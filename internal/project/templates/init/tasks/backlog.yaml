@@ -1,1 +1,22 @@
+# Example task structure (delete this example and add your own tasks)
+# tasks:
+# - id: TASK-001
+#   title: Example task title
+#   description: Detailed description of what needs to be done
+#   status: pending
+#   scope:
+#     - src/module
+#   spec_refs:
+#     - .agentic/spec/04-architecture.md
+#     - .agentic/spec/05-domain-model.md
+#   inputs:
+#     - .agentic/context/rolling-summary.md
+#   outputs:
+#     - src/module/feature.go
+#     - tests/module/feature_test.go
+#   acceptance:
+#     - Feature implements specified behavior
+#     - All tests pass
+#     - Code follows project conventions
+
 tasks: []

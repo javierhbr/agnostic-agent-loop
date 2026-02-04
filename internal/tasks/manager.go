@@ -108,3 +108,37 @@ func (tm *TaskManager) MoveTask(taskID string, fromType, toType string, newStatu
 	toList.Tasks = append(toList.Tasks, taskToMove)
 	return tm.SaveTasks(toType, toList)
 }
+
+// FindTask searches for a task across all lists (backlog, in-progress, done)
+// Returns the task, the source list name, and an error if any
+func (tm *TaskManager) FindTask(taskID string) (*models.Task, string, error) {
+	sources := []string{"backlog", "in-progress", "done"}
+
+	for _, source := range sources {
+		list, err := tm.LoadTasks(source)
+		if err != nil {
+			return nil, "", fmt.Errorf("error loading %s: %w", source, err)
+		}
+
+		for _, task := range list.Tasks {
+			if task.ID == taskID {
+				return &task, source, nil
+			}
+			// Also check subtasks
+			for _, subtask := range task.SubTasks {
+				if subtask.ID == taskID {
+					// Convert SubTask to Task for consistent return
+					fullTask := models.Task{
+						ID:         subtask.ID,
+						Title:      subtask.Title,
+						Status:     subtask.Status,
+						AssignedTo: subtask.AssignedTo,
+					}
+					return &fullTask, source, nil
+				}
+			}
+		}
+	}
+
+	return nil, "", nil // Not found, but no error
+}
