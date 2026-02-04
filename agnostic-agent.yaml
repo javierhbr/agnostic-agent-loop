@@ -1,0 +1,15 @@
+project:
+  name: {{ .Name }}
+  version: 0.1.0
+  roots:
+    - .
+
+agents:
+  defaults:
+    max_tokens: 4000
+    model: claude-3-5-sonnet-20241022
+
+workflow:
+  validators:
+    - context-check
+    - task-scope

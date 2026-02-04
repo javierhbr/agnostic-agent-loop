@@ -1,0 +1,93 @@
+package encoding
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/javierbenavides/agentic-agent/internal/context"
+	"github.com/javierbenavides/agentic-agent/internal/tasks"
+	"github.com/javierbenavides/agentic-agent/pkg/models"
+)
+
+type ContextBundle struct {
+	Task        *models.Task               `yaml:"task" json:"task"`
+	Global      *models.GlobalContext      `yaml:"global" json:"global"`
+	Rolling     string                     `yaml:"rolling" json:"rolling"`
+	Directories []*models.DirectoryContext `yaml:"directories" json:"directories"`
+	BuiltAt     time.Time                  `yaml:"built_at" json:"built_at"`
+}
+
+func CreateContextBundle(taskID string, format string) ([]byte, error) {
+	// 1. Load Task
+	tm := tasks.NewTaskManager(".agentic/tasks")
+	// Search in all lists
+	// Simplified: just check in-progress for building context usually
+	list, err := tm.LoadTasks("in-progress")
+	if err != nil {
+		return nil, err
+	}
+
+	var task *models.Task
+	for _, t := range list.Tasks {
+		if t.ID == taskID {
+			task = &t
+			break
+		}
+	}
+
+	if task == nil {
+		// Try backlog
+		list, _ = tm.LoadTasks("backlog")
+		for _, t := range list.Tasks {
+			if t.ID == taskID {
+				task = &t
+				break
+			}
+		}
+	}
+
+	if task == nil {
+		return nil, fmt.Errorf("task %s not found", taskID)
+	}
+
+	// 2. Load Global Context
+	gcm := context.NewGlobalContextManager(".agentic/context")
+	global, err := gcm.LoadGlobal()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load global context: %w", err)
+	}
+
+	// 3. Load Rolling Summary
+	rcm := context.NewRollingContextManager(".agentic/context")
+	rolling, err := rcm.LoadRolling()
+	if err != nil {
+		// rolling might be optional or empty
+		rolling = ""
+	}
+
+	// 4. Load Directory Contexts (simplified: load all tracked dirs?)
+	// Or just from task scope?
+	// For MVP, lets looking at task scope if we had it, or just root.
+	// We'll scan root for now.
+	dcm := context.NewDirectoryContextManager(".")
+	dirs, _ := dcm.FindContextDirs(".")
+	var dirContexts []*models.DirectoryContext
+	for _, d := range dirs {
+		ctx, err := dcm.LoadContext(d)
+		if err == nil {
+			dirContexts = append(dirContexts, ctx)
+		}
+	}
+
+	bundle := &ContextBundle{
+		Task:        task,
+		Global:      global,
+		Rolling:     rolling,
+		Directories: dirContexts,
+		BuiltAt:     time.Now(),
+	}
+
+	// 5. Encode
+	encoder := NewToonEncoder()
+	return encoder.Encode(bundle)
+}

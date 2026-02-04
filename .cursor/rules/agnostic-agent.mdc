@@ -1,0 +1,18 @@
+---
+description: Agnostic Agent Rules for Cursor
+globs: 
+---
+
+# Agnostic Agent Rules
+
+## Base Rules
+# Base Agent Rules
+
+- Always read `context.md` before starting work in a directory.
+- Update `context.md` if you change the logic/architecture.
+- Keep tasks small.
+
+
+## Cursor-Specific Rules
+- Always check `TODO.md` or `task.md` for active tasks.
+- Use the terminal to run `agentic-agent` commands.

@@ -1,0 +1,6 @@
+tasks:
+    - id: TASK-1770224937
+      title: Verify task creation
+      description: ""
+      status: in-progress
+      assigned_to: javierbenavides
