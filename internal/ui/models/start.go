@@ -78,30 +78,66 @@ func NewStartWizardModel() StartWizardModel {
 	}
 	modelSelect := components.NewSimpleSelect("AI Model", modelOptions)
 
-	// Next action selection
+	// Next action selection - ALL first-level commands
 	nextActionOptions := []components.SelectOption{
+		// First-Level Commands (matching agentic-agent --help)
 		components.NewSelectOption(
-			"Create your first task",
-			"Open the interactive task creation wizard",
-			"task-create",
+			"🎬 init - Initialize project",
+			"Initialize a new agentic project (interactive wizard)",
+			"init",
 		),
 		components.NewSelectOption(
-			"Start working",
-			"Begin the complete work workflow",
+			"📋 task - Manage tasks",
+			"Create, list, claim, complete, and manage tasks",
+			"task",
+		),
+		components.NewSelectOption(
+			"🔨 work - Interactive workflow",
+			"Complete workflow: claim task → work → complete",
 			"work",
 		),
 		components.NewSelectOption(
-			"View all tasks",
-			"See the task list and management interface",
-			"task-list",
+			"📁 context - Manage context",
+			"Generate, scan, and build context files",
+			"context",
 		),
 		components.NewSelectOption(
-			"Exit",
+			"✔️  validate - Run validation",
+			"Run all validation rules on the project",
+			"validate",
+		),
+		components.NewSelectOption(
+			"🛠️  skills - Manage skills",
+			"Generate and check agent skill files",
+			"skills",
+		),
+		components.NewSelectOption(
+			"📊 token - Token usage",
+			"View and manage token usage statistics",
+			"token",
+		),
+		components.NewSelectOption(
+			"🤖 run - Run orchestrator",
+			"Run the agent orchestrator for a task",
+			"run",
+		),
+		components.NewSelectOption(
+			"ℹ️  version - Version info",
+			"Display version information",
+			"version",
+		),
+		components.NewSelectOption(
+			"❓ help - Get help",
+			"Show help for any command",
+			"help",
+		),
+		components.NewSelectOption(
+			"🚪 Exit",
 			"Close the CLI",
 			"exit",
 		),
 	}
-	nextAction := components.NewSimpleSelect("What would you like to do next?", nextActionOptions)
+	nextAction := components.NewSimpleSelect("Select a command:", nextActionOptions)
 
 	spinner := components.NewSpinner("Initializing project...")
 
