@@ -699,29 +699,160 @@ agentic-agent task complete TASK-042
 
 ## Testing
 
-The framework includes comprehensive tests:
+The framework includes comprehensive tests covering all functionality including the Ralph PDR integration.
+
+### Run All Tests
 
 ```bash
-# Run all tests
+# Run all tests in the project
 go test ./...
 
-# Run with coverage
-go test -cover ./...
+# Run all tests with verbose output
+go test ./... -v
 
-# Run specific package tests
-go test ./internal/tasks
-go test ./internal/validator/rules
+# Run all tests with coverage report
+go test ./... -cover
+```
 
-# Run integration tests
-go test ./tests/integration
+### Run Tests by Package
+
+```bash
+# Task management tests (including progress writer)
+go test ./internal/tasks -v
+
+# Validator tests (including browser verification)
+go test ./internal/validator/rules -v
+
+# Orchestrator tests (loop and archiver)
+go test ./internal/orchestrator -v
+
+# Integration tests
+go test ./tests/integration -v
+
+# Model tests
+go test ./pkg/models -v
+```
+
+### Run Specific Tests
+
+```bash
+# Run a specific test function
+go test ./internal/tasks -run TestProgressWriter_AppendEntry
+
+# Run all tests matching a pattern
+go test ./internal/validator/rules -run TestBrowserVerification
+
+# Run tests with detailed output
+go test ./internal/orchestrator -run TestArchiver -v
+```
+
+### View Test Coverage
+
+#### Quick Coverage Check
+
+```bash
+# Show coverage by package
+go test ./... -cover
+```
+
+#### Comprehensive Coverage Reports
+
+We provide multiple ways to generate detailed coverage reports:
+
+**Option 1: Using Make (Recommended)**
+
+```bash
+# Generate HTML coverage report and open in browser
+make coverage-html
+
+# Show coverage by function
+make coverage-func
+
+# Show coverage summary by package
+make coverage-summary
+
+# Clean coverage files
+make clean-coverage
+```
+
+**Option 2: Using Coverage Script**
+
+```bash
+# Generate comprehensive coverage report
+./scripts/coverage-report.sh
+
+# Generate report and open HTML in browser
+./scripts/coverage-report.sh --open
+```
+
+**Option 3: Manual Go Commands**
+
+```bash
+# Generate detailed coverage report
+go test ./... -coverprofile=coverage/coverage.out -covermode=count
+go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+
+# View coverage by function
+go tool cover -func=coverage/coverage.out
+
+# Count passing tests
+go test ./... -v 2>&1 | grep -c "^--- PASS:"
+```
+
+#### Coverage Report Features
+
+The coverage report tools provide:
+- **Total coverage percentage** with color-coded output
+- **Package-by-package breakdown** sorted by coverage
+- **Packages without tests** highlighted
+- **HTML visualization** of line-by-line coverage
+- **Function-level coverage** details
+- **Coverage badge** for documentation
+- **Threshold validation** (fails CI if below 50%)
+
+#### Understanding Coverage Output
+
+Coverage levels are color-coded:
+- 🟢 **Green (70%+)**: Good coverage
+- 🟡 **Yellow (40-69%)**: Needs improvement
+- 🔴 **Red (<40%)**: Insufficient coverage
+
+### Ralph PDR Integration Tests
+
+The Ralph PDR integration includes 43 new tests:
+
+```bash
+# Progress writer tests (11 tests)
+go test ./internal/tasks -run TestProgressWriter -v
+
+# Browser verification validator tests (13 tests)
+go test ./internal/validator/rules -run TestBrowserVerification -v
+
+# Archiver tests (10 tests)
+go test ./internal/orchestrator -run TestArchiver -v
+
+# Loop orchestrator tests (9 tests)
+go test ./internal/orchestrator -run TestLoop -v
 ```
 
 ### Test Results
 
-The framework has been validated with:
-- **59 unit and integration tests**
-- **66.4% code coverage** on critical packages
+The framework has been fully validated with:
+- **87 unit and integration tests** (total)
+- **43 tests** for Ralph PDR integration
+- **44 tests** for core framework
 - All tests passing ✅
+- Build compiles successfully ✅
+
+### Quick Verification
+
+```bash
+# Verify all Ralph PDR tests pass
+go test ./internal/tasks ./internal/validator/rules ./internal/orchestrator -v
+
+# Run full test suite and show summary
+go test ./... -v 2>&1 | tail -20
+```
 
 See [VALIDATION_REPORT.md](VALIDATION_REPORT.md) for detailed test results.
 
@@ -900,6 +1031,8 @@ Validation rules enforce best practices and catch issues before they become prob
 
 - [VALIDATION_REPORT.md](VALIDATION_REPORT.md) - Detailed validation and test results
 - [CLAUDE.md](CLAUDE.md) - Claude-specific agent rules
+- [docs/COVERAGE.md](docs/COVERAGE.md) - Comprehensive test coverage guide
+- [COVERAGE_QUICK_REF.md](COVERAGE_QUICK_REF.md) - Coverage quick reference
 - Specification files in `.agentic/spec/` - Project specifications
 
 ## Roadmap
