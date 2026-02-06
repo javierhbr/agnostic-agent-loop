@@ -37,16 +37,16 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          mkdir -p coverage
-          go test ./tests/bdd -v -coverprofile=coverage/bdd-coverage.out -covermode=count
-          go tool cover -html=coverage/bdd-coverage.out -o coverage/bdd-coverage.html
+          mkdir -p build/coverage
+          go test ./test/bdd -v -coverprofile=build/coverage/bdd-coverage.out -covermode=count
+          go tool cover -html=build/coverage/bdd-coverage.out -o build/coverage/bdd-coverage.html
 
       - name: Upload coverage reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-reports
-          path: coverage/
+          path: build/coverage/
           retention-days: 30
 
       - name: Upload test results
@@ -66,7 +66,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "All BDD feature tests have been executed." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f coverage/bdd-coverage.out ]; then
-            COVERAGE=$(go tool cover -func=coverage/bdd-coverage.out | grep total | awk '{print $3}')
+          if [ -f build/coverage/bdd-coverage.out ]; then
+            COVERAGE=$(go tool cover -func=build/coverage/bdd-coverage.out | grep total | awk '{print $3}')
             echo "Coverage: $COVERAGE" >> $GITHUB_STEP_SUMMARY
           fi

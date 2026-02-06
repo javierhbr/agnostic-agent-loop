@@ -8,7 +8,7 @@ import (
 	"github.com/cucumber/godog"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
-	"github.com/javierbenavides/agentic-agent/tests/functional"
+	"github.com/javierbenavides/agentic-agent/test/functional"
 )
 
 // TaskSteps encapsulates task-related step definitions

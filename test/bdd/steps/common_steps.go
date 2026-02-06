@@ -9,7 +9,7 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/javierbenavides/agentic-agent/internal/project"
-	"github.com/javierbenavides/agentic-agent/tests/functional"
+	"github.com/javierbenavides/agentic-agent/test/functional"
 )
 
 // CommonSteps encapsulates common step definitions for test setup and command execution

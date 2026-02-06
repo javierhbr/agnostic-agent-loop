@@ -4,15 +4,14 @@
 *.dll
 *.so
 *.dylib
-agentic-agent
-test-sandbox/
+build/bin/agentic-agent
+examples/test-sandbox/
 # Test binary, built with `go test -c`
 *.test
 
 # Output of the go coverage tool
 *.out
-coverage.html
-coverage/
+build/coverage/
 
 # Go workspace file
 go.work
@@ -39,8 +38,8 @@ Thumbs.db
 
 # Build output
 dist/
-build/
-bin/
+build/bin/
+build/coverage/
 
 # Logs
 *.log

@@ -5,7 +5,7 @@ This directory contains Behavior-Driven Development (BDD) tests using Gherkin fe
 ## Structure
 
 ```
-tests/bdd/
+test/bdd/
 ├── features_test.go         # Main test runner
 ├── suite_context.go         # Shared test context
 └── steps/                   # Step definition packages
@@ -62,7 +62,7 @@ Feature: Task Creation
 
 ### 2. Implement Step Definitions
 
-If needed, add step definitions in `tests/bdd/steps/`:
+If needed, add step definitions in `test/bdd/steps/`:
 
 ```go
 func (s *TaskSteps) RegisterSteps(sc *godog.ScenarioContext) {
@@ -108,7 +108,7 @@ make test-bdd
 
 ## Reusing Existing Helpers
 
-The BDD step definitions reuse helpers from `tests/functional/helpers.go`:
+The BDD step definitions reuse helpers from `test/functional/helpers.go`:
 - `SetupTestProject()` - Creates isolated test environment
 - `VerifyTaskFile()` - Parses and validates task YAML
 - `VerifyTaskInFile()` - Finds specific task in file

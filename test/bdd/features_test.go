@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/cucumber/godog"
-	"github.com/javierbenavides/agentic-agent/tests/bdd/steps"
+	"github.com/javierbenavides/agentic-agent/test/bdd/steps"
 )
 
 var opts = godog.Options{

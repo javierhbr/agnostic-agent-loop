@@ -728,7 +728,7 @@ go test ./internal/validator/rules -v
 go test ./internal/orchestrator -v
 
 # Integration tests
-go test ./tests/integration -v
+go test ./test/integration -v
 
 # Model tests
 go test ./pkg/models -v
@@ -790,11 +790,11 @@ make clean-coverage
 
 ```bash
 # Generate detailed coverage report
-go test ./... -coverprofile=coverage/coverage.out -covermode=count
-go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+go test ./... -coverprofile=build/coverage/coverage.out -covermode=count
+go tool cover -html=build/coverage/coverage.out -o coverage/coverage.html
 
 # View coverage by function
-go tool cover -func=coverage/coverage.out
+go tool cover -func=build/coverage/coverage.out
 
 # Count passing tests
 go test ./... -v 2>&1 | grep -c "^--- PASS:"
@@ -1044,7 +1044,7 @@ Validation rules enforce best practices and catch issues before they become prob
 - Specification files in `.agentic/spec/` - Project specifications
 
 ### Testing
-- [tests/bdd/README.md](tests/bdd/README.md) - BDD infrastructure overview
+- [test/bdd/README.md](test/bdd/README.md) - BDD infrastructure overview
 - [features/](features/) - Gherkin feature files (executable specifications)
 
 ## Roadmap

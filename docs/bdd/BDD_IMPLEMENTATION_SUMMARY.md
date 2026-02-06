@@ -19,13 +19,13 @@ Successfully implemented a complete Behavior-Driven Development (BDD) / Acceptan
 
 **Delivered**:
 - Installed godog v0.15.1 dependency
-- Created directory structure (features/, tests/bdd/)
+- Created directory structure (features/, test/bdd/)
 - Built core infrastructure:
-  - `tests/bdd/features_test.go` - Main test runner
-  - `tests/bdd/suite_context.go` - Shared context
+  - `test/bdd/features_test.go` - Main test runner
+  - `test/bdd/suite_context.go` - Shared context
   - Step definition framework
 - Updated Makefile with BDD targets
-- Created `tests/bdd/README.md`
+- Created `test/bdd/README.md`
 
 **Key Decision**: Sequential execution (Concurrency: 1) to avoid race conditions
 
@@ -33,7 +33,7 @@ Successfully implemented a complete Behavior-Driven Development (BDD) / Acceptan
 
 **Delivered**:
 - First feature file: `features/init/project_initialization.feature`
-- Step definitions in `tests/bdd/steps/`:
+- Step definitions in `test/bdd/steps/`:
   - `common_steps.go` - Setup and command execution
   - `assertion_steps.go` - Generic assertions
   - `init_steps.go` - Initialization steps
@@ -49,7 +49,7 @@ Successfully implemented a complete Behavior-Driven Development (BDD) / Acceptan
   - `features/workflows/intermediate_workflow.feature` (17 steps)
   - `features/workflows/advanced_workflow.feature` (13 steps)
 - Complete task step definitions in `task_steps.go` (50+ methods)
-- Reused existing test helpers from `tests/functional/helpers.go`
+- Reused existing test helpers from `test/functional/helpers.go`
 
 **Achievement**: Living documentation for all tutorial scenarios
 
@@ -109,7 +109,7 @@ agnostic-agent-loop/
 │       ├── beginner_workflow.feature
 │       ├── intermediate_workflow.feature
 │       └── advanced_workflow.feature
-├── tests/bdd/                      # BDD infrastructure
+├── test/bdd/                      # BDD infrastructure
 │   ├── features_test.go           # Main test runner
 │   ├── suite_context.go           # Shared context
 │   ├── README.md                  # BDD infrastructure docs
@@ -153,7 +153,7 @@ agnostic-agent-loop/
 
 - **Suite Context**: Shared state across scenarios
 - **Cleanup Management**: Automatic cleanup after each scenario
-- **Helper Reuse**: Leverages existing `tests/functional/helpers.go`
+- **Helper Reuse**: Leverages existing `test/functional/helpers.go`
 - **Sequential Execution**: Prevents race conditions
 
 ### 4. CI/CD Integration
@@ -197,10 +197,10 @@ make coverage-all
 # Total Coverage: 11.7%
 #
 # Individual reports:
-#   - Unit tests:       coverage/unit-coverage.html
-#   - Functional tests: coverage/functional-coverage.html
-#   - BDD tests:        coverage/bdd-coverage.html
-#   - Merged report:    coverage/merged-coverage.html
+#   - Unit tests:       build/coverage/unit-coverage.html
+#   - Functional tests: build/coverage/functional-coverage.html
+#   - BDD tests:        build/coverage/bdd-coverage.html
+#   - Merged report:    build/coverage/merged-coverage.html
 ```
 
 ### Coverage Breakdown
@@ -224,7 +224,7 @@ make coverage-all
 
 ### 2. Test Helper Reuse
 
-**Decision**: Reuse existing helpers from `tests/functional/helpers.go`
+**Decision**: Reuse existing helpers from `test/functional/helpers.go`
 
 **Benefits**:
 - No code duplication
@@ -257,23 +257,23 @@ make coverage-all
 
 ```bash
 # Run only workflow features
-go test ./tests/bdd -v -godog.paths=../../features/workflows/
+go test ./test/bdd -v -godog.paths=../../features/workflows/
 
 # Run specific feature file
-go test ./tests/bdd -v -godog.paths=../../features/tasks/task_lifecycle.feature
+go test ./test/bdd -v -godog.paths=../../features/tasks/task_lifecycle.feature
 ```
 
 ### Run Tagged Scenarios
 
 ```bash
 # Run only @smoke tests
-go test ./tests/bdd -v -godog.tags=@smoke
+go test ./test/bdd -v -godog.tags=@smoke
 
 # Run @beginner or @intermediate
-go test ./tests/bdd -v -godog.tags="@beginner || @intermediate"
+go test ./test/bdd -v -godog.tags="@beginner || @intermediate"
 
 # Exclude @wip (work in progress)
-go test ./tests/bdd -v -godog.tags="~@wip"
+go test ./test/bdd -v -godog.tags="~@wip"
 ```
 
 ### Generate Coverage
@@ -283,8 +283,8 @@ go test ./tests/bdd -v -godog.tags="~@wip"
 make coverage-all
 
 # BDD tests only
-go test ./tests/bdd -v -coverprofile=coverage/bdd.out
-go tool cover -html=coverage/bdd.out
+go test ./test/bdd -v -coverprofile=build/build/coverage/bdd.out
+go tool cover -html=build/build/coverage/bdd.out
 ```
 
 ---

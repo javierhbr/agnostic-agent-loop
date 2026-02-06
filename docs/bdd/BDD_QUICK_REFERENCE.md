@@ -12,15 +12,15 @@ make test-bdd
 make test-all
 
 # Run specific feature
-go test ./tests/bdd -v -godog.paths=../../features/tasks/task_lifecycle.feature
+go test ./test/bdd -v -godog.paths=../../features/tasks/task_lifecycle.feature
 
 # Run specific workflow
-go test ./tests/bdd -v -godog.paths=../../features/workflows/
+go test ./test/bdd -v -godog.paths=../../features/workflows/
 
 # Run with tags
-go test ./tests/bdd -v -godog.tags=@smoke
-go test ./tests/bdd -v -godog.tags="@beginner || @intermediate"
-go test ./tests/bdd -v -godog.tags="~@wip"  # Exclude WIP
+go test ./test/bdd -v -godog.tags=@smoke
+go test ./test/bdd -v -godog.tags="@beginner || @intermediate"
+go test ./test/bdd -v -godog.tags="~@wip"  # Exclude WIP
 ```
 
 ## Coverage
@@ -30,11 +30,11 @@ go test ./tests/bdd -v -godog.tags="~@wip"  # Exclude WIP
 make coverage-all
 
 # View merged coverage report
-open coverage/merged-coverage.html
+open build/coverage/merged-coverage.html
 
 # BDD coverage only
-go test ./tests/bdd -v -coverprofile=coverage/bdd.out
-go tool cover -html=coverage/bdd.out
+go test ./test/bdd -v -coverprofile=build/build/coverage/bdd.out
+go tool cover -html=build/build/coverage/bdd.out
 ```
 
 ## Gherkin Syntax
@@ -136,10 +136,10 @@ Then the following files should exist:
 
 ## Step Definition Locations
 
-- **Setup & Commands**: `tests/bdd/steps/common_steps.go`
-- **Task Operations**: `tests/bdd/steps/task_steps.go`
-- **Assertions**: `tests/bdd/steps/assertion_steps.go`
-- **Initialization**: `tests/bdd/steps/init_steps.go`
+- **Setup & Commands**: `test/bdd/steps/common_steps.go`
+- **Task Operations**: `test/bdd/steps/task_steps.go`
+- **Assertions**: `test/bdd/steps/assertion_steps.go`
+- **Initialization**: `test/bdd/steps/init_steps.go`
 
 ## ATDD Workflow
 
@@ -155,7 +155,7 @@ Then the following files should exist:
 
 3. **Implement Step Definitions**
    ```bash
-   vim tests/bdd/steps/task_steps.go
+   vim test/bdd/steps/task_steps.go
    ```
 
 4. **Implement Feature**
@@ -170,7 +170,7 @@ Then the following files should exist:
 
 6. **Commit**
    ```bash
-   git add features/ tests/bdd/ cmd/
+   git add features/ test/bdd/ cmd/
    git commit -m "feat: Add new feature"
    ```
 
@@ -197,7 +197,7 @@ grep -r "Given\|When\|Then\|And" features/ | wc -l
 cat features/workflows/beginner_workflow.feature
 
 # Check step definition usage
-grep -r "sc.Step" tests/bdd/steps/
+grep -r "sc.Step" test/bdd/steps/
 ```
 
 ## CI/CD
@@ -221,10 +221,10 @@ grep -r "sc.Step" tests/bdd/steps/
 
 ```bash
 # More detail
-go test ./tests/bdd -v
+go test ./test/bdd -v
 
 # Even more detail
-go test ./tests/bdd -v -godog.format=pretty -test.v
+go test ./test/bdd -v -godog.format=pretty -test.v
 ```
 
 ### Run Single Scenario
@@ -238,14 +238,14 @@ Scenario: Debug this one
 
 Then:
 ```bash
-go test ./tests/bdd -v -godog.tags=@focus
+go test ./test/bdd -v -godog.tags=@focus
 ```
 
 ### Check Step Definitions
 
 ```bash
 # List all registered steps
-go test ./tests/bdd -v -godog.format=steps
+go test ./test/bdd -v -godog.format=steps
 ```
 
 ## Best Practices
@@ -271,7 +271,7 @@ go test ./tests/bdd -v -godog.format=steps
 
 **Error**: `Step is undefined: I do something new`
 
-**Fix**: Add step definition in appropriate file under `tests/bdd/steps/`
+**Fix**: Add step definition in appropriate file under `test/bdd/steps/`
 
 ### Race Condition
 
@@ -295,7 +295,7 @@ s.suite.RegisterCleanup(func() {
 - [BDD Guide](BDD_GUIDE.md) - Complete guide
 - [CLI Tutorial](CLI_TUTORIAL.md) - Tutorial with ATDD section
 - [Implementation Summary](BDD_IMPLEMENTATION_SUMMARY.md) - Project overview
-- [tests/bdd/README.md](../tests/bdd/README.md) - Infrastructure docs
+- [test/bdd/README.md](../test/bdd/README.md) - Infrastructure docs
 
 ## Quick Stats
 

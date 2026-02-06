@@ -2,19 +2,19 @@ Summary
 I've successfully created a comprehensive step-by-step CLI usage and testing scenario with functional testing using Cobra. Here's what was delivered:
 
 📦 Deliverables
-1. Functional Test Infrastructure (tests/functional/helpers.go)
+1. Functional Test Infrastructure (test/functional/helpers.go)
 
 370 lines of reusable test utilities
 15+ helper functions for test setup, command execution, and verification
 Isolated test environments with git initialization
 Output capture and file system verification
-2. Core CLI Command Tests (tests/functional/cli_test.go)
+2. Core CLI Command Tests (test/functional/cli_test.go)
 
 381 lines covering 10 comprehensive test functions
 Tests all major CLI operations: init, create, claim, complete, decompose, show, find
 Error handling with 4 sub-test scenarios
 Multi-task workflow testing
-3. End-to-End Scenario Tests (tests/functional/scenarios_test.go)
+3. End-to-End Scenario Tests (test/functional/scenarios_test.go)
 
 400 lines with 5 complete scenario tests
 Beginner scenario: Complete first-project workflow
@@ -55,9 +55,9 @@ Total: 23 test cases
 make test-functional
 
 # Run specific scenarios
-go test ./tests/functional -run TestBeginnerScenario -v
-go test ./tests/functional -run TestIntermediateScenario -v
-go test ./tests/functional -run TestAdvancedScenario -v
+go test ./test/functional -run TestBeginnerScenario -v
+go test ./test/functional -run TestIntermediateScenario -v
+go test ./test/functional -run TestAdvancedScenario -v
 
 # Follow the tutorial
 cat docs/CLI_TUTORIAL.md

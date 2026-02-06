@@ -381,7 +381,7 @@ agentic-agent session close                 # Execute session close protocol
 5. CI/CD setup (GitHub Actions)
 
 **Files to create:**
-- `tests/integration/*.go`
+- `test/integration/*.go`
 - `docs/README.md`
 - `.github/workflows/ci.yaml`
 - `examples/sample-project/`

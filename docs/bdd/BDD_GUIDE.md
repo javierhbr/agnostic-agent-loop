@@ -95,7 +95,7 @@ make bdd-init
 
 This creates:
 - `features/` - Gherkin feature files
-- `tests/bdd/` - Step definitions and test infrastructure
+- `test/bdd/` - Step definitions and test infrastructure
 
 ### Project Structure
 
@@ -113,7 +113,7 @@ agnostic-agent-loop/
 │       ├── beginner_workflow.feature
 │       ├── intermediate_workflow.feature
 │       └── advanced_workflow.feature
-├── tests/bdd/                     # BDD test infrastructure
+├── test/bdd/                     # BDD test infrastructure
 │   ├── features_test.go          # Main test runner
 │   ├── suite_context.go          # Shared test context
 │   └── steps/                    # Step definitions
@@ -293,23 +293,23 @@ make test-bdd
 
 ```bash
 # Run only workflow features
-go test ./tests/bdd -v -godog.paths=../../features/workflows/
+go test ./test/bdd -v -godog.paths=../../features/workflows/
 
 # Run specific feature file
-go test ./tests/bdd -v -godog.paths=../../features/tasks/task_lifecycle.feature
+go test ./test/bdd -v -godog.paths=../../features/tasks/task_lifecycle.feature
 ```
 
 ### Run Tagged Scenarios
 
 ```bash
 # Run only @smoke tests
-go test ./tests/bdd -v -godog.tags=@smoke
+go test ./test/bdd -v -godog.tags=@smoke
 
 # Run @smoke but exclude @wip (work in progress)
-go test ./tests/bdd -v -godog.tags="@smoke && ~@wip"
+go test ./test/bdd -v -godog.tags="@smoke && ~@wip"
 
 # Run beginner or intermediate workflows
-go test ./tests/bdd -v -godog.tags="@beginner || @intermediate"
+go test ./test/bdd -v -godog.tags="@beginner || @intermediate"
 ```
 
 ### Run All Tests
@@ -368,7 +368,7 @@ Step definition missing for:
 ### 3. Implement Step Definitions
 
 ```go
-// tests/bdd/steps/task_steps.go
+// test/bdd/steps/task_steps.go
 func (s *TaskSteps) RegisterSteps(sc *godog.ScenarioContext) {
     sc.Step(`^I have completed tasks older than (\d+) days$`, s.createOldCompletedTasks)
     sc.Step(`^tasks should be moved to archived\.yaml$`, s.assertTasksArchived)
@@ -429,7 +429,7 @@ make test-all  # All tests still pass
 
 ```bash
 git add features/tasks/task_archiving.feature
-git add cmd/agentic-agent/task.go tests/bdd/steps/task_steps.go
+git add cmd/agentic-agent/task.go test/bdd/steps/task_steps.go
 git commit -m "feat: Add task archiving
 
 Implemented task archiving feature as specified
@@ -667,7 +667,7 @@ Step is undefined:
 ```
 
 **Solution:**
-Add step definition in appropriate `tests/bdd/steps/*.go` file.
+Add step definition in appropriate `test/bdd/steps/*.go` file.
 
 ### Race Conditions
 
@@ -699,4 +699,4 @@ s.suite.RegisterCleanup(func() {
 
 ---
 
-**Questions?** Check [tests/bdd/README.md](tests/bdd/README.md) or review existing feature files in `features/`.
+**Questions?** Check [test/bdd/README.md](test/bdd/README.md) or review existing feature files in `features/`.

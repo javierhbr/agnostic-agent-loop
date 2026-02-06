@@ -338,7 +338,7 @@ All validation rules passed!
 make test
 
 # Or run specific functional tests
-go test ./tests/functional -run TestBeginnerScenario -v
+go test ./test/functional -run TestBeginnerScenario -v
 ```
 
 **Expected**: All tests pass, including the automated beginner scenario test.
@@ -650,7 +650,7 @@ agentic-agent task complete TASK-1234567891
 make test
 
 # Run intermediate scenario test
-go test ./tests/functional -run TestIntermediateScenario -v
+go test ./test/functional -run TestIntermediateScenario -v
 
 # Run your API tests
 go test ./tests/api -v
@@ -926,10 +926,10 @@ make test
 make coverage-html
 
 # Run advanced scenario test
-go test ./tests/functional -run TestAdvancedScenario -v
+go test ./test/functional -run TestAdvancedScenario -v
 
 # Run complete workflow test
-go test ./tests/functional -run TestCompleteWorkflow -v
+go test ./test/functional -run TestCompleteWorkflow -v
 ```
 
 ### Advanced Scenario Summary
@@ -979,20 +979,20 @@ go test ./internal/tasks -v
 go test ./internal/validator/rules -v
 
 # Test functional scenarios
-go test ./tests/functional -v
+go test ./test/functional -v
 ```
 
 #### Specific Test Functions
 
 ```bash
 # Run beginner scenario test
-go test ./tests/functional -run TestBeginnerScenario -v
+go test ./test/functional -run TestBeginnerScenario -v
 
 # Run intermediate scenario test
-go test ./tests/functional -run TestIntermediateScenario -v
+go test ./test/functional -run TestIntermediateScenario -v
 
 # Run advanced scenario test
-go test ./tests/functional -run TestAdvancedScenario -v
+go test ./test/functional -run TestAdvancedScenario -v
 ```
 
 ### Test Coverage
@@ -1088,7 +1088,7 @@ jobs:
       - name: Run tests
         run: make test
       - name: Run functional tests
-        run: go test ./tests/functional -v
+        run: go test ./test/functional -v
       - name: Validate
         run: ./agentic-agent validate --format json
 ```
@@ -1279,7 +1279,7 @@ agentic-agent validate --format json
 make test
 make test-verbose
 make coverage-html
-go test ./tests/functional -v
+go test ./test/functional -v
 ```
 
 ### Keyboard Shortcuts (Interactive Mode)
@@ -1383,13 +1383,13 @@ You can run specific feature files or scenarios:
 
 ```bash
 # Run only workflow features
-go test ./tests/bdd -v -godog.paths=../../features/workflows/
+go test ./test/bdd -v -godog.paths=../../features/workflows/
 
 # Run only beginner workflow
-go test ./tests/bdd -v -godog.paths=../../features/workflows/beginner_workflow.feature
+go test ./test/bdd -v -godog.paths=../../features/workflows/beginner_workflow.feature
 
 # Run tests tagged as @smoke
-go test ./tests/bdd -v -godog.tags=@smoke
+go test ./test/bdd -v -godog.tags=@smoke
 ```
 
 ### Step 4: The ATDD Development Cycle
@@ -1426,7 +1426,7 @@ make test-bdd
 
 #### 4.3 Implement Step Definitions (Yellow Phase)
 
-Add step definitions in `tests/bdd/steps/task_steps.go`:
+Add step definitions in `test/bdd/steps/task_steps.go`:
 
 ```go
 func (s *TaskSteps) RegisterSteps(sc *godog.ScenarioContext) {
@@ -1513,8 +1513,8 @@ make coverage-all
 # - Merged total coverage
 #
 # Reports generated:
-# - coverage/merged-coverage.html (all tests)
-# - coverage/bdd-coverage.html (BDD only)
+# - build/coverage/merged-coverage.html (all tests)
+# - build/coverage/bdd-coverage.html (BDD only)
 ```
 
 ### Benefits of ATDD/BDD
@@ -1589,7 +1589,7 @@ Scenario: Critical user workflow
 For comprehensive guidance on ATDD/BDD:
 - [BDD Guide](BDD_GUIDE.md) - Complete guide to BDD with examples
 - [Feature Files](../features/) - All existing feature specifications
-- [Step Definitions](../tests/bdd/steps/) - Implementation patterns
+- [Step Definitions](../test/bdd/steps/) - Implementation patterns
 
 ---
 
@@ -1612,16 +1612,16 @@ All scenarios in this tutorial are verified by automated functional tests:
 
 ```bash
 # Test beginner scenario
-go test ./tests/functional -run TestBeginnerScenario -v
+go test ./test/functional -run TestBeginnerScenario -v
 
 # Test intermediate scenario
-go test ./tests/functional -run TestIntermediateScenario -v
+go test ./test/functional -run TestIntermediateScenario -v
 
 # Test advanced scenario
-go test ./tests/functional -run TestAdvancedScenario -v
+go test ./test/functional -run TestAdvancedScenario -v
 
 # Test complete workflow
-go test ./tests/functional -run TestCompleteWorkflow -v
+go test ./test/functional -run TestCompleteWorkflow -v
 ```
 
 These tests ensure the tutorial stays accurate and commands work as documented.
