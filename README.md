@@ -29,6 +29,7 @@ The Agentic Agent framework provides a structured approach to AI-assisted develo
 - ✅ **Learnings Management** - Codebase patterns and directory-specific guidance
 - ✅ **Browser Verification** - Validation for UI changes
 - ✅ **agentskills.io Compliance** - Portable skills across tools
+- ✅ **BDD/ATDD Testing** - Gherkin feature files with godog framework for living documentation
 
 ## Installation
 
@@ -1029,11 +1030,22 @@ Validation rules enforce best practices and catch issues before they become prob
 
 ## Documentation
 
+### User Guides
+- [docs/CLI_TUTORIAL.md](docs/CLI_TUTORIAL.md) - Step-by-step CLI tutorial with scenarios
+- [docs/BDD_GUIDE.md](docs/BDD_GUIDE.md) - Complete guide to BDD/ATDD testing
+
+### Technical Documentation
 - [VALIDATION_REPORT.md](VALIDATION_REPORT.md) - Detailed validation and test results
 - [CLAUDE.md](CLAUDE.md) - Claude-specific agent rules
 - [docs/COVERAGE.md](docs/COVERAGE.md) - Comprehensive test coverage guide
 - [COVERAGE_QUICK_REF.md](COVERAGE_QUICK_REF.md) - Coverage quick reference
+
+### Specifications
 - Specification files in `.agentic/spec/` - Project specifications
+
+### Testing
+- [tests/bdd/README.md](tests/bdd/README.md) - BDD infrastructure overview
+- [features/](features/) - Gherkin feature files (executable specifications)
 
 ## Roadmap
 

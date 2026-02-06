@@ -11,6 +11,7 @@ A comprehensive, step-by-step guide to using the agentic-agent CLI tool for spec
 - [Scenario 2: Intermediate - Building a Blog API](#scenario-2-intermediate---building-a-blog-api)
 - [Scenario 3: Advanced - Complex Feature Decomposition](#scenario-3-advanced---complex-feature-decomposition)
 - [Testing Workflow](#testing-workflow)
+- [ATDD/BDD Workflow](#atddbdd-workflow)
 - [Best Practices](#best-practices)
 - [Troubleshooting](#troubleshooting)
 - [Quick Reference](#quick-reference)
@@ -1313,6 +1314,282 @@ tests/                  # Test files
 2. **context-update**: Context must be updated when files change
 3. **task-scope**: Modified files must be in task scope
 4. **task-size**: Max 5 files, 2 directories per task
+
+---
+
+## ATDD/BDD Workflow
+
+**Goal**: Learn how to use Acceptance Test-Driven Development (ATDD) with Gherkin features to drive your development process.
+
+**Time**: ~15 minutes
+
+**What You'll Learn**:
+- Writing executable specifications with Gherkin
+- Running BDD tests
+- Test-first development workflow
+- Living documentation
+
+### What is ATDD/BDD?
+
+**Acceptance Test-Driven Development (ATDD)** is a development approach where you:
+1. Write acceptance tests **before** implementing features
+2. Use plain language that stakeholders can understand
+3. Let tests serve as both specification and validation
+
+**Behavior-Driven Development (BDD)** uses Gherkin syntax (Given/When/Then) to describe behavior from the user's perspective.
+
+### Step 1: Understanding Feature Files
+
+Feature files live in the `features/` directory and use Gherkin syntax:
+
+```gherkin
+Feature: Task Creation
+  As a developer using the CLI
+  I want to create tasks with metadata
+  So that I have clear requirements
+
+  Scenario: Create a simple task
+    Given a clean test environment
+    And I have initialized a project
+    When I create a task with title "Implement login"
+    Then the command should succeed
+    And the task should appear in the backlog
+```
+
+### Step 2: Run Existing BDD Tests
+
+The project includes comprehensive BDD tests:
+
+```bash
+# Run all BDD tests
+make test-bdd
+
+# Expected output:
+# Running BDD feature tests...
+# Feature: Project Initialization
+#   Scenario: Initialize a new project successfully ✓
+#   Scenario: Initialize project in non-git directory ✓
+#
+# Feature: Beginner Workflow
+#   Scenario: Complete beginner workflow from CLI tutorial ✓
+#
+# 12 scenarios (12 passed)
+# 107 steps (107 passed)
+```
+
+### Step 3: Run Tests for Specific Features
+
+You can run specific feature files or scenarios:
+
+```bash
+# Run only workflow features
+go test ./tests/bdd -v -godog.paths=../../features/workflows/
+
+# Run only beginner workflow
+go test ./tests/bdd -v -godog.paths=../../features/workflows/beginner_workflow.feature
+
+# Run tests tagged as @smoke
+go test ./tests/bdd -v -godog.tags=@smoke
+```
+
+### Step 4: The ATDD Development Cycle
+
+Follow this workflow when adding new features:
+
+#### 4.1 Write Feature First (Red Phase)
+
+Create a feature file describing desired behavior:
+
+```gherkin
+# features/tasks/task_priority.feature
+Feature: Task Priority Management
+  As a developer managing multiple tasks
+  I want to set task priorities
+  So that I can focus on important work
+
+  Scenario: Set task priority to high
+    Given I have created a task with title "Critical Bug Fix"
+    When I set the task priority to "high"
+    Then the task priority should be "high"
+    And the task should appear first in backlog listings
+```
+
+#### 4.2 Run Tests (They Fail)
+
+```bash
+make test-bdd
+
+# Output shows undefined steps:
+# Step definition missing for:
+#   I set the task priority to "high"
+```
+
+#### 4.3 Implement Step Definitions (Yellow Phase)
+
+Add step definitions in `tests/bdd/steps/task_steps.go`:
+
+```go
+func (s *TaskSteps) RegisterSteps(sc *godog.ScenarioContext) {
+    // ... existing steps ...
+    sc.Step(`^I set the task priority to "([^"]*)"$`, s.setTaskPriority)
+    sc.Step(`^the task priority should be "([^"]*)"$`, s.assertTaskPriority)
+}
+
+func (s *TaskSteps) setTaskPriority(ctx context.Context, priority string) error {
+    // Call actual CLI command or internal API
+    return nil
+}
+
+func (s *TaskSteps) assertTaskPriority(ctx context.Context, expected string) error {
+    // Verify priority was set correctly
+    return nil
+}
+```
+
+#### 4.4 Implement Feature (Green Phase)
+
+Now implement the actual feature in your code:
+
+```go
+// cmd/agentic-agent/task.go
+var setPriorityCmd = &cobra.Command{
+    Use:   "set-priority [task-id] [priority]",
+    Short: "Set task priority",
+    Run:   setTaskPriority,
+}
+
+func setTaskPriority(cmd *cobra.Command, args []string) {
+    // Implementation...
+}
+```
+
+#### 4.5 Tests Pass
+
+```bash
+make test-bdd
+
+# Output:
+# Feature: Task Priority Management
+#   Scenario: Set task priority to high ✓
+#
+# All tests pass!
+```
+
+#### 4.6 Refactor with Confidence
+
+Refactor code knowing tests will catch regressions:
+
+```bash
+make test-all  # Unit + Functional + BDD all pass
+```
+
+### Step 5: Exploring Existing Features
+
+Review existing feature files to learn patterns:
+
+```bash
+# List all feature files
+find features -name "*.feature"
+
+# View beginner workflow
+cat features/workflows/beginner_workflow.feature
+
+# View error handling examples
+cat features/tasks/error_handling.feature
+```
+
+### Step 6: Running Coverage with BDD Tests
+
+See how BDD tests contribute to overall coverage:
+
+```bash
+# Run all tests with coverage
+make coverage-all
+
+# Output shows:
+# - Unit test coverage
+# - Functional test coverage
+# - BDD test coverage
+# - Merged total coverage
+#
+# Reports generated:
+# - coverage/merged-coverage.html (all tests)
+# - coverage/bdd-coverage.html (BDD only)
+```
+
+### Benefits of ATDD/BDD
+
+**Living Documentation**: Feature files are always up-to-date because:
+- They're executable tests
+- They fail if out of sync with code
+- They're readable by non-developers
+
+**Clear Requirements**: Before writing any code, you know:
+- Exactly what behavior is expected
+- What acceptance criteria must be met
+- How to verify the feature works
+
+**Better Design**: Writing tests first:
+- Forces thinking about user experience
+- Identifies edge cases early
+- Results in simpler, more testable code
+
+**Collaboration**: Gherkin syntax enables:
+- Product owners to review specifications
+- Developers to implement with clarity
+- QA to understand test coverage
+
+### Common Gherkin Patterns
+
+**Background** (runs before each scenario):
+```gherkin
+Background:
+  Given a clean test environment
+  And I have initialized a project
+```
+
+**Data Tables**:
+```gherkin
+When I add the following acceptance criteria:
+  | criterion                  |
+  | All endpoints have tests   |
+  | API returns proper status  |
+```
+
+**Scenario Outlines** (parameterized tests):
+```gherkin
+Scenario Outline: Validate title length
+  When I create a task with title "<title>"
+  Then the command should <result>
+
+  Examples:
+    | title        | result  |
+    | Valid        | succeed |
+    |              | fail    |
+```
+
+**Tags** (organize and filter):
+```gherkin
+@smoke @critical
+Scenario: Critical user workflow
+  ...
+```
+
+### ATDD Best Practices
+
+1. **Write features before code**: Define behavior first
+2. **Keep scenarios focused**: One scenario tests one behavior
+3. **Use descriptive names**: Make intent clear
+4. **Avoid implementation details**: Focus on behavior, not internals
+5. **Reuse step definitions**: Create generic, reusable steps
+6. **Tag strategically**: Use tags to organize test suites
+
+### Further Reading
+
+For comprehensive guidance on ATDD/BDD:
+- [BDD Guide](BDD_GUIDE.md) - Complete guide to BDD with examples
+- [Feature Files](../features/) - All existing feature specifications
+- [Step Definitions](../tests/bdd/steps/) - Implementation patterns
 
 ---
 

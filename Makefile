@@ -106,7 +106,26 @@ test-all: test test-functional test-bdd
 coverage-all:
 	@echo "Running all tests with coverage..."
 	@mkdir -p coverage
-	@go test ./... -coverprofile=coverage/coverage.out -covermode=count
+	@echo "Running unit tests..."
+	@go test ./internal/... ./pkg/... ./cmd/... -coverprofile=coverage/unit-coverage.out -covermode=count 2>&1 | grep -v "no test files"
+	@echo "Running functional tests..."
+	@go test ./tests/functional -coverprofile=coverage/functional-coverage.out -covermode=count
+	@echo "Running BDD tests..."
 	@go test ./tests/bdd -coverprofile=coverage/bdd-coverage.out -covermode=count
-	@go tool cover -html=coverage/coverage.out -o coverage/coverage.html
-	@echo "Coverage report generated: coverage/coverage.html"
+	@echo "Merging coverage reports..."
+	@echo "mode: count" > coverage/merged-coverage.out
+	@tail -q -n +2 coverage/unit-coverage.out coverage/functional-coverage.out coverage/bdd-coverage.out 2>/dev/null >> coverage/merged-coverage.out || true
+	@go tool cover -html=coverage/merged-coverage.out -o coverage/merged-coverage.html
+	@echo ""
+	@echo "=== Coverage Summary ==="
+	@go tool cover -func=coverage/merged-coverage.out | grep total | awk '{print "Total Coverage: " $$3}'
+	@echo ""
+	@echo "Individual reports:"
+	@echo "  - Unit tests:       coverage/unit-coverage.html"
+	@echo "  - Functional tests: coverage/functional-coverage.html"
+	@echo "  - BDD tests:        coverage/bdd-coverage.html"
+	@echo "  - Merged report:    coverage/merged-coverage.html"
+	@echo ""
+	@go tool cover -html=coverage/unit-coverage.out -o coverage/unit-coverage.html 2>/dev/null || true
+	@go tool cover -html=coverage/functional-coverage.out -o coverage/functional-coverage.html 2>/dev/null || true
+	@go tool cover -html=coverage/bdd-coverage.out -o coverage/bdd-coverage.html 2>/dev/null || true
