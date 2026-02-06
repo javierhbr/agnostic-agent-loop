@@ -54,6 +54,7 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 	steps.NewTaskSteps(stepsSuite).RegisterSteps(sc)
 	steps.NewInitSteps(stepsSuite).RegisterSteps(sc)
 	steps.NewAssertionSteps(stepsSuite).RegisterSteps(sc)
+	steps.NewSkillSteps(stepsSuite).RegisterSteps(sc)
 
 	// Cleanup after each scenario
 	sc.After(func(ctx context.Context, _ *godog.Scenario, err error) (context.Context, error) {
