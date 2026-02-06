@@ -1,0 +1,34 @@
+tasks:
+  - id: SPEC-001
+    title: "Create JWT token service"
+    description: "Implement token generation and validation using RS256"
+    status: pending
+    spec_refs:
+      - "auth-requirements.md"
+      - "api-design.md"
+    scope:
+      - "internal/auth"
+    outputs:
+      - "internal/auth/jwt.go"
+      - "internal/auth/jwt_test.go"
+    acceptance:
+      - "RS256 token generation works"
+      - "Token validation rejects expired tokens"
+      - "Refresh token flow works"
+
+  - id: SPEC-002
+    title: "Implement auth middleware"
+    description: "HTTP middleware that validates JWT tokens and blocks unauthenticated requests"
+    status: pending
+    spec_refs:
+      - "auth-requirements.md"
+    scope:
+      - "internal/auth"
+      - "internal/server"
+    outputs:
+      - "internal/auth/middleware.go"
+      - "internal/auth/middleware_test.go"
+    acceptance:
+      - "Returns 401 for missing tokens"
+      - "Returns 401 for expired tokens"
+      - "Passes authenticated user via request context"

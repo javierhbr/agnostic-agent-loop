@@ -26,6 +26,7 @@ func NewSkillRegistry() *SkillRegistry {
 	// Register supported tools
 	r.Register("claude-code", "templates/claude.tmpl", "CLAUDE.md")
 	r.Register("cursor", "templates/cursor.tmpl", ".cursor/rules/agnostic-agent.mdc")
+	r.Register("gemini", "templates/gemini.tmpl", ".gemini/GEMINI.md")
 
 	return r
 }

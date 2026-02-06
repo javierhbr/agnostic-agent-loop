@@ -1,0 +1,29 @@
+description = "Convert a PRD to YAML task format for the agentic-agent system."
+prompt = """
+Read the PRD from {{.PRDOutputPath}} and convert it to YAML task entries in .agentic/tasks/backlog.yaml.
+
+Rules:
+- Each task must be completable in one context window (one agent iteration).
+- Max 5 files per task, max 2 directories per task.
+- Use this YAML format for each task:
+
+```yaml
+- id: "US-001"
+  title: "[Short title]"
+  description: "As a [user], I want [feature] so that [benefit]"
+  status: "pending"
+  scope:
+    - "path/to/file1.go"
+    - "path/to/file2.go"
+  acceptance:
+    - "Criterion 1"
+    - "Criterion 2"
+```
+
+If a task is too large, split it. Right-sized examples:
+- Add a database table and migration
+- Add a single API endpoint with tests
+- Add a UI component to an existing page
+
+PRD to convert: $PROMPT
+"""

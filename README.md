@@ -24,6 +24,12 @@ The Agentic Agent framework provides a structured approach to AI-assisted develo
 - ✅ Subtask decomposition
 - ✅ Skills generation for AI agent tools
 - ✅ Dual-mode support (interactive wizards + traditional flags)
+- ✅ **Ralph PDR Integration** - Plan-Do-Review methodology with PRD generation
+- ✅ **Progress Tracking** - Dual-format progress logs (text + YAML)
+- ✅ **Learnings Management** - Codebase patterns and directory-specific guidance
+- ✅ **Browser Verification** - Validation for UI changes
+- ✅ **agentskills.io Compliance** - Portable skills across tools
+- ✅ **BDD/ATDD Testing** - Gherkin feature files with godog framework for living documentation
 
 ## Installation
 
@@ -557,23 +563,46 @@ src/module/
 
 ## Configuration
 
+### How the CLI Finds `agnostic-agent.yaml`
+
+The CLI expects `agnostic-agent.yaml` to exist in the **current working directory** where you run the command. It does **not** search parent directories or perform any file discovery — it simply reads `./agnostic-agent.yaml` relative to your shell's working directory.
+
+This file is created automatically when you run `agentic-agent init`. Several commands (`learnings`, `skills generate`) load this file for path configuration. If the file is not found, those commands fall back to sensible defaults.
+
+You can also pass a custom path via the `--config` flag:
+
+```bash
+agentic-agent --config /path/to/my-config.yaml task list
+```
+
+### Configuration Reference
+
 The `agnostic-agent.yaml` file in your project root contains project configuration:
 
 ```yaml
-project_name: "My Project"
-version: "1.0.0"
-agent_framework: "agnostic-agent"
+project:
+  name: "My Project"
+  version: 0.1.0
+  roots:
+    - .
 
-# Token budgets
-context:
-  global_max_tokens: 1500
-  rolling_max_tokens: 1000
-  per_dir_max_tokens: 600
+agents:
+  defaults:
+    max_tokens: 4000
+    model: claude-3-5-sonnet-20241022
 
-# Task constraints
-tasks:
-  max_files_per_task: 5
-  max_directories_per_task: 2
+# Path configuration (used by learnings, skills, archiver)
+paths:
+  prdOutputPath: .agentic/tasks/
+  progressTextPath: .agentic/progress.txt
+  progressYAMLPath: .agentic/progress.yaml
+  archiveDir: .agentic/archive/
+
+workflow:
+  validators:
+    - context-check
+    - task-scope
+    - browser-verification
 ```
 
 ## Best Practices
@@ -694,29 +723,160 @@ agentic-agent task complete TASK-042
 
 ## Testing
 
-The framework includes comprehensive tests:
+The framework includes comprehensive tests covering all functionality including the Ralph PDR integration.
+
+### Run All Tests
 
 ```bash
-# Run all tests
+# Run all tests in the project
 go test ./...
 
-# Run with coverage
-go test -cover ./...
+# Run all tests with verbose output
+go test ./... -v
 
-# Run specific package tests
-go test ./internal/tasks
-go test ./internal/validator/rules
+# Run all tests with coverage report
+go test ./... -cover
+```
 
-# Run integration tests
-go test ./tests/integration
+### Run Tests by Package
+
+```bash
+# Task management tests (including progress writer)
+go test ./internal/tasks -v
+
+# Validator tests (including browser verification)
+go test ./internal/validator/rules -v
+
+# Orchestrator tests (loop and archiver)
+go test ./internal/orchestrator -v
+
+# Integration tests
+go test ./test/integration -v
+
+# Model tests
+go test ./pkg/models -v
+```
+
+### Run Specific Tests
+
+```bash
+# Run a specific test function
+go test ./internal/tasks -run TestProgressWriter_AppendEntry
+
+# Run all tests matching a pattern
+go test ./internal/validator/rules -run TestBrowserVerification
+
+# Run tests with detailed output
+go test ./internal/orchestrator -run TestArchiver -v
+```
+
+### View Test Coverage
+
+#### Quick Coverage Check
+
+```bash
+# Show coverage by package
+go test ./... -cover
+```
+
+#### Comprehensive Coverage Reports
+
+We provide multiple ways to generate detailed coverage reports:
+
+**Option 1: Using Make (Recommended)**
+
+```bash
+# Generate HTML coverage report and open in browser
+make coverage-html
+
+# Show coverage by function
+make coverage-func
+
+# Show coverage summary by package
+make coverage-summary
+
+# Clean coverage files
+make clean-coverage
+```
+
+**Option 2: Using Coverage Script**
+
+```bash
+# Generate comprehensive coverage report
+./scripts/coverage-report.sh
+
+# Generate report and open HTML in browser
+./scripts/coverage-report.sh --open
+```
+
+**Option 3: Manual Go Commands**
+
+```bash
+# Generate detailed coverage report
+go test ./... -coverprofile=build/coverage/coverage.out -covermode=count
+go tool cover -html=build/coverage/coverage.out -o coverage/coverage.html
+
+# View coverage by function
+go tool cover -func=build/coverage/coverage.out
+
+# Count passing tests
+go test ./... -v 2>&1 | grep -c "^--- PASS:"
+```
+
+#### Coverage Report Features
+
+The coverage report tools provide:
+- **Total coverage percentage** with color-coded output
+- **Package-by-package breakdown** sorted by coverage
+- **Packages without tests** highlighted
+- **HTML visualization** of line-by-line coverage
+- **Function-level coverage** details
+- **Coverage badge** for documentation
+- **Threshold validation** (fails CI if below 50%)
+
+#### Understanding Coverage Output
+
+Coverage levels are color-coded:
+- 🟢 **Green (70%+)**: Good coverage
+- 🟡 **Yellow (40-69%)**: Needs improvement
+- 🔴 **Red (<40%)**: Insufficient coverage
+
+### Ralph PDR Integration Tests
+
+The Ralph PDR integration includes 43 new tests:
+
+```bash
+# Progress writer tests (11 tests)
+go test ./internal/tasks -run TestProgressWriter -v
+
+# Browser verification validator tests (13 tests)
+go test ./internal/validator/rules -run TestBrowserVerification -v
+
+# Archiver tests (10 tests)
+go test ./internal/orchestrator -run TestArchiver -v
+
+# Loop orchestrator tests (9 tests)
+go test ./internal/orchestrator -run TestLoop -v
 ```
 
 ### Test Results
 
-The framework has been validated with:
-- **59 unit and integration tests**
-- **66.4% code coverage** on critical packages
+The framework has been fully validated with:
+- **87 unit and integration tests** (total)
+- **43 tests** for Ralph PDR integration
+- **44 tests** for core framework
 - All tests passing ✅
+- Build compiles successfully ✅
+
+### Quick Verification
+
+```bash
+# Verify all Ralph PDR tests pass
+go test ./internal/tasks ./internal/validator/rules ./internal/orchestrator -v
+
+# Run full test suite and show summary
+go test ./... -v 2>&1 | tail -20
+```
 
 See [VALIDATION_REPORT.md](VALIDATION_REPORT.md) for detailed test results.
 
@@ -893,9 +1053,23 @@ Validation rules enforce best practices and catch issues before they become prob
 
 ## Documentation
 
+### User Guides
+- [docs/CLI_TUTORIAL.md](docs/CLI_TUTORIAL.md) - Step-by-step CLI tutorial with scenarios
+- [docs/BDD_GUIDE.md](docs/BDD_GUIDE.md) - Complete guide to BDD/ATDD testing
+- [examples/multi-agent-workflow/MULTI_AGENT_USE_CASE.md](examples/multi-agent-workflow/MULTI_AGENT_USE_CASE.md) - Switching between Claude Code CLI, VSCode extension, Copilot, and Antigravity IDE with Gemini
+
+### Technical Documentation
 - [VALIDATION_REPORT.md](VALIDATION_REPORT.md) - Detailed validation and test results
 - [CLAUDE.md](CLAUDE.md) - Claude-specific agent rules
+- [docs/COVERAGE.md](docs/COVERAGE.md) - Comprehensive test coverage guide
+- [COVERAGE_QUICK_REF.md](COVERAGE_QUICK_REF.md) - Coverage quick reference
+
+### Specifications
 - Specification files in `.agentic/spec/` - Project specifications
+
+### Testing
+- [test/bdd/README.md](test/bdd/README.md) - BDD infrastructure overview
+- [features/](features/) - Gherkin feature files (executable specifications)
 
 ## Roadmap
 

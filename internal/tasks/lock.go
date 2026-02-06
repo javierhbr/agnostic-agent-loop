@@ -63,3 +63,30 @@ func (tm *TaskManager) ClaimTask(taskID string, assignee string) error {
 
 	return tm.SaveTasks("in-progress", inProgress)
 }
+
+// ClaimTaskWithConfig claims a task after running readiness checks.
+// Readiness failures are printed as warnings but do not block the claim.
+func (tm *TaskManager) ClaimTaskWithConfig(taskID, assignee string, cfg *models.Config) error {
+	// Find the task to run readiness checks before claiming
+	backlog, err := tm.LoadTasks("backlog")
+	if err != nil {
+		return err
+	}
+
+	var task *models.Task
+	for _, t := range backlog.Tasks {
+		if t.ID == taskID {
+			task = &t
+			break
+		}
+	}
+
+	if task != nil {
+		result := CanClaimTask(task, cfg)
+		if len(result.Checks) > 0 {
+			fmt.Print(FormatReadinessResult(result))
+		}
+	}
+
+	return tm.ClaimTask(taskID, assignee)
+}

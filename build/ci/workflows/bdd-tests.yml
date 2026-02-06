@@ -1,0 +1,72 @@
+name: BDD Tests
+
+on:
+  push:
+    branches: [ main, develop, ralph ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  bdd:
+    name: BDD Feature Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          go mod download
+          go install github.com/cucumber/godog/cmd/godog@latest
+
+      - name: Run unit tests
+        run: make test
+
+      - name: Run functional tests
+        run: make test-functional
+
+      - name: Run BDD tests
+        run: make test-bdd
+
+      - name: Generate coverage report
+        run: |
+          mkdir -p build/coverage
+          go test ./test/bdd -v -coverprofile=build/coverage/bdd-coverage.out -covermode=count
+          go tool cover -html=build/coverage/bdd-coverage.out -o build/coverage/bdd-coverage.html
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: build/coverage/
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-test-results
+          path: |
+            bdd-results.xml
+            bdd-results.json
+          retention-days: 30
+
+      - name: Post test summary
+        if: always()
+        run: |
+          echo "## BDD Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All BDD feature tests have been executed." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f build/coverage/bdd-coverage.out ]; then
+            COVERAGE=$(go tool cover -func=build/coverage/bdd-coverage.out | grep total | awk '{print $3}')
+            echo "Coverage: $COVERAGE" >> $GITHUB_STEP_SUMMARY
+          fi

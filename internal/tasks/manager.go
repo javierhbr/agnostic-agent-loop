@@ -15,11 +15,21 @@ type TaskList struct {
 }
 
 type TaskManager struct {
-	baseDir string
+	baseDir        string
+	progressWriter *ProgressWriter
+	agentsMdHelper *AgentsMdHelper
 }
 
 func NewTaskManager(baseDir string) *TaskManager {
 	return &TaskManager{baseDir: baseDir}
+}
+
+func NewTaskManagerWithTracking(baseDir string, progressWriter *ProgressWriter, agentsMdHelper *AgentsMdHelper) *TaskManager {
+	return &TaskManager{
+		baseDir:        baseDir,
+		progressWriter: progressWriter,
+		agentsMdHelper: agentsMdHelper,
+	}
 }
 
 func (tm *TaskManager) LoadTasks(listType string) (*TaskList, error) {
@@ -141,4 +151,49 @@ func (tm *TaskManager) FindTask(taskID string) (*models.Task, string, error) {
 	}
 
 	return nil, "", nil // Not found, but no error
+}
+
+// CompleteTaskWithTracking marks a task as complete and logs progress
+func (tm *TaskManager) CompleteTaskWithTracking(taskID string, learnings []string, filesChanged []string, threadURL string) error {
+	// Find the task
+	task, source, err := tm.FindTask(taskID)
+	if err != nil {
+		return err
+	}
+	if task == nil {
+		return fmt.Errorf("task %s not found", taskID)
+	}
+
+	// Move task to done
+	if source != "done" {
+		if err := tm.MoveTask(taskID, source, "done", models.StatusDone); err != nil {
+			return fmt.Errorf("failed to move task: %w", err)
+		}
+	}
+
+	// If progress tracking is enabled, log the completion
+	if tm.progressWriter != nil {
+		entry := ProgressEntry{
+			Timestamp:    time.Now(),
+			StoryID:      taskID,
+			Title:        task.Title,
+			FilesChanged: filesChanged,
+			Learnings:    learnings,
+			ThreadURL:    threadURL,
+		}
+		if err := tm.progressWriter.AppendEntry(entry); err != nil {
+			return fmt.Errorf("failed to write progress: %w", err)
+		}
+	}
+
+	// If AGENTS.md helper is enabled and there are learnings, prompt for directory updates
+	if tm.agentsMdHelper != nil && len(learnings) > 0 && len(filesChanged) > 0 {
+		dirs := tm.agentsMdHelper.GetModifiedDirectories(filesChanged)
+		// Note: In a CLI context, this would prompt the user interactively
+		// For now, we'll just prepare the infrastructure
+		// The actual prompting will be done in the CLI command handler
+		_ = dirs
+	}
+
+	return nil
 }

@@ -1,0 +1,83 @@
+name: Test Coverage
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-coverage:
+    name: Run Tests with Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Run tests with coverage
+      run: |
+        go test ./... -coverprofile=coverage.out -covermode=count
+
+    - name: Generate coverage report
+      run: |
+        go tool cover -func=coverage.out > coverage.txt
+
+    - name: Extract coverage percentage
+      id: coverage
+      run: |
+        COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+        echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+        echo "Coverage: $COVERAGE%"
+
+    - name: Comment coverage on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const coverage = '${{ steps.coverage.outputs.percentage }}';
+          const body = `## Test Coverage Report\n\n📊 **Coverage: ${coverage}%**\n\nDetailed coverage by package:\n\`\`\`\n${require('fs').readFileSync('coverage.txt', 'utf8')}\n\`\`\``;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });
+
+    - name: Upload coverage to artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: |
+          coverage.out
+          coverage.txt
+
+    - name: Check coverage threshold
+      run: |
+        COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+        THRESHOLD=50
+        if awk -v cov="$COVERAGE" -v thresh="$THRESHOLD" 'BEGIN {exit !(cov < thresh)}'; then
+          echo "❌ Coverage $COVERAGE% is below threshold of $THRESHOLD%"
+          exit 1
+        else
+          echo "✅ Coverage $COVERAGE% meets threshold of $THRESHOLD%"
+        fi

@@ -4,6 +4,7 @@ type Config struct {
 	Project  ProjectConfig  `yaml:"project"`
 	Agents   AgentsConfig   `yaml:"agents"`
 	Workflow WorkflowConfig `yaml:"workflow"`
+	Paths    PathsConfig    `yaml:"paths"`
 }
 
 type ProjectConfig struct {
@@ -30,4 +31,13 @@ type AgentConfig struct {
 
 type WorkflowConfig struct {
 	Validators []string `yaml:"validators"`
+}
+
+type PathsConfig struct {
+	PRDOutputPath    string   `yaml:"prdOutputPath,omitempty"`
+	ProgressTextPath string   `yaml:"progressTextPath,omitempty"`
+	ProgressYAMLPath string   `yaml:"progressYAMLPath,omitempty"`
+	ArchiveDir       string   `yaml:"archiveDir,omitempty"`
+	SpecDirs         []string `yaml:"specDirs,omitempty"`
+	ContextDirs      []string `yaml:"contextDirs,omitempty"`
 }
