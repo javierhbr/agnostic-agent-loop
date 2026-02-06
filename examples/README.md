@@ -15,9 +15,9 @@ An isolated environment for testing framework features without affecting the mai
 **Purpose:** Safe space to experiment with agentic-agent commands and workflows.
 
 ### `multi-agent-workflow/` - Multi-Agent Use Case
-A step-by-step walkthrough showing how to switch between Claude Code CLI, Claude Code VSCode extension, and GitHub Copilot — all on the same project — without losing context.
+A step-by-step walkthrough showing how to bounce between Claude Code CLI, Claude Code VSCode extension, GitHub Copilot, and Antigravity IDE with Gemini — back and forth on the same project — without losing context.
 
-**Purpose:** Demonstrates that the `.agentic/` directory is the shared state bridge across any AI agent tool. See [MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md).
+**Purpose:** Demonstrates that the `.agentic/` directory is the shared state bridge across any AI agent tool, including non-linear workflows where you return to tools already used. See [MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md).
 
 ## Creating Your Own Example
 
@@ -86,10 +86,10 @@ Demonstrates:
 
 See [multi-agent-workflow/MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md) for a full walkthrough demonstrating:
 
-- Switching between Claude Code CLI, Claude Code VSCode extension, and GitHub Copilot
-- Task decomposition across agent tools
-- Shared context and learnings that persist across switches
-- Validation that works regardless of which agent did the work
+- Switching between Claude Code CLI, Claude Code VSCode extension, GitHub Copilot, and Antigravity IDE with Gemini
+- Non-linear back-and-forth switching (returning to tools already used)
+- Bug found in one tool, fixed in another via shared learnings
+- Task decomposition, shared context, and persistent learnings across all switches
 
 ### CI/CD Integration (Coming Soon)
 Demonstrates:

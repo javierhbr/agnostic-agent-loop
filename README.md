@@ -1056,7 +1056,7 @@ Validation rules enforce best practices and catch issues before they become prob
 ### User Guides
 - [docs/CLI_TUTORIAL.md](docs/CLI_TUTORIAL.md) - Step-by-step CLI tutorial with scenarios
 - [docs/BDD_GUIDE.md](docs/BDD_GUIDE.md) - Complete guide to BDD/ATDD testing
-- [examples/multi-agent-workflow/MULTI_AGENT_USE_CASE.md](examples/multi-agent-workflow/MULTI_AGENT_USE_CASE.md) - Switching between Claude Code CLI, VSCode extension, and Copilot
+- [examples/multi-agent-workflow/MULTI_AGENT_USE_CASE.md](examples/multi-agent-workflow/MULTI_AGENT_USE_CASE.md) - Switching between Claude Code CLI, VSCode extension, Copilot, and Antigravity IDE with Gemini
 
 ### Technical Documentation
 - [VALIDATION_REPORT.md](VALIDATION_REPORT.md) - Detailed validation and test results
