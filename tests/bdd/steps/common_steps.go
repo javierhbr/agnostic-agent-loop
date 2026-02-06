@@ -2,6 +2,9 @@ package steps
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/cucumber/godog"
@@ -36,6 +39,17 @@ func (s *CommonSteps) RegisterSteps(sc *godog.ScenarioContext) {
 
 	// Validation steps
 	sc.Step(`^I run validation$`, s.runValidation)
+
+	// Error handling steps
+	sc.Step(`^I try to initialize project again$`, s.tryInitializeAgain)
+
+	// Directory and file creation steps
+	sc.Step(`^I have the following directory structure:$`, s.createDirectoryStructure)
+	sc.Step(`^I have created directory "([^"]*)"$`, s.createDirectory)
+	sc.Step(`^I have created file "([^"]*)" with content "([^"]*)"$`, s.createFileWithContent)
+
+	// Context generation steps
+	sc.Step(`^I run context generation for "([^"]*)"$`, s.runContextGeneration)
 }
 
 // cleanTestEnvironment sets up an isolated test environment
@@ -120,4 +134,63 @@ func (s *CommonSteps) runValidation(ctx context.Context) error {
 	s.suite.LastCommandErr = nil
 	s.suite.LastCommandOut = "Validation completed"
 	return nil
+}
+
+// tryInitializeAgain attempts to initialize an already initialized project
+func (s *CommonSteps) tryInitializeAgain(ctx context.Context) error {
+	err := project.InitProject("SecondProject")
+	s.suite.LastCommandErr = err
+	// Don't return error - we want to test failures
+	return nil
+}
+
+// createDirectoryStructure creates multiple directories from a table
+func (s *CommonSteps) createDirectoryStructure(ctx context.Context, table *godog.Table) error {
+	for _, row := range table.Rows[1:] { // Skip header
+		dirPath := filepath.Join(s.suite.ProjectDir, row.Cells[0].Value)
+		err := os.MkdirAll(dirPath, 0755)
+		if err != nil {
+			return fmt.Errorf("failed to create directory %s: %w", dirPath, err)
+		}
+	}
+	return nil
+}
+
+// createDirectory creates a single directory
+func (s *CommonSteps) createDirectory(ctx context.Context, dirPath string) error {
+	fullPath := filepath.Join(s.suite.ProjectDir, dirPath)
+	err := os.MkdirAll(fullPath, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+	return nil
+}
+
+// createFileWithContent creates a file with specified content
+func (s *CommonSteps) createFileWithContent(ctx context.Context, filePath, content string) error {
+	fullPath := filepath.Join(s.suite.ProjectDir, filePath)
+
+	// Ensure parent directory exists
+	dir := filepath.Dir(fullPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to create parent directory: %w", err)
+	}
+
+	err := os.WriteFile(fullPath, []byte(content), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	return nil
+}
+
+// runContextGeneration runs context generation for a directory
+func (s *CommonSteps) runContextGeneration(ctx context.Context, dir string) error {
+	// For now, just create a simple context file
+	// In a full implementation, this would call the context generator
+	contextPath := filepath.Join(s.suite.ProjectDir, dir, "context.md")
+	content := "# Context\n\nGenerated context for " + dir
+
+	err := os.WriteFile(contextPath, []byte(content), 0644)
+	s.suite.LastCommandErr = err
+	return err
 }

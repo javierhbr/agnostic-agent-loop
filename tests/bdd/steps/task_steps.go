@@ -61,6 +61,12 @@ func (s *TaskSteps) RegisterSteps(sc *godog.ScenarioContext) {
 	sc.Step(`^I decompose the task into the following subtasks:$`, s.decomposeTask)
 	sc.Step(`^the task should have (\d+) subtasks$`, s.assertSubtaskCount)
 	sc.Step(`^the task should remain in backlog$`, s.assertTaskInBacklog)
+
+	// Error handling steps
+	sc.Step(`^I try to claim task "([^"]*)"$`, s.tryClaimTaskByID)
+	sc.Step(`^I try to complete task without claiming$`, s.tryCompleteWithoutClaim)
+	sc.Step(`^I try to create a task with empty title$`, s.tryCreateEmptyTask)
+	sc.Step(`^the task should still be in backlog$`, s.assertTaskInBacklog)
 }
 
 // createTaskWithTitle creates a task with the specified title
@@ -382,5 +388,39 @@ func (s *TaskSteps) assertTaskNotInState(ctx context.Context, state string) erro
 		}
 	}
 
+	return nil
+}
+
+// tryClaimTaskByID attempts to claim a task by ID (may fail)
+func (s *TaskSteps) tryClaimTaskByID(ctx context.Context, taskID string) error {
+	tm := tasks.NewTaskManager(filepath.Join(s.suite.ProjectDir, ".agentic/tasks"))
+	err := tm.ClaimTask(taskID, "test-agent")
+	s.suite.LastCommandErr = err
+	// Don't return error - we want to test failures
+	return nil
+}
+
+// tryCompleteWithoutClaim attempts to complete a task without claiming it
+func (s *TaskSteps) tryCompleteWithoutClaim(ctx context.Context) error {
+	if s.suite.LastTaskID == "" {
+		return fmt.Errorf("no task to complete")
+	}
+
+	tm := tasks.NewTaskManager(filepath.Join(s.suite.ProjectDir, ".agentic/tasks"))
+	err := tm.MoveTask(s.suite.LastTaskID, "backlog", "done", models.StatusDone)
+	s.suite.LastCommandErr = err
+	// Don't return error - we want to test failures
+	return nil
+}
+
+// tryCreateEmptyTask attempts to create a task with empty title
+func (s *TaskSteps) tryCreateEmptyTask(ctx context.Context) error {
+	tm := tasks.NewTaskManager(filepath.Join(s.suite.ProjectDir, ".agentic/tasks"))
+	task, err := tm.CreateTask("")
+	s.suite.LastCommandErr = err
+	if task != nil {
+		s.suite.LastTaskID = task.ID
+	}
+	// Don't return error - we want to test failures
 	return nil
 }

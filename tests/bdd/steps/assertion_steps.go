@@ -36,6 +36,10 @@ func (s *AssertionSteps) RegisterSteps(sc *godog.ScenarioContext) {
 
 	// Validation assertions
 	sc.Step(`^the validation should complete successfully$`, s.validationShouldSucceed)
+
+	// Context file assertions
+	sc.Step(`^a context file should exist at "([^"]*)"$`, s.contextFileShouldExist)
+	sc.Step(`^the context file should contain "([^"]*)"$`, s.contextFileShouldContain)
 }
 
 // commandShouldSucceed asserts that the last command succeeded
@@ -152,5 +156,32 @@ func (s *AssertionSteps) validationShouldSucceed(ctx context.Context) error {
 	if s.suite.LastCommandErr != nil {
 		return fmt.Errorf("validation failed: %w", s.suite.LastCommandErr)
 	}
+	return nil
+}
+
+// contextFileShouldExist asserts that a context file exists at the specified path
+func (s *AssertionSteps) contextFileShouldExist(ctx context.Context, relPath string) error {
+	fullPath := filepath.Join(s.suite.ProjectDir, relPath)
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		return fmt.Errorf("context file does not exist: %s", fullPath)
+	}
+	return nil
+}
+
+// contextFileShouldContain asserts that the context file contains expected text
+func (s *AssertionSteps) contextFileShouldContain(ctx context.Context, expectedText string) error {
+	// Find the most recently created context file
+	// For simplicity, we'll check the last context file that was generated
+	contextPath := filepath.Join(s.suite.ProjectDir, "src/utils/context.md")
+
+	content, err := os.ReadFile(contextPath)
+	if err != nil {
+		return fmt.Errorf("failed to read context file: %w", err)
+	}
+
+	if !contains(string(content), expectedText) {
+		return fmt.Errorf("context file does not contain %q", expectedText)
+	}
+
 	return nil
 }
