@@ -255,11 +255,54 @@ var skillsGenerateClaudeCmd = &cobra.Command{
 	},
 }
 
+var skillsGenerateGeminiCmd = &cobra.Command{
+	Use:   "generate-gemini-skills",
+	Short: "Generate Gemini CLI slash command files (PRD, Ralph converter)",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Load config
+		cfg, err := config.LoadConfig("agnostic-agent.yaml")
+		if err != nil {
+			fmt.Printf("Error loading config: %v\n", err)
+			fmt.Println("Using default paths...")
+			cfg = &models.Config{}
+			cfg.Paths.PRDOutputPath = ".agentic/tasks/"
+		}
+
+		// Create generator with config
+		gen := skills.NewGeneratorWithConfig(cfg)
+
+		// Generate Gemini skills
+		if err := gen.GenerateGeminiSkills(); err != nil {
+			fmt.Printf("Error generating Gemini skills: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Interactive mode - styled output
+		if helpers.ShouldUseInteractiveMode(cmd) {
+			var b strings.Builder
+			b.WriteString(styles.TitleStyle.Render("Gemini CLI Skills Generated") + "\n\n")
+			b.WriteString(styles.SuccessStyle.Render(fmt.Sprintf("%s Generated skill files:", styles.IconCheckmark)) + "\n")
+			b.WriteString(styles.MutedStyle.Render("  • .gemini/commands/prd/gen.toml") + "\n")
+			b.WriteString(styles.MutedStyle.Render("  • .gemini/commands/ralph/convert.toml") + "\n\n")
+			b.WriteString(styles.HelpStyle.Render(fmt.Sprintf("PRD output path: %s", cfg.Paths.PRDOutputPath)) + "\n")
+			fmt.Println(styles.ContainerStyle.Render(b.String()))
+			return
+		}
+
+		// Flag mode - simple output
+		fmt.Println("Generated Gemini CLI skills:")
+		fmt.Println("  - .gemini/commands/prd/gen.toml")
+		fmt.Println("  - .gemini/commands/ralph/convert.toml")
+		fmt.Printf("PRD output path: %s\n", cfg.Paths.PRDOutputPath)
+	},
+}
+
 func init() {
-	skillsGenerateCmd.Flags().String("tool", "", "Tool name (claude-code, cursor)")
+	skillsGenerateCmd.Flags().String("tool", "", "Tool name (claude-code, cursor, gemini)")
 	skillsGenerateCmd.Flags().Bool("all", false, "Generate for all tools")
 
 	skillsCmd.AddCommand(skillsGenerateCmd)
 	skillsCmd.AddCommand(skillsCheckCmd)
 	skillsCmd.AddCommand(skillsGenerateClaudeCmd)
+	skillsCmd.AddCommand(skillsGenerateGeminiCmd)
 }

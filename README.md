@@ -563,23 +563,46 @@ src/module/
 
 ## Configuration
 
+### How the CLI Finds `agnostic-agent.yaml`
+
+The CLI expects `agnostic-agent.yaml` to exist in the **current working directory** where you run the command. It does **not** search parent directories or perform any file discovery — it simply reads `./agnostic-agent.yaml` relative to your shell's working directory.
+
+This file is created automatically when you run `agentic-agent init`. Several commands (`learnings`, `skills generate`) load this file for path configuration. If the file is not found, those commands fall back to sensible defaults.
+
+You can also pass a custom path via the `--config` flag:
+
+```bash
+agentic-agent --config /path/to/my-config.yaml task list
+```
+
+### Configuration Reference
+
 The `agnostic-agent.yaml` file in your project root contains project configuration:
 
 ```yaml
-project_name: "My Project"
-version: "1.0.0"
-agent_framework: "agnostic-agent"
+project:
+  name: "My Project"
+  version: 0.1.0
+  roots:
+    - .
 
-# Token budgets
-context:
-  global_max_tokens: 1500
-  rolling_max_tokens: 1000
-  per_dir_max_tokens: 600
+agents:
+  defaults:
+    max_tokens: 4000
+    model: claude-3-5-sonnet-20241022
 
-# Task constraints
-tasks:
-  max_files_per_task: 5
-  max_directories_per_task: 2
+# Path configuration (used by learnings, skills, archiver)
+paths:
+  prdOutputPath: .agentic/tasks/
+  progressTextPath: .agentic/progress.txt
+  progressYAMLPath: .agentic/progress.yaml
+  archiveDir: .agentic/archive/
+
+workflow:
+  validators:
+    - context-check
+    - task-scope
+    - browser-verification
 ```
 
 ## Best Practices
@@ -1033,6 +1056,7 @@ Validation rules enforce best practices and catch issues before they become prob
 ### User Guides
 - [docs/CLI_TUTORIAL.md](docs/CLI_TUTORIAL.md) - Step-by-step CLI tutorial with scenarios
 - [docs/BDD_GUIDE.md](docs/BDD_GUIDE.md) - Complete guide to BDD/ATDD testing
+- [examples/multi-agent-workflow/MULTI_AGENT_USE_CASE.md](examples/multi-agent-workflow/MULTI_AGENT_USE_CASE.md) - Switching between Claude Code CLI, VSCode extension, and Copilot
 
 ### Technical Documentation
 - [VALIDATION_REPORT.md](VALIDATION_REPORT.md) - Detailed validation and test results

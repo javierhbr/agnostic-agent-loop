@@ -78,6 +78,61 @@ func (g *Generator) Generate(tool string) error {
 	return nil
 }
 
+// GenerateGeminiSkills generates Gemini CLI slash command files for PRD and Ralph converter
+func (g *Generator) GenerateGeminiSkills() error {
+	if g.Config == nil {
+		return fmt.Errorf("config required for generating Gemini skills")
+	}
+
+	skills := []struct {
+		templateFile string
+		outputFile   string
+	}{
+		{
+			templateFile: "templates/gemini-prd-command.toml",
+			outputFile:   ".gemini/commands/prd/gen.toml",
+		},
+		{
+			templateFile: "templates/gemini-ralph-command.toml",
+			outputFile:   ".gemini/commands/ralph/convert.toml",
+		},
+	}
+
+	data := struct {
+		PRDOutputPath string
+	}{
+		PRDOutputPath: g.Config.Paths.PRDOutputPath,
+	}
+
+	for _, skill := range skills {
+		tmplContent, err := templatesFS.ReadFile(skill.templateFile)
+		if err != nil {
+			return fmt.Errorf("failed to read template %s: %w", skill.templateFile, err)
+		}
+
+		t, err := template.New("skill").Parse(string(tmplContent))
+		if err != nil {
+			return fmt.Errorf("failed to parse template: %w", err)
+		}
+
+		var buf bytes.Buffer
+		if err := t.Execute(&buf, data); err != nil {
+			return fmt.Errorf("failed to execute template: %w", err)
+		}
+
+		outputDir := filepath.Dir(skill.outputFile)
+		if err := os.MkdirAll(outputDir, 0755); err != nil {
+			return fmt.Errorf("failed to create directory %s: %w", outputDir, err)
+		}
+
+		if err := os.WriteFile(skill.outputFile, buf.Bytes(), 0644); err != nil {
+			return fmt.Errorf("failed to write skill file %s: %w", skill.outputFile, err)
+		}
+	}
+
+	return nil
+}
+
 // GenerateClaudeCodeSkills generates Claude Code skill files for PRD and Ralph converter
 func (g *Generator) GenerateClaudeCodeSkills() error {
 	if g.Config == nil {

@@ -8,6 +8,7 @@ This directory contains tool-specific configurations and integrations for variou
 tools/
 ├── .claude/          # Claude Code configurations
 ├── .cursor/          # Cursor IDE configurations
+├── .gemini/          # Gemini CLI configurations
 └── README.md         # This file
 ```
 
@@ -41,6 +42,27 @@ See [.claude/README.md](.claude/README.md) for available skills.
 
 Open the project in Cursor and it will automatically load configurations from `.cursor/`.
 
+## Gemini CLI (.gemini/)
+
+[Gemini CLI](https://github.com/google-gemini/gemini-cli) is Google's command-line tool for Gemini. The `.gemini/` directory contains:
+
+- **GEMINI.md** - Project context and agent rules (auto-loaded by Gemini CLI)
+- **Commands** - Custom slash commands in TOML format (e.g., `/prd:gen`, `/ralph:convert`)
+
+### Using Gemini CLI
+
+Generate Gemini configuration files:
+
+```bash
+# Generate GEMINI.md rules file
+agentic-agent skills generate --tool gemini
+
+# Generate Gemini slash commands (PRD, Ralph converter)
+agentic-agent skills generate-gemini-skills
+```
+
+Gemini CLI will automatically load `.gemini/GEMINI.md` when opened in the project directory.
+
 ## Why This Directory?
 
 Development tool configurations are grouped here to:
@@ -70,6 +92,7 @@ When adding support for a new development tool:
 ### AI Coding Assistants
 - ✅ Claude Code - Official Anthropic CLI
 - ✅ Cursor - AI-powered code editor
+- ✅ Gemini CLI - Google's Gemini command-line tool
 
 ### Coming Soon
 - GitHub Copilot configuration

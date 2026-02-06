@@ -14,6 +14,11 @@ An isolated environment for testing framework features without affecting the mai
 
 **Purpose:** Safe space to experiment with agentic-agent commands and workflows.
 
+### `multi-agent-workflow/` - Multi-Agent Use Case
+A step-by-step walkthrough showing how to switch between Claude Code CLI, Claude Code VSCode extension, and GitHub Copilot — all on the same project — without losing context.
+
+**Purpose:** Demonstrates that the `.agentic/` directory is the shared state bridge across any AI agent tool. See [MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md).
+
 ## Creating Your Own Example
 
 To create a new example project:
@@ -77,12 +82,14 @@ Demonstrates:
 - Task management workflow
 - Context generation
 
-### Multi-Agent Project (Coming Soon)
-Demonstrates:
-- Multiple agents working in parallel
-- Task decomposition
-- Conflict resolution
-- Shared context management
+### Multi-Agent Workflow
+
+See [multi-agent-workflow/MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md) for a full walkthrough demonstrating:
+
+- Switching between Claude Code CLI, Claude Code VSCode extension, and GitHub Copilot
+- Task decomposition across agent tools
+- Shared context and learnings that persist across switches
+- Validation that works regardless of which agent did the work
 
 ### CI/CD Integration (Coming Soon)
 Demonstrates:

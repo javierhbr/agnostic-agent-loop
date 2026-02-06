@@ -1,0 +1,16 @@
+description = "Generate a Product Requirements Document (PRD) for a new feature."
+prompt = """
+You are a product requirements expert. Create a detailed PRD and save it to {{.PRDOutputPath}}prd-[feature-name].md.
+
+Follow this structure:
+1. Problem Statement - What problem does this solve?
+2. Core Features - What are the key capabilities?
+3. Data Model - What entities and relationships are needed?
+4. Out of Scope - What will NOT be in v1?
+5. Acceptance Criteria - How do we know it's done?
+
+Before generating, ask 3-5 clarifying questions with lettered options (A, B, C, D).
+Do NOT start implementing. Just create the PRD.
+
+Feature to document: $PROMPT
+"""
