@@ -24,13 +24,13 @@ func LoadConfig(path string) (*models.Config, error) {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
 
-	setDefaults(&cfg)
+	SetDefaults(&cfg)
 
 	return &cfg, nil
 }
 
-// setDefaults applies default values to the configuration.
-func setDefaults(cfg *models.Config) {
+// SetDefaults applies default values to the configuration.
+func SetDefaults(cfg *models.Config) {
 	// Set default paths if not configured
 	if cfg.Paths.PRDOutputPath == "" {
 		cfg.Paths.PRDOutputPath = ".agentic/tasks/"
@@ -43,5 +43,11 @@ func setDefaults(cfg *models.Config) {
 	}
 	if cfg.Paths.ArchiveDir == "" {
 		cfg.Paths.ArchiveDir = ".agentic/archive/"
+	}
+	if len(cfg.Paths.SpecDirs) == 0 {
+		cfg.Paths.SpecDirs = []string{".agentic/spec"}
+	}
+	if len(cfg.Paths.ContextDirs) == 0 {
+		cfg.Paths.ContextDirs = []string{".agentic/context"}
 	}
 }

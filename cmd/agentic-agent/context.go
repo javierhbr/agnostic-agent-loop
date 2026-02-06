@@ -173,7 +173,7 @@ func (m *contextBuildModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.step == "select-format" {
 				// Build the context bundle
 				m.step = "building"
-				bundle, err := encoding.CreateContextBundle(m.selectedTask, m.format)
+				bundle, err := encoding.CreateContextBundle(m.selectedTask, m.format, getConfig())
 				if err != nil {
 					m.message = fmt.Sprintf("Error building bundle: %v", err)
 					m.success = false
@@ -414,7 +414,7 @@ var contextBuildCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		bundle, err := encoding.CreateContextBundle(taskID, format)
+		bundle, err := encoding.CreateContextBundle(taskID, format, getConfig())
 		if err != nil {
 			fmt.Printf("Error building bundle: %v\n", err)
 			os.Exit(1)

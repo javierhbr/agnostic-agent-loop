@@ -10,9 +10,21 @@ import (
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 )
 
+// GenerateContextWithConfig analyzes the directory using the provided config.
+// If cfg is nil, behaves identically to GenerateContext.
+func GenerateContextWithConfig(dir string, cfg *models.Config) (*models.DirectoryContext, error) {
+	// For now, config is reserved for future enhancements (e.g. custom scan rules).
+	// Delegate to the core logic.
+	return generateContextCore(dir)
+}
+
 // GenerateContext analyzes the directory and produces a DirectoryContext.
 // This is a simplified "Expert System" or "Skill" implementation.
 func GenerateContext(dir string) (*models.DirectoryContext, error) {
+	return generateContextCore(dir)
+}
+
+func generateContextCore(dir string) (*models.DirectoryContext, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err

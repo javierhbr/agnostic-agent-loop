@@ -54,6 +54,7 @@ my-auth-project/
     │   ├── backlog.yaml
     │   ├── in-progress.yaml
     │   └── done.yaml
+    ├── spec/                    # Specification files referenced by tasks
     ├── context/
     │   ├── global-context.md
     │   ├── rolling-summary.md
@@ -83,6 +84,12 @@ agentic-agent task create \
 
 ```
 Created task TASK-1738900000: Implement user authentication
+```
+
+Verify the spec reference resolves:
+
+```bash
+agentic-agent spec resolve .agentic/spec/04-architecture.md
 ```
 
 ### 2. Decompose into subtasks
@@ -176,6 +183,7 @@ agentic-agent context build --task TASK-1738900000
 This bundles everything the agent needs into a single output:
 
 - The task definition (title, subtasks, acceptance criteria)
+- **Resolved specs** from the task's `spec_refs` (e.g., `.agentic/spec/04-architecture.md` content)
 - Global context from `.agentic/context/global-context.md`
 - Rolling summary from `.agentic/context/rolling-summary.md`
 - All directory context files (including `src/auth/context.md`)
@@ -658,6 +666,7 @@ The feature is complete. Four tools contributed. Zero context was lost.
 | **Context bundling** | `agentic-agent context build --task TASK-ID` packages everything a new agent session needs to continue work without re-explanation. |
 | **Persistent learnings** | `agentic-agent learnings add` and `learnings list` carry patterns, decisions, and even bug reports across agent boundaries. |
 | **Agent-agnostic rules** | `.agentic/agent-rules/base.md` defines behavior rules that apply to every agent equally. |
+| **Spec resolution** | `spec resolve` and `context build` resolve spec references from configured directories. Specs travel with the project — any agent reads the same requirements. |
 | **Validation independence** | `agentic-agent validate` checks the file system, not the agent. Work done by any tool is validated the same way. |
 | **Back-and-forth is free** | Returning to a previously used tool costs nothing — the agent reads the current state from disk and continues. No "session" to restore. |
 

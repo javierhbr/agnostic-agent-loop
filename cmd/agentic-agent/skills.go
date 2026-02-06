@@ -6,12 +6,10 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/javierbenavides/agentic-agent/internal/config"
 	"github.com/javierbenavides/agentic-agent/internal/skills"
 	"github.com/javierbenavides/agentic-agent/internal/ui/components"
 	"github.com/javierbenavides/agentic-agent/internal/ui/helpers"
 	"github.com/javierbenavides/agentic-agent/internal/ui/styles"
-	"github.com/javierbenavides/agentic-agent/pkg/models"
 	"github.com/spf13/cobra"
 )
 
@@ -216,15 +214,7 @@ var skillsGenerateClaudeCmd = &cobra.Command{
 	Use:   "generate-claude-skills",
 	Short: "Generate Claude Code skill files (PRD, Ralph converter)",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Load config
-		cfg, err := config.LoadConfig("agnostic-agent.yaml")
-		if err != nil {
-			fmt.Printf("Error loading config: %v\n", err)
-			fmt.Println("Using default paths...")
-			// Use defaults if config not found
-			cfg = &models.Config{}
-			cfg.Paths.PRDOutputPath = ".agentic/tasks/"
-		}
+		cfg := getConfig()
 
 		// Create generator with config
 		gen := skills.NewGeneratorWithConfig(cfg)
@@ -259,14 +249,7 @@ var skillsGenerateGeminiCmd = &cobra.Command{
 	Use:   "generate-gemini-skills",
 	Short: "Generate Gemini CLI slash command files (PRD, Ralph converter)",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Load config
-		cfg, err := config.LoadConfig("agnostic-agent.yaml")
-		if err != nil {
-			fmt.Printf("Error loading config: %v\n", err)
-			fmt.Println("Using default paths...")
-			cfg = &models.Config{}
-			cfg.Paths.PRDOutputPath = ".agentic/tasks/"
-		}
+		cfg := getConfig()
 
 		// Create generator with config
 		gen := skills.NewGeneratorWithConfig(cfg)

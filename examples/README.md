@@ -19,6 +19,11 @@ A step-by-step walkthrough showing how to bounce between Claude Code CLI, Claude
 
 **Purpose:** Demonstrates that the `.agentic/` directory is the shared state bridge across any AI agent tool, including non-linear workflows where you return to tools already used. See [MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md).
 
+### `spec-driven-workflow/` - Spec Kit & OpenSpec Integration
+A walkthrough demonstrating spec-driven development with multi-directory spec resolution, Spec Kit integration, OpenSpec integration, and autopilot mode.
+
+**Purpose:** Shows how to plan with Spec Kit or OpenSpec and execute with `agentic-agent`, using the `spec resolve`, `spec list`, and `autopilot start` commands. See [README.md](spec-driven-workflow/README.md).
+
 ## Creating Your Own Example
 
 To create a new example project:
@@ -42,6 +47,7 @@ examples/my-example/
 ├── agnostic-agent.yaml          # Framework configuration
 ├── .agentic/                    # Framework runtime
 │   ├── tasks/                   # Task definitions
+│   ├── spec/                    # Specification files
 │   ├── context/                 # Context files
 │   └── agent-rules/             # Agent rules
 └── src/                         # Example source code
@@ -74,6 +80,24 @@ agentic-agent task complete task-001
 agentic-agent context generate .
 ```
 
+### Work with Specs
+```bash
+# List all specs across configured directories
+agentic-agent spec list
+
+# Resolve and print a specific spec
+agentic-agent spec resolve auth-requirements.md
+```
+
+### Run Autopilot
+```bash
+# Preview what would be processed
+agentic-agent autopilot start --dry-run
+
+# Run autopilot with a task limit
+agentic-agent autopilot start --max-iterations 5
+```
+
 ## Example Use Cases
 
 ### Basic Project
@@ -90,6 +114,16 @@ See [multi-agent-workflow/MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AG
 - Non-linear back-and-forth switching (returning to tools already used)
 - Bug found in one tool, fixed in another via shared learnings
 - Task decomposition, shared context, and persistent learnings across all switches
+
+### Spec-Driven Workflow
+
+See [spec-driven-workflow/README.md](spec-driven-workflow/README.md) for a walkthrough demonstrating:
+
+- Multi-directory spec resolution (Spec Kit, OpenSpec, agentic native)
+- Creating tasks that reference external specs
+- Readiness checks verifying specs exist before claiming tasks
+- Context bundles that include resolved spec content
+- Autopilot mode for sequential task processing
 
 ### CI/CD Integration (Coming Soon)
 Demonstrates:

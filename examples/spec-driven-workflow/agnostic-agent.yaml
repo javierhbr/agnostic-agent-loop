@@ -1,0 +1,25 @@
+project:
+  name: spec-driven-demo
+  version: 0.1.0
+  roots:
+    - .
+
+agents:
+  defaults:
+    max_tokens: 4000
+    model: claude-3-5-sonnet-20241022
+
+# Multi-directory spec resolution:
+# Specs are searched in order — first match wins.
+paths:
+  specDirs:
+    - .specify/specs       # Spec Kit specs (if using Spec Kit)
+    - openspec/specs        # OpenSpec specs (if using OpenSpec)
+    - .agentic/spec         # Agentic native specs (fallback)
+  contextDirs:
+    - .agentic/context
+
+workflow:
+  validators:
+    - context-check
+    - task-scope

@@ -85,7 +85,7 @@ Flag Mode:
 		if !skipContextGen && len(task.Scope) > 0 {
 			fmt.Println("Generating context for scope directories...")
 			for _, dir := range task.Scope {
-				ctx, err := context.GenerateContext(dir)
+				ctx, err := context.GenerateContextWithConfig(dir, getConfig())
 				if err != nil {
 					fmt.Printf("  Warning: Could not generate context for %s: %v\n", dir, err)
 					continue

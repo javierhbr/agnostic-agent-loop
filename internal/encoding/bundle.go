@@ -2,22 +2,25 @@ package encoding
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/javierbenavides/agentic-agent/internal/context"
+	"github.com/javierbenavides/agentic-agent/internal/specs"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 )
 
 type ContextBundle struct {
-	Task        *models.Task               `yaml:"task" json:"task"`
-	Global      *models.GlobalContext      `yaml:"global" json:"global"`
-	Rolling     string                     `yaml:"rolling" json:"rolling"`
+	Task        *models.Task              `yaml:"task" json:"task"`
+	Global      *models.GlobalContext     `yaml:"global" json:"global"`
+	Rolling     string                    `yaml:"rolling" json:"rolling"`
 	Directories []*models.DirectoryContext `yaml:"directories" json:"directories"`
-	BuiltAt     time.Time                  `yaml:"built_at" json:"built_at"`
+	Specs       []*specs.ResolvedSpec     `yaml:"specs,omitempty" json:"specs,omitempty"`
+	BuiltAt     time.Time                 `yaml:"built_at" json:"built_at"`
 }
 
-func CreateContextBundle(taskID string, format string) ([]byte, error) {
+func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]byte, error) {
 	// 1. Load Task
 	tm := tasks.NewTaskManager(".agentic/tasks")
 	// Search in all lists
@@ -87,7 +90,20 @@ func CreateContextBundle(taskID string, format string) ([]byte, error) {
 		BuiltAt:     time.Now(),
 	}
 
-	// 5. Encode
+	// 5. Resolve specs if task has SpecRefs
+	if len(task.SpecRefs) > 0 {
+		resolver := specs.NewResolver(cfg)
+		bundle.Specs = resolver.ResolveAll(task.SpecRefs)
+
+		// Warn on stderr for unresolved specs (non-blocking)
+		for _, s := range bundle.Specs {
+			if !s.Found {
+				fmt.Fprintf(os.Stderr, "Warning: spec %q could not be resolved: %s\n", s.Ref, s.Error)
+			}
+		}
+	}
+
+	// 6. Encode
 	encoder := NewToonEncoder()
 	return encoder.Encode(bundle)
 }

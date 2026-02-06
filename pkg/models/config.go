@@ -34,8 +34,10 @@ type WorkflowConfig struct {
 }
 
 type PathsConfig struct {
-	PRDOutputPath    string `yaml:"prdOutputPath,omitempty"`
-	ProgressTextPath string `yaml:"progressTextPath,omitempty"`
-	ProgressYAMLPath string `yaml:"progressYAMLPath,omitempty"`
-	ArchiveDir       string `yaml:"archiveDir,omitempty"`
+	PRDOutputPath    string   `yaml:"prdOutputPath,omitempty"`
+	ProgressTextPath string   `yaml:"progressTextPath,omitempty"`
+	ProgressYAMLPath string   `yaml:"progressYAMLPath,omitempty"`
+	ArchiveDir       string   `yaml:"archiveDir,omitempty"`
+	SpecDirs         []string `yaml:"specDirs,omitempty"`
+	ContextDirs      []string `yaml:"contextDirs,omitempty"`
 }

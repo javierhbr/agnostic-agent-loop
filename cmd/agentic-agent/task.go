@@ -202,7 +202,7 @@ var taskClaimCmd = &cobra.Command{
 		}
 
 		tm := tasks.NewTaskManager(".agentic/tasks")
-		if err := tm.ClaimTask(taskID, user); err != nil {
+		if err := tm.ClaimTaskWithConfig(taskID, user, getConfig()); err != nil {
 			fmt.Printf("Error claiming task: %v\n", err)
 			os.Exit(1)
 		}
