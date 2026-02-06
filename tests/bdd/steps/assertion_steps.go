@@ -33,6 +33,9 @@ func (s *AssertionSteps) RegisterSteps(sc *godog.ScenarioContext) {
 
 	// Git assertions
 	sc.Step(`^git should be initialized$`, s.gitShouldBeInitialized)
+
+	// Validation assertions
+	sc.Step(`^the validation should complete successfully$`, s.validationShouldSucceed)
 }
 
 // commandShouldSucceed asserts that the last command succeeded
@@ -142,4 +145,12 @@ func findSubstring(s, substr string) bool {
 		}
 	}
 	return false
+}
+
+// validationShouldSucceed asserts that validation completed successfully
+func (s *AssertionSteps) validationShouldSucceed(ctx context.Context) error {
+	if s.suite.LastCommandErr != nil {
+		return fmt.Errorf("validation failed: %w", s.suite.LastCommandErr)
+	}
+	return nil
 }
