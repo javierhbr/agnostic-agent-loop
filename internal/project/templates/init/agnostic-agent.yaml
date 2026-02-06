@@ -9,7 +9,15 @@ agents:
     max_tokens: 4000
     model: claude-3-5-sonnet-20241022
 
+# Ralph PDR Integration paths
+paths:
+  prdOutputPath: .agentic/tasks/
+  progressTextPath: .agentic/progress.txt
+  progressYAMLPath: .agentic/progress.yaml
+  archiveDir: .agentic/archive/
+
 workflow:
   validators:
     - context-check
     - task-scope
+    - browser-verification

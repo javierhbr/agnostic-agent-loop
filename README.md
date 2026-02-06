@@ -24,6 +24,11 @@ The Agentic Agent framework provides a structured approach to AI-assisted develo
 - ✅ Subtask decomposition
 - ✅ Skills generation for AI agent tools
 - ✅ Dual-mode support (interactive wizards + traditional flags)
+- ✅ **Ralph PDR Integration** - Plan-Do-Review methodology with PRD generation
+- ✅ **Progress Tracking** - Dual-format progress logs (text + YAML)
+- ✅ **Learnings Management** - Codebase patterns and directory-specific guidance
+- ✅ **Browser Verification** - Validation for UI changes
+- ✅ **agentskills.io Compliance** - Portable skills across tools
 
 ## Installation
 
