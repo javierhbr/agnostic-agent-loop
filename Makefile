@@ -1,4 +1,4 @@
-.PHONY: test test-verbose test-coverage coverage-html coverage-func coverage-summary clean-coverage test-functional help
+.PHONY: test test-verbose test-coverage coverage-html coverage-func coverage-summary clean-coverage test-functional test-bdd test-bdd-verbose test-all bdd-init help
 
 # Help target
 help:
@@ -6,11 +6,16 @@ help:
 	@echo "  test              - Run all tests"
 	@echo "  test-verbose      - Run all tests with verbose output"
 	@echo "  test-functional   - Run functional CLI tests"
+	@echo "  test-bdd          - Run BDD feature tests"
+	@echo "  test-bdd-verbose  - Run BDD tests with verbose output"
+	@echo "  test-all          - Run all test types (unit + functional + BDD)"
 	@echo "  test-coverage     - Run tests and generate coverage report"
 	@echo "  coverage-html     - Generate HTML coverage report and open in browser"
 	@echo "  coverage-func     - Show coverage by function"
 	@echo "  coverage-summary  - Show coverage summary by package"
+	@echo "  coverage-all      - Run all tests with coverage (including BDD)"
 	@echo "  clean-coverage    - Clean coverage files"
+	@echo "  bdd-init          - Install godog and setup BDD infrastructure"
 
 # Run all tests
 test:
@@ -72,3 +77,36 @@ clean-coverage:
 	@echo "Cleaning coverage files..."
 	@rm -rf coverage/
 	@echo "Coverage files cleaned"
+
+# Initialize BDD infrastructure
+bdd-init:
+	@echo "Installing godog..."
+	@go get github.com/cucumber/godog/cmd/godog@latest
+	@go mod tidy
+	@echo "Creating feature directories..."
+	@mkdir -p features/{init,tasks,context,validation,workflows}
+	@mkdir -p tests/bdd/{steps,helpers}
+	@echo "BDD infrastructure initialized!"
+
+# Run BDD tests
+test-bdd:
+	@echo "Running BDD feature tests..."
+	@go test ./tests/bdd -v
+
+# Run BDD tests with verbose output
+test-bdd-verbose:
+	@echo "Running BDD tests with verbose output..."
+	@go test ./tests/bdd -v -tags=godog
+
+# Run all tests (unit + functional + BDD)
+test-all: test test-functional test-bdd
+	@echo "All tests completed!"
+
+# Run all tests with coverage including BDD
+coverage-all:
+	@echo "Running all tests with coverage..."
+	@mkdir -p coverage
+	@go test ./... -coverprofile=coverage/coverage.out -covermode=count
+	@go test ./tests/bdd -coverprofile=coverage/bdd-coverage.out -covermode=count
+	@go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+	@echo "Coverage report generated: coverage/coverage.html"
