@@ -1,10 +1,11 @@
-.PHONY: test test-verbose test-coverage coverage-html coverage-func coverage-summary clean-coverage help
+.PHONY: test test-verbose test-coverage coverage-html coverage-func coverage-summary clean-coverage test-functional help
 
 # Help target
 help:
 	@echo "Available targets:"
 	@echo "  test              - Run all tests"
 	@echo "  test-verbose      - Run all tests with verbose output"
+	@echo "  test-functional   - Run functional CLI tests"
 	@echo "  test-coverage     - Run tests and generate coverage report"
 	@echo "  coverage-html     - Generate HTML coverage report and open in browser"
 	@echo "  coverage-func     - Show coverage by function"
@@ -20,6 +21,11 @@ test:
 test-verbose:
 	@echo "Running all tests with verbose output..."
 	@go test -v ./...
+
+# Run functional CLI tests
+test-functional:
+	@echo "Running functional CLI tests..."
+	@go test -v ./tests/functional
 
 # Run tests and generate basic coverage report
 test-coverage:
