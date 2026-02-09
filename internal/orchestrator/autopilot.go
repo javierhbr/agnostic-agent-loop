@@ -9,6 +9,7 @@ import (
 	"github.com/javierbenavides/agentic-agent/internal/encoding"
 	"github.com/javierbenavides/agentic-agent/internal/specs"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
+	"github.com/javierbenavides/agentic-agent/internal/tracks"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 )
 
@@ -20,6 +21,7 @@ type AutopilotLoop struct {
 	dryRun        bool
 	taskManager   *tasks.TaskManager
 	specResolver  *specs.Resolver
+	trackManager  *tracks.Manager
 }
 
 // NewAutopilotLoop creates a new autopilot loop.
@@ -37,6 +39,7 @@ func NewAutopilotLoop(cfg *models.Config, maxIterations int, stopSignal string, 
 		dryRun:        dryRun,
 		taskManager:   tasks.NewTaskManager(".agentic/tasks"),
 		specResolver:  specs.NewResolver(cfg),
+		trackManager:  tracks.NewManager(cfg.Paths.TrackDir),
 	}
 }
 
@@ -135,14 +138,35 @@ func (a *AutopilotLoop) findNextTask() (*models.Task, error) {
 		return nil, nil // All done
 	}
 
-	// Prefer tasks that are fully ready
+	// Prefer tasks that are fully ready and whose track (if any) is active
 	for _, t := range backlog.Tasks {
+		if a.isTaskBlocked(&t) {
+			continue
+		}
 		result := tasks.CanClaimTask(&t, a.cfg)
 		if result.Ready {
 			return &t, nil
 		}
 	}
 
-	// Fall back to first task in backlog
-	return &backlog.Tasks[0], nil
+	// Fall back to first unblocked task in backlog
+	for _, t := range backlog.Tasks {
+		if !a.isTaskBlocked(&t) {
+			return &t, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// isTaskBlocked returns true if a task is linked to a track that is not yet active.
+func (a *AutopilotLoop) isTaskBlocked(task *models.Task) bool {
+	if task.TrackID == "" {
+		return false
+	}
+	track, err := a.trackManager.Get(task.TrackID)
+	if err != nil {
+		return false // track not found — don't block
+	}
+	return track.Status == models.TrackStatusIdeation || track.Status == models.TrackStatusPlanning
 }

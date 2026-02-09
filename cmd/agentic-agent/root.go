@@ -73,4 +73,7 @@ func init() {
 	rootCmd.AddCommand(learningsCmd)
 	rootCmd.AddCommand(specCmd)
 	rootCmd.AddCommand(autopilotCmd)
+	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(trackCmd)
+	rootCmd.AddCommand(planCmd)
 }

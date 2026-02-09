@@ -40,4 +40,5 @@ type PathsConfig struct {
 	ArchiveDir       string   `yaml:"archiveDir,omitempty"`
 	SpecDirs         []string `yaml:"specDirs,omitempty"`
 	ContextDirs      []string `yaml:"contextDirs,omitempty"`
+	TrackDir         string   `yaml:"trackDir,omitempty"`
 }

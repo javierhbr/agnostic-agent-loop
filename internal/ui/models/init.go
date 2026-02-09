@@ -18,6 +18,9 @@ const (
 	InitStepProjectName
 	InitStepModel
 	InitStepValidators
+	InitStepDescription
+	InitStepTechStack
+	InitStepWorkflow
 	InitStepPreview
 	InitStepInitializing
 	InitStepComplete
@@ -25,15 +28,18 @@ const (
 
 // InitWizardModel is the model for init wizard
 type InitWizardModel struct {
-	step           InitWizardStep
-	projectName    components.ValidatedInput
-	modelSelect    components.SimpleSelect
+	step            InitWizardStep
+	projectName     components.ValidatedInput
+	modelSelect     components.SimpleSelect
 	validatorSelect components.SimpleSelect
-	spinner        components.Spinner
-	error          string
-	width          int
-	height         int
-	quitting       bool
+	description     components.TextArea
+	techStack       components.TextArea
+	workflow        components.TextArea
+	spinner         components.Spinner
+	error           string
+	width           int
+	height          int
+	quitting        bool
 }
 
 // NewInitWizardModel creates a new init wizard model
@@ -93,6 +99,23 @@ func NewInitWizardModel() InitWizardModel {
 	}
 	validatorSelect := components.NewSimpleSelect("Validation Rules", validatorOptions)
 
+	// Project profile fields (all optional)
+	description := components.NewTextArea(
+		"Project Description",
+		"Brief description of your project, its goals, and key features...",
+		true,
+	)
+	techStack := components.NewTextArea(
+		"Tech Stack",
+		"Languages, frameworks, databases (e.g., Go, React, PostgreSQL)...",
+		true,
+	)
+	workflow := components.NewTextArea(
+		"Workflow Preferences",
+		"Testing approach, branching strategy, code review process...",
+		true,
+	)
+
 	spinner := components.NewSpinner("Initializing project...")
 
 	return InitWizardModel{
@@ -100,6 +123,9 @@ func NewInitWizardModel() InitWizardModel {
 		projectName:     projectName,
 		modelSelect:     modelSelect,
 		validatorSelect: validatorSelect,
+		description:     description,
+		techStack:       techStack,
+		workflow:        workflow,
 		spinner:         spinner,
 	}
 }
@@ -130,7 +156,26 @@ func (m InitWizardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
+		case "tab":
+			// Tab skips optional profile steps
+			switch m.step {
+			case InitStepDescription:
+				m.step = InitStepTechStack
+				return m, m.techStack.Focus()
+			case InitStepTechStack:
+				m.step = InitStepWorkflow
+				return m, m.workflow.Focus()
+			case InitStepWorkflow:
+				m.step = InitStepPreview
+				return m, nil
+			}
+
 		case "enter":
+			// In textarea steps, enter adds a newline (use tab to skip, ctrl+n to advance)
+			if m.step == InitStepDescription || m.step == InitStepTechStack || m.step == InitStepWorkflow {
+				// Don't intercept enter for textareas - let it add newlines
+				break
+			}
 			return m.handleEnter()
 		}
 
@@ -160,6 +205,18 @@ func (m InitWizardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.validatorSelect = m.validatorSelect.Update(keyMsg)
 		}
 
+	case InitStepDescription:
+		m.description, cmd = m.description.Update(msg)
+		return m, cmd
+
+	case InitStepTechStack:
+		m.techStack, cmd = m.techStack.Update(msg)
+		return m, cmd
+
+	case InitStepWorkflow:
+		m.workflow, cmd = m.workflow.Update(msg)
+		return m, cmd
+
 	case InitStepInitializing:
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
@@ -186,8 +243,8 @@ func (m InitWizardModel) handleEnter() (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case InitStepValidators:
-		m.step = InitStepPreview
-		return m, nil
+		m.step = InitStepDescription
+		return m, m.description.Focus()
 
 	case InitStepPreview:
 		m.step = InitStepInitializing
@@ -207,7 +264,16 @@ func (m InitWizardModel) handleEnter() (tea.Model, tea.Cmd) {
 // initializeProject initializes the project
 func (m *InitWizardModel) initializeProject() tea.Cmd {
 	return func() tea.Msg {
-		if err := project.InitProject(m.projectName.Value()); err != nil {
+		profile := &project.ProjectProfile{
+			Description: m.description.Value(),
+			TechStack:   m.techStack.Value(),
+			Workflow:    m.workflow.Value(),
+		}
+		// Only pass profile if any field is filled
+		if profile.Description == "" && profile.TechStack == "" && profile.Workflow == "" {
+			profile = nil
+		}
+		if err := project.InitProjectWithProfile(m.projectName.Value(), profile); err != nil {
 			return projectInitErrorMsg{err}
 		}
 		return projectInitCompleteMsg{}
@@ -229,6 +295,12 @@ func (m InitWizardModel) View() string {
 		return m.renderModel()
 	case InitStepValidators:
 		return m.renderValidators()
+	case InitStepDescription:
+		return m.renderDescription()
+	case InitStepTechStack:
+		return m.renderTechStack()
+	case InitStepWorkflow:
+		return m.renderWorkflow()
 	case InitStepPreview:
 		return m.renderPreview()
 	case InitStepInitializing:
@@ -249,7 +321,8 @@ func (m InitWizardModel) renderWelcome() string {
 	b.WriteString(styles.ListItemStyle.Render("  • Directory structure (.agentic/)\n"))
 	b.WriteString(styles.ListItemStyle.Render("  • Specification templates\n"))
 	b.WriteString(styles.ListItemStyle.Render("  • Task management files\n"))
-	b.WriteString(styles.ListItemStyle.Render("  • AI model configuration\n\n"))
+	b.WriteString(styles.ListItemStyle.Render("  • AI model configuration\n"))
+	b.WriteString(styles.ListItemStyle.Render("  • Project profile (optional)\n\n"))
 
 	b.WriteString(styles.HelpStyle.Render("Press Enter to continue • Esc to cancel") + "\n")
 
@@ -292,6 +365,36 @@ func (m InitWizardModel) renderValidators() string {
 	return styles.ContainerStyle.Render(b.String())
 }
 
+func (m InitWizardModel) renderDescription() string {
+	var b strings.Builder
+
+	b.WriteString(styles.TitleStyle.Render("Project Profile") + "\n\n")
+	b.WriteString(m.description.View() + "\n")
+	b.WriteString(styles.HelpStyle.Render("Tab to skip/next • Esc to cancel") + "\n")
+
+	return styles.ContainerStyle.Render(b.String())
+}
+
+func (m InitWizardModel) renderTechStack() string {
+	var b strings.Builder
+
+	b.WriteString(styles.TitleStyle.Render("Project Profile") + "\n\n")
+	b.WriteString(m.techStack.View() + "\n")
+	b.WriteString(styles.HelpStyle.Render("Tab to skip/next • Esc to cancel") + "\n")
+
+	return styles.ContainerStyle.Render(b.String())
+}
+
+func (m InitWizardModel) renderWorkflow() string {
+	var b strings.Builder
+
+	b.WriteString(styles.TitleStyle.Render("Project Profile") + "\n\n")
+	b.WriteString(m.workflow.View() + "\n")
+	b.WriteString(styles.HelpStyle.Render("Tab to skip/next • Esc to cancel") + "\n")
+
+	return styles.ContainerStyle.Render(b.String())
+}
+
 func (m InitWizardModel) renderPreview() string {
 	var b strings.Builder
 
@@ -308,11 +411,27 @@ func (m InitWizardModel) renderPreview() string {
 
 	b.WriteString(styles.CardStyle.Render(config) + "\n")
 
+	// Show profile summary if any filled
+	if m.description.Value() != "" || m.techStack.Value() != "" || m.workflow.Value() != "" {
+		var profile strings.Builder
+		if m.description.Value() != "" {
+			profile.WriteString("Description: provided\n")
+		}
+		if m.techStack.Value() != "" {
+			profile.WriteString("Tech Stack: provided\n")
+		}
+		if m.workflow.Value() != "" {
+			profile.WriteString("Workflow: provided\n")
+		}
+		b.WriteString(styles.CardStyle.Render(profile.String()) + "\n")
+	}
+
 	b.WriteString(styles.SubtitleStyle.Render("Directory structure to be created:") + "\n\n")
 	b.WriteString(styles.MutedStyle.Render(".agentic/\n"))
 	b.WriteString(styles.MutedStyle.Render("├── spec/              # Specifications\n"))
 	b.WriteString(styles.MutedStyle.Render("├── context/           # Context summaries\n"))
 	b.WriteString(styles.MutedStyle.Render("├── tasks/             # Task management\n"))
+	b.WriteString(styles.MutedStyle.Render("├── tracks/            # Feature/bug tracks\n"))
 	b.WriteString(styles.MutedStyle.Render("└── agent-rules/       # Tool configs\n"))
 	b.WriteString(styles.MutedStyle.Render("agnostic-agent.yaml    # Project config\n\n"))
 

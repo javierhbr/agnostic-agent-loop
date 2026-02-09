@@ -50,4 +50,7 @@ func SetDefaults(cfg *models.Config) {
 	if len(cfg.Paths.ContextDirs) == 0 {
 		cfg.Paths.ContextDirs = []string{".agentic/context"}
 	}
+	if cfg.Paths.TrackDir == "" {
+		cfg.Paths.TrackDir = ".agentic/tracks"
+	}
 }

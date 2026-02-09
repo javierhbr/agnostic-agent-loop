@@ -2,14 +2,14 @@ package tasks
 
 import (
 	"fmt"
+	"os/exec"
+	"strings"
+	"time"
 
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 )
 
-// AcquireLock attempts to lock a task by checking if it is already assigned/locked.
-// For MVP, we will assume "In Progress" means locked by the assignee.
-// True file locking can be added later if concurrent access is a major issue.
-// This function mainly updates the assigned_to field.
+// ClaimTask claims a task from backlog, recording claim time and git branch.
 func (tm *TaskManager) ClaimTask(taskID string, assignee string) error {
 	// Find task in backlog
 	backlog, err := tm.LoadTasks("backlog")
@@ -31,15 +31,6 @@ func (tm *TaskManager) ClaimTask(taskID string, assignee string) error {
 		return fmt.Errorf("task %s not found in backlog (can only claim pending tasks)", taskID)
 	}
 
-	// Move to In Progress
-	// We need to slightly modify MoveTask to allow updating properties during move,
-	// Or just do it manually here.
-
-	// Better: Use MoveTask then update? OR update then save?
-	// MoveTask does remove and add.
-
-	// Let's implement specific logic here reusing Load/Save to be safe.
-
 	newBacklogTasks := []models.Task{}
 	for _, t := range backlog.Tasks {
 		if t.ID != taskID {
@@ -53,15 +44,25 @@ func (tm *TaskManager) ClaimTask(taskID string, assignee string) error {
 
 	inProgress, err := tm.LoadTasks("in-progress")
 	if err != nil {
-		// Try to rollback? Not implementing full rollback for MVP
 		return err
 	}
 
 	task.Status = models.StatusInProgress
 	task.AssignedTo = assignee
+	task.ClaimedAt = time.Now()
+	task.Branch = currentGitBranch()
 	inProgress.Tasks = append(inProgress.Tasks, task)
 
 	return tm.SaveTasks("in-progress", inProgress)
+}
+
+// currentGitBranch returns the current git branch, or empty string if not in a repo.
+func currentGitBranch() string {
+	out, err := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD").Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
 }
 
 // ClaimTaskWithConfig claims a task after running readiness checks.

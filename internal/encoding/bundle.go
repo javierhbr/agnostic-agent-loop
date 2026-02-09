@@ -15,9 +15,12 @@ type ContextBundle struct {
 	Task        *models.Task              `yaml:"task" json:"task"`
 	Global      *models.GlobalContext     `yaml:"global" json:"global"`
 	Rolling     string                    `yaml:"rolling" json:"rolling"`
+	TechStack   string                    `yaml:"tech_stack,omitempty" json:"tech_stack,omitempty"`
+	Workflow    string                    `yaml:"workflow,omitempty" json:"workflow,omitempty"`
 	Directories []*models.DirectoryContext `yaml:"directories" json:"directories"`
-	Specs       []*specs.ResolvedSpec     `yaml:"specs,omitempty" json:"specs,omitempty"`
-	BuiltAt     time.Time                 `yaml:"built_at" json:"built_at"`
+	Specs             []*specs.ResolvedSpec     `yaml:"specs,omitempty" json:"specs,omitempty"`
+	SkillInstructions string                    `yaml:"skill_instructions,omitempty" json:"skill_instructions,omitempty"`
+	BuiltAt           time.Time                 `yaml:"built_at" json:"built_at"`
 }
 
 func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]byte, error) {
@@ -82,10 +85,16 @@ func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]by
 		}
 	}
 
+	// Load supplementary context files (optional, non-blocking)
+	techStack, _ := os.ReadFile(".agentic/context/tech-stack.md")
+	workflow, _ := os.ReadFile(".agentic/context/workflow-preferences.md")
+
 	bundle := &ContextBundle{
 		Task:        task,
 		Global:      global,
 		Rolling:     rolling,
+		TechStack:   string(techStack),
+		Workflow:    string(workflow),
 		Directories: dirContexts,
 		BuiltAt:     time.Now(),
 	}
