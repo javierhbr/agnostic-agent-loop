@@ -133,6 +133,85 @@ agentic-agent status --format json  # Machine-readable output
 
 ---
 
+## Configuration Reference
+
+`agentic-agent init` generates `agnostic-agent.yaml` in the project root. Here is a fully annotated sample:
+
+```yaml
+# ── Project metadata ────────────────────────────────────────────────
+project:
+  name: "my-project"           # Project name shown in status dashboard
+  version: 0.1.0               # Semantic version (informational)
+  roots:                        # Source roots to scan for context
+    - .
+
+# ── Agent defaults ──────────────────────────────────────────────────
+agents:
+  defaults:
+    max_tokens: 4000            # Token budget for context bundles
+    model: claude-3-5-sonnet-20241022
+  overrides:                    # Per-tool overrides (optional)
+    - name: cursor
+      max_tokens: 8000
+
+# ── Paths ───────────────────────────────────────────────────────────
+# All paths are relative to the project root.
+paths:
+  # Spec resolution: searched in order, first match wins.
+  specDirs:
+    - .specify/specs            # Spec Kit (if using Spec Kit)
+    - openspec/specs            # OpenSpec (if using OpenSpec)
+    - .agentic/spec             # Native agentic specs (default)
+
+  contextDirs:
+    - .agentic/context          # Global context files
+
+  trackDir: .agentic/tracks     # Track work units (spec + plan + tasks)
+  prdOutputPath: .agentic/tasks/       # Where PRD converter writes tasks
+  progressTextPath: .agentic/progress.txt
+  progressYAMLPath: .agentic/progress.yaml
+  archiveDir: .agentic/archive/        # Archived tracks and tasks
+
+# ── Workflow ────────────────────────────────────────────────────────
+workflow:
+  validators:                   # Validation rules run by `agentic-agent validate`
+    - context-check             # Verify context.md exists in scope dirs
+    - task-scope                # Enforce max 5 files / 2 dirs per task
+    - browser-verification      # (optional) Browser-based checks
+```
+
+### Minimal config
+
+If you only need the basics, most fields have sensible defaults:
+
+```yaml
+project:
+  name: "my-project"
+
+paths:
+  specDirs:
+    - .agentic/spec
+
+workflow:
+  validators:
+    - context-check
+    - task-scope
+```
+
+Omitted fields use these defaults:
+
+| Field              | Default                       |
+|--------------------|-------------------------------|
+| `project.version`  | `0.1.0`                       |
+| `project.roots`    | `[.]`                         |
+| `agents.defaults`  | 4000 tokens, Sonnet           |
+| `paths.specDirs`   | `[.agentic/spec]`             |
+| `paths.contextDirs`| `[.agentic/context]`          |
+| `paths.trackDir`   | `.agentic/tracks`             |
+| `paths.archiveDir` | `.agentic/archive/`           |
+
+---
+
 ## Creating Your Own Example
 
 ```bash
