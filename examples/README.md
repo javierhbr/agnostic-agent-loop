@@ -1,160 +1,163 @@
 # Examples
 
-This directory contains example projects and demonstrations of the Agentic Agent framework.
+Step-by-step demonstrations of the Agentic Agent framework.
 
 ## Available Examples
 
-### `foo/` - Simple Example Package
-A minimal Go package demonstrating basic project structure. Moved from `src/foo/` to clarify it's example code, not main framework source.
+### `test-sandbox/` - End-to-End Walkthrough
 
-**Purpose:** Shows how a simple Go package might be organized when using the Agentic Agent framework.
+Build a project from scratch: idea elaboration, project init, PRD generation, task decomposition, claim-to-complete workflow, and tool switching.
 
-### `test-sandbox/` - Test Environment
-An isolated environment for testing framework features without affecting the main codebase.
+**Start here** if you're new. See [SAMPLE.README.md](test-sandbox/SAMPLE.README.md).
 
-**Purpose:** Safe space to experiment with agentic-agent commands and workflows.
+### `track-workflow/` - Tracks: Idea to Implementation
 
-### `multi-agent-workflow/` - Multi-Agent Use Case
-A step-by-step walkthrough showing how to bounce between Claude Code CLI, Claude Code VSCode extension, GitHub Copilot, and Antigravity IDE with Gemini — back and forth on the same project — without losing context.
+Walk through the full track lifecycle: brainstorm with an AI agent, refine the spec, activate to generate a plan and tasks, work through tasks, and complete the track.
 
-**Purpose:** Demonstrates that the `.agentic/` directory is the shared state bridge across any AI agent tool, including non-linear workflows where you return to tools already used. See [MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md).
+Demonstrates: `track init`, `track refine`, `track activate --decompose`, `plan show`, `plan next`, `plan mark`, `status`.
 
-### `spec-driven-workflow/` - Spec Kit & OpenSpec Integration
-A walkthrough demonstrating spec-driven development with multi-directory spec resolution, Spec Kit integration, OpenSpec integration, and autopilot mode.
+See [README.md](track-workflow/README.md).
 
-**Purpose:** Shows how to plan with Spec Kit or OpenSpec and execute with `agentic-agent`, using the `spec resolve`, `spec list`, and `autopilot start` commands. See [README.md](spec-driven-workflow/README.md).
+### `skill-packs/` - Skill Pack Installation and Usage
 
-## Creating Your Own Example
+Install reusable skill bundles for any AI agent tool. Shows project-level and global installation, listing packs, and verifying drift.
 
-To create a new example project:
+Demonstrates: `skills install`, `skills list`, `skills check`, multi-tool support.
 
-1. Create a directory: `examples/my-example/`
-2. Initialize with agentic-agent:
-   ```bash
-   cd examples/my-example
-   agentic-agent init
-   ```
-3. Add your example code and documentation
-4. Update this README with a description
+See [README.md](skill-packs/README.md).
 
-## Example Project Structure
+### `tdd/` - Test-Driven Development Workflow
 
-A typical example project using the Agentic Agent framework:
+Use `work --follow-tdd` to decompose a task into RED/GREEN/REFACTOR sub-tasks. The TDD skill pack provides phase-specific instructions to the AI agent.
 
-```
-examples/my-example/
-├── README.md                    # Example documentation
-├── agnostic-agent.yaml          # Framework configuration
-├── .agentic/                    # Framework runtime
-│   ├── tasks/                   # Task definitions
-│   ├── spec/                    # Specification files
-│   ├── context/                 # Context files
-│   └── agent-rules/             # Agent rules
-└── src/                         # Example source code
-    └── main.go
-```
+See [README.md](tdd/README.md).
 
-## Running Examples
+### `multi-agent-workflow/` - Multi-Agent Tool Switching
 
-### Initialize an Example
+Bounce between Claude Code CLI, Claude Code VSCode, GitHub Copilot, and Antigravity IDE with Gemini on the same project. Demonstrates non-linear back-and-forth switching, shared state, and cross-tool bug discovery.
+
+See [MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md).
+
+### `spec-driven-workflow/` - Spec Kit and OpenSpec Integration
+
+Multi-directory spec resolution with Spec Kit, OpenSpec, and native specs. Shows how tasks reference specs across directories and how autopilot processes them sequentially.
+
+See [README.md](spec-driven-workflow/README.md).
+
+---
+
+## Running Any Example
+
+### Initialize a project
+
 ```bash
-cd examples/foo
-agentic-agent init
+cd examples/<example-dir>
+agentic-agent init --name "My Project"
 ```
 
-### Work with Tasks
+### Work with tracks
+
 ```bash
-# List tasks
-agentic-agent task list backlog
+# Start a track with brainstorming scaffolding
+agentic-agent track init "My Feature" --type feature
 
-# Claim a task
-agentic-agent task claim task-001
+# Check spec completeness
+agentic-agent track refine my-feature
 
-# Complete a task
-agentic-agent task complete task-001
+# Activate: generate plan + decompose into tasks
+agentic-agent track activate my-feature --decompose
 ```
 
-### Generate Context
+### Work with tasks
+
 ```bash
-# Generate context for current directory
-agentic-agent context generate .
+agentic-agent task list                 # List all tasks
+agentic-agent task claim TASK-001       # Claim with readiness checks
+agentic-agent task complete TASK-001    # Mark done
 ```
 
-### Work with Specs
+### Work with plans
+
 ```bash
-# List all specs across configured directories
-agentic-agent spec list
-
-# Resolve and print a specific spec
-agentic-agent spec resolve auth-requirements.md
+agentic-agent plan show --track my-feature   # View plan progress
+agentic-agent plan next --track my-feature   # See next pending step
+agentic-agent plan mark plan.md 12 done      # Mark step done by line
 ```
 
-### Run Autopilot
+### Generate context
+
 ```bash
-# Preview what would be processed
-agentic-agent autopilot start --dry-run
-
-# Run autopilot with a task limit
-agentic-agent autopilot start --max-iterations 5
+agentic-agent context generate internal/auth   # Directory context
+agentic-agent context build --task TASK-001    # Full context bundle
 ```
+
+### Work with specs
+
+```bash
+agentic-agent spec list                     # All specs across directories
+agentic-agent spec resolve auth-spec.md     # Resolve and print
+```
+
+### Install skill packs
+
+```bash
+agentic-agent skills list                             # Available packs
+agentic-agent skills install tdd --tool claude-code   # Install for a tool
+agentic-agent skills check                            # Detect drift
+```
+
+### Run autopilot
+
+```bash
+agentic-agent autopilot start --dry-run          # Preview
+agentic-agent autopilot start --max-iterations 5  # Process tasks
+```
+
+### Check project status
+
+```bash
+agentic-agent status                # Dashboard with progress bar
+agentic-agent status --format json  # Machine-readable output
+```
+
+---
 
 ## Example Use Cases
 
-### Basic Project
-Demonstrates:
-- Simple Go package structure
-- Task management workflow
-- Context generation
+- **[test-sandbox](test-sandbox/SAMPLE.README.md)** — Full workflow, tool switching, parallel agents
+- **[track-workflow](track-workflow/README.md)** — Brainstorming, spec refinement, plan generation
+- **[skill-packs](skill-packs/README.md)** — Multi-tool skill installation, drift detection
+- **[tdd](tdd/README.md)** — RED/GREEN/REFACTOR decomposition
+- **[multi-agent-workflow](multi-agent-workflow/MULTI_AGENT_USE_CASE.md)** — 4 tools, 6 phases, cross-tool bug fix
+- **[spec-driven-workflow](spec-driven-workflow/README.md)** — Spec Kit, OpenSpec, autopilot mode
 
-### Multi-Agent Workflow
+---
 
-See [multi-agent-workflow/MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md) for a full walkthrough demonstrating:
+## Creating Your Own Example
 
-- Switching between Claude Code CLI, Claude Code VSCode extension, GitHub Copilot, and Antigravity IDE with Gemini
-- Non-linear back-and-forth switching (returning to tools already used)
-- Bug found in one tool, fixed in another via shared learnings
-- Task decomposition, shared context, and persistent learnings across all switches
+```bash
+mkdir examples/my-example && cd examples/my-example
+agentic-agent init --name "My Example"
+```
 
-### Spec-Driven Workflow
+Structure:
 
-See [spec-driven-workflow/README.md](spec-driven-workflow/README.md) for a walkthrough demonstrating:
-
-- Multi-directory spec resolution (Spec Kit, OpenSpec, agentic native)
-- Creating tasks that reference external specs
-- Readiness checks verifying specs exist before claiming tasks
-- Context bundles that include resolved spec content
-- Autopilot mode for sequential task processing
-
-### CI/CD Integration (Coming Soon)
-Demonstrates:
-- Running agentic-agent in CI/CD pipelines
-- Automated task validation
-- Coverage tracking
-
-## Notes for Framework Development
-
-**Important:** Examples in this directory serve two purposes:
-
-1. **User Education** - Show how to use the framework
-2. **Framework Testing** - Provide realistic test scenarios
-
-When modifying examples:
-- Keep them simple and focused on one concept
-- Document clearly what each example demonstrates
-- Ensure examples work with the latest framework version
-- Add tests if the example includes complex logic
+```text
+examples/my-example/
+|-- README.md                    # Walkthrough
+|-- agnostic-agent.yaml          # Configuration
+|-- .agentic/
+|   |-- tasks/                   # backlog, in-progress, done
+|   |-- spec/                    # Specification files
+|   |-- context/                 # global-context, rolling-summary
+|   |-- tracks/                  # Track work units
+|   +-- agent-rules/             # base.md
++-- src/                         # Your code
+```
 
 ## Related Documentation
 
-- [Main README](../README.md) - Project overview
+- [Main README](../README.md) - Project overview and CLI reference
+- [Spec-Driven Development Guide](../docs/SPEC_DRIVEN_DEVELOPMENT.md) - Spec Kit and OpenSpec workflows
 - [CLI Tutorial](../docs/guide/CLI_TUTORIAL.md) - Command-line usage
-- [BDD Guide](../docs/bdd/BDD_GUIDE.md) - Testing with examples
-
-## Contributing Examples
-
-We welcome new examples! When contributing:
-
-1. Ensure the example is clear and well-documented
-2. Test that it works with the current framework version
-3. Update this README with your example
-4. Consider adding a demo script or walkthrough
+- [BDD Guide](../docs/bdd/BDD_GUIDE.md) - Testing with Gherkin
