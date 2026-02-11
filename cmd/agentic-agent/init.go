@@ -42,7 +42,20 @@ Flag Mode (with flags):
 			name = "my-agentic-project"
 		}
 
-		if err := project.InitProject(name); err != nil {
+		desc, _ := cmd.Flags().GetString("description")
+		tech, _ := cmd.Flags().GetString("tech-stack")
+		wf, _ := cmd.Flags().GetString("workflow")
+
+		var profile *project.ProjectProfile
+		if desc != "" || tech != "" || wf != "" {
+			profile = &project.ProjectProfile{
+				Description: desc,
+				TechStack:   tech,
+				Workflow:    wf,
+			}
+		}
+
+		if err := project.InitProjectWithProfile(name, profile); err != nil {
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
@@ -62,4 +75,7 @@ func runInteractiveInit() {
 
 func init() {
 	initCmd.Flags().String("name", "", "Name of the project")
+	initCmd.Flags().String("description", "", "Project description (populates global context)")
+	initCmd.Flags().String("tech-stack", "", "Tech stack summary (e.g., 'Go, React, PostgreSQL')")
+	initCmd.Flags().String("workflow", "", "Workflow preferences (e.g., 'TDD, trunk-based, PR reviews')")
 }

@@ -291,10 +291,28 @@ Agent Decision Tree:
 <project>/.cursor/skills/
 ```
 
+### Gemini
+```bash
+# Skills directory
+<project>/.gemini/skills/
+```
+
 ### Windsurf
 ```bash
 # Skills directory
 <project>/.windsurf/skills/
+```
+
+### Codex
+```bash
+# Skills directory
+<project>/.codex/skills/
+```
+
+### Antigravity (generic)
+```bash
+# Skills directory
+<project>/.agent/skills/
 ```
 
 ### Universal Pattern

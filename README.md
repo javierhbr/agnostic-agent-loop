@@ -40,11 +40,11 @@ Agentic Agent solves this by giving every AI agent the same structured workflow:
 The core loop:
 
 ```
-  init --> write specs --> create tasks --> claim task
-   ^                                          |
-   |                                    generate context
-   |                                          |
-   +--- complete <--- validate <--- implement
+  track init --> brainstorm --> refine spec --> activate
+       |                                          |
+       |                          generate plan + decompose tasks
+       |                                          |
+       +--- complete <--- validate <--- claim + implement
 ```
 
 Every command works with **any AI agent** — Claude Code, Cursor, GitHub Copilot, Gemini, or manual development.
@@ -61,14 +61,19 @@ go install github.com/javierbenavides/agentic-agent/cmd/agentic-agent@latest
 mkdir my-project && cd my-project
 agentic-agent init --name "My Project"
 
-# Create a task
-agentic-agent task create \
-  --title "Add user authentication" \
-  --spec-refs "auth-requirements.md" \
-  --outputs "internal/auth/service.go" \
-  --acceptance "JWT tokens generated,Expired tokens rejected"
+# Start a track with brainstorming scaffolding
+agentic-agent track init "User Authentication" \
+  --purpose "Secure user login" \
+  --success "Users can register, login, logout"
 
-# Work on it
+# Brainstorm with your AI agent using the generated brainstorm.md
+# Then check spec completeness
+agentic-agent track refine user-authentication
+
+# Activate: generate plan + decompose into tasks
+agentic-agent track activate user-authentication --decompose
+
+# Work on tasks
 agentic-agent task claim TASK-001       # Readiness checks + claim
 agentic-agent context generate internal/auth  # Context for the agent
 agentic-agent validate                  # Check scope and context
@@ -78,8 +83,8 @@ agentic-agent task complete TASK-001    # Done
 All commands support **dual mode** — run without arguments for interactive wizards, or pass flags for scripting:
 
 ```bash
-agentic-agent task create                # Interactive wizard
-agentic-agent task create --title "..."  # Flag mode
+agentic-agent track init                        # Interactive wizard
+agentic-agent track init "Auth" --purpose "..."  # Flag mode
 ```
 
 ---
@@ -95,8 +100,8 @@ go install github.com/javierbenavides/agentic-agent/cmd/agentic-agent@latest
 # Option 2: Build from source
 git clone https://github.com/javierbenavides/agentic-agent.git
 cd agentic-agent
-go build -o agentic-agent ./cmd/agentic-agent
-sudo mv agentic-agent /usr/local/bin/
+make build
+sudo mv build/agentic-agent /usr/local/bin/
 
 # Option 3: Development (no install)
 go run ./cmd/agentic-agent version
@@ -113,6 +118,32 @@ Specs live in `.agentic/spec/` (or Spec Kit / OpenSpec directories). Agents refe
 ```bash
 agentic-agent task create --spec-refs "auth-requirements.md,api-design.md"
 ```
+
+### Tracks — from idea to implementation
+
+Tracks group a spec, plan, and tasks into a single work unit. The brainstorming workflow guides you from a vague idea to a well-formed spec through structured dialogue with your AI agent.
+
+```bash
+# 1. Initialize with brainstorming scaffolding
+agentic-agent track init "User Auth" --type feature
+
+# 2. Use brainstorm.md as a dialogue script with your agent
+#    Agent asks one question at a time, proposes 2-3 approaches,
+#    presents design in sections for validation
+
+# 3. Check spec completeness
+agentic-agent track refine user-auth
+#   ✓ purpose
+#   ✓ constraints
+#   ✗ design (missing)
+
+# 4. Activate: validate spec → generate plan → decompose into tasks
+agentic-agent track activate user-auth --decompose
+```
+
+Track status progresses through: **ideation** → **active** → **done**. Tasks linked to ideation tracks are skipped by autopilot until the track is activated.
+
+Templates are customizable — override the defaults by placing your own in `.agentic/templates/track/`.
 
 ### Context isolation — agents stay focused
 
@@ -131,6 +162,7 @@ Context Bundle for TASK-001
 |-- Rolling Summary (recent changes)
 |-- Task Details (title, acceptance criteria, scope)
 |-- Resolved Specs (full content from spec_refs)
+|-- Resolved Skills (targeted content from skill_refs, or all installed)
 +-- Directory Contexts (context.md from task scope)
 ```
 
@@ -161,12 +193,100 @@ Claimed task TASK-001
 
 ### Agent-agnostic — works with everything
 
-The same project structure works across Claude Code, Cursor, Copilot, Gemini, and Antigravity IDE. Generate tool-specific configs:
+The same project structure works across Claude Code, Cursor, Copilot, Gemini, Windsurf, Antigravity IDE, and Codex. Generate tool-specific configs or install skill packs:
 
 ```bash
 agentic-agent skills generate-claude-skills
 agentic-agent skills generate-gemini-skills
+
+# Install skill packs for any supported tool
+agentic-agent skills install tdd --tool claude-code
+agentic-agent skills install tdd --tool cursor --global
+agentic-agent skills list
 ```
+
+### Skill packs — reusable agent skills
+
+Skill packs are tool-agnostic bundles of instructions that install into the correct directory for each AI agent tool:
+
+| Tool | Project directory |
+|------|-------------------|
+| Claude Code | `.claude/skills/` |
+| Cursor | `.cursor/skills/` |
+| Gemini CLI | `.gemini/skills/` |
+| Windsurf | `.windsurf/skills/` |
+| Antigravity | `.agent/skills/` |
+| Codex | `.codex/skills/` |
+
+```bash
+# Install TDD skill pack for Claude Code (project-level)
+agentic-agent skills install tdd --tool claude-code
+
+# Install globally (user-level)
+agentic-agent skills install tdd --tool claude-code --global
+
+# Interactive mode — select pack, tool, and scope
+agentic-agent skills install
+```
+
+### Task-level skill refs — targeted skills per task
+
+Instead of applying all installed skill packs to every task, declare `skill_refs` on individual tasks to include only the relevant skills:
+
+```yaml
+# .agentic/tasks/backlog.yaml
+tasks:
+  - id: "TASK-001"
+    title: "Refactor auth middleware"
+    skill_refs:
+      - code-simplification
+      - tdd
+    scope:
+      - "internal/auth"
+```
+
+When a context bundle is built for this task, only the referenced skill packs are included — not all installed packs. Tasks without `skill_refs` fall back to the existing behavior (all installed packs included).
+
+Skill refs resolve through a 3-tier fallback:
+
+1. Agent's installed skill directory (e.g., `.claude/skills/tdd/SKILL.md`)
+2. Any installed tool's skill directory
+3. Embedded pack content (compiled into the binary — always available)
+
+### Simplify command — targeted code review
+
+The `simplify` command generates a focused context bundle for code simplification review:
+
+```bash
+# Review specific directories
+agentic-agent simplify internal/auth internal/middleware
+
+# Review directories from a task's scope
+agentic-agent simplify --task TASK-001
+
+# Output as JSON
+agentic-agent simplify . --format json --output review.json
+```
+
+The bundle includes the code-simplification skill instructions, directory context, source file listings, and tech stack information.
+
+### TDD workflow — RED/GREEN/REFACTOR
+
+The `work --follow-tdd` flag decomposes a task into three phased sub-tasks and verifies the TDD skill pack is installed:
+
+```bash
+# Install the TDD skill pack first
+agentic-agent skills install tdd --tool claude-code
+
+# Work on a task with TDD workflow
+agentic-agent work --task TASK-001 --follow-tdd
+```
+
+This creates three sub-tasks:
+
+1. **RED** (`TASK-001-red`) — Write failing tests
+2. **GREEN** (`TASK-001-green`) — Implement minimal code to pass
+3. **REFACTOR** (`TASK-001-refactor`) — Improve code quality
 
 ---
 
@@ -238,6 +358,21 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 | `start` | Interactive setup wizard |
 | `version` | Print version |
 
+### Tracks
+
+| Command | Description |
+|---------|-------------|
+| `track init [name]` | Initialize track with brainstorming scaffolding |
+| `track refine <id>` | Validate spec completeness |
+| `track activate <id>` | Generate plan and tasks from spec |
+| `track list` | List all tracks |
+| `track show <id>` | Show track details |
+| `track archive <id>` | Archive a completed track |
+
+**Track init flags:** `--name`, `--type`, `--purpose`, `--constraints`, `--success`
+
+**Track activate flags:** `--decompose` (auto-create tasks from plan)
+
 ### Tasks
 
 | Command | Description |
@@ -276,8 +411,9 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 | `autopilot start --dry-run` | Preview without changes |
 | `run` | Run orchestrator loop |
 | `work` | Interactive claim-to-complete workflow |
+| `work --follow-tdd` | TDD workflow: decompose into RED/GREEN/REFACTOR |
 
-### Validation and Skills
+### Validation, Skills, and Simplification
 
 | Command | Description |
 |---------|-------------|
@@ -285,6 +421,10 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 | `validate --format json` | JSON output for CI/CD |
 | `skills generate-claude-skills` | Generate Claude Code config |
 | `skills generate-gemini-skills` | Generate Gemini config |
+| `skills install [pack]` | Install a skill pack for an agent tool |
+| `skills list` | List available skill packs |
+| `simplify [dir...]` | Generate code simplification review bundle |
+| `simplify --task <id>` | Simplify using task scope directories |
 
 ### Progress Tracking
 
@@ -346,6 +486,12 @@ workflow:
 |   |-- backlog.yaml
 |   |-- in-progress.yaml
 |   +-- done.yaml
+|-- tracks/              # Work units (spec + plan + tasks)
+|   +-- user-auth/
+|       |-- brainstorm.md    # Agent dialogue script
+|       |-- spec.md          # Enhanced specification
+|       |-- plan.md          # Phased implementation plan
+|       +-- metadata.yaml
 +-- agent-rules/         # Tool-specific agent configs
     +-- base.md
 agnostic-agent.yaml      # Project configuration
@@ -369,10 +515,16 @@ agentic-agent/
 |   |-- config/               # Configuration loading
 |   |-- context/              # Context generation
 |   |-- encoding/             # Context bundle encoding
+|   |-- gitops/               # Read-only git integration
 |   |-- orchestrator/         # Autopilot and loop orchestration
-|   |-- project/              # Project initialization
+|   |-- plans/                # Plan parsing + generation from specs
+|   |-- project/              # Project init + track templates
 |   |-- specs/                # Multi-directory spec resolution
-|   |-- tasks/                # Task management + readiness checks
+|   |-- status/               # Aggregated project status
+|   |-- simplify/             # Code simplification bundle builder
+|   |-- skills/               # Skill packs, installer, registry, resolver
+|   |-- tasks/                # Task management + decomposition
+|   |-- tracks/               # Track management + spec validation
 |   +-- validator/            # Validation rules
 |-- pkg/models/               # Data models
 |-- test/
@@ -398,9 +550,14 @@ make coverage-html
 
 # By package
 go test ./internal/specs -v           # Spec resolution
-go test ./internal/tasks -v           # Task management + readiness
+go test ./internal/tasks -v           # Task management + decomposition + TDD
+go test ./internal/skills -v          # Skill packs, installer, resolver
+go test ./internal/simplify -v        # Code simplification bundles
+go test ./internal/tracks -v          # Track management + spec validation
+go test ./internal/plans -v           # Plan parsing + generation
 go test ./internal/orchestrator -v    # Autopilot + loop
 go test ./internal/validator/rules -v # Validation rules
+go test ./test/functional -v          # Functional CLI tests
 go test ./test/integration -v         # Integration tests
 go test ./test/bdd -v                 # BDD/Gherkin tests
 ```

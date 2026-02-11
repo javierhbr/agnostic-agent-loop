@@ -1,0 +1,58 @@
+# Agent-Aware Skills Example
+# Demonstrates per-agent configuration with skill packs, extra rules, and auto-setup.
+
+project:
+  name: "agent-skills-demo"
+  version: 0.1.0
+  roots:
+    - .
+
+agents:
+  defaults:
+    max_tokens: 4000
+    model: claude-3-5-sonnet-20241022
+  overrides:
+    # Claude Code: auto-setup + multiple skill packs + custom rules
+    - name: claude-code
+      max_tokens: 8000
+      skill_packs:
+        - tdd
+        - api-docs
+        - code-simplification
+      extra_rules:
+        - "Always run `go test ./...` before completing a task"
+        - "Use table-driven tests for all new test functions"
+      auto_setup: true
+
+    # Cursor: higher token budget, dev-plans + diataxis packs
+    - name: cursor
+      max_tokens: 12000
+      skill_packs:
+        - tdd
+        - dev-plans
+        - diataxis
+      extra_rules:
+        - "Prefer small, focused commits"
+
+    # Gemini: TDD + extract-wisdom packs
+    - name: gemini
+      skill_packs:
+        - tdd
+        - extract-wisdom
+
+    # Windsurf: minimal config
+    - name: windsurf
+      auto_setup: true
+
+paths:
+  specDirs:
+    - .agentic/spec
+  contextDirs:
+    - .agentic/context
+  trackDir: .agentic/tracks
+  prdOutputPath: .agentic/tasks/
+
+workflow:
+  validators:
+    - context-check
+    - task-scope

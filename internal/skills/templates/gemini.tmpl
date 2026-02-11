@@ -9,4 +9,26 @@
 - Before editing files in a directory, run `agentic-agent context generate <DIR>`.
 - After completing work, run `agentic-agent task complete <TASK_ID>`.
 - Read `.agentic/context/global-context.md` for project context.
-- Read `.agentic/tasks/in-progress.yaml` to see active tasks.
+- Use shell tool to run `agentic-agent` commands.
+- Run `agentic-agent validate` before marking tasks complete.
+
+## Available Slash Commands
+- `/prd` — Generate a Product Requirements Document
+- `/ralph` — Convert a PRD to YAML task format
+
+## Workflow Commands
+- `agentic-agent task list` — View backlog and in-progress tasks
+- `agentic-agent status` — View project dashboard
+- `agentic-agent context build --task <ID>` — Build full context bundle
+- `agentic-agent skills ensure` — Ensure skills/rules are set up
+
+## Key Files
+- `.agentic/tasks/backlog.yaml` — Available tasks
+- `.agentic/tasks/in-progress.yaml` — Current work
+- `.agentic/context/global-context.md` — Project overview
+- `agnostic-agent.yaml` — Project configuration
+{{ if .AgentRules }}
+
+## Project-Specific Agent Rules
+{{ .AgentRules }}
+{{ end }}

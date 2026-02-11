@@ -3,7 +3,9 @@ package tasks
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/javierbenavides/agentic-agent/pkg/models"
@@ -153,7 +155,8 @@ func (tm *TaskManager) FindTask(taskID string) (*models.Task, string, error) {
 	return nil, "", nil // Not found, but no error
 }
 
-// CompleteTaskWithTracking marks a task as complete and logs progress
+// CompleteTaskWithTracking marks a task as complete and logs progress.
+// If the task has a ClaimedAt timestamp, git commits since that time are auto-captured.
 func (tm *TaskManager) CompleteTaskWithTracking(taskID string, learnings []string, filesChanged []string, threadURL string) error {
 	// Find the task
 	task, source, err := tm.FindTask(taskID)
@@ -164,8 +167,25 @@ func (tm *TaskManager) CompleteTaskWithTracking(taskID string, learnings []strin
 		return fmt.Errorf("task %s not found", taskID)
 	}
 
-	// Move task to done
+	// Auto-populate git data if ClaimedAt is set and we're in a git repo
+	if !task.ClaimedAt.IsZero() {
+		task.CompletedAt = time.Now()
+		gitCommits, gitFiles := collectGitData(task.ClaimedAt)
+		if len(gitCommits) > 0 {
+			task.Commits = gitCommits
+		}
+		if len(filesChanged) == 0 && len(gitFiles) > 0 {
+			filesChanged = gitFiles
+		}
+	}
+
+	// Move task to done (with updated fields)
 	if source != "done" {
+		// Update the task in its current list before moving
+		tm.updateTaskInList(taskID, source, func(t *models.Task) {
+			t.CompletedAt = task.CompletedAt
+			t.Commits = task.Commits
+		})
 		if err := tm.MoveTask(taskID, source, "done", models.StatusDone); err != nil {
 			return fmt.Errorf("failed to move task: %w", err)
 		}
@@ -189,11 +209,70 @@ func (tm *TaskManager) CompleteTaskWithTracking(taskID string, learnings []strin
 	// If AGENTS.md helper is enabled and there are learnings, prompt for directory updates
 	if tm.agentsMdHelper != nil && len(learnings) > 0 && len(filesChanged) > 0 {
 		dirs := tm.agentsMdHelper.GetModifiedDirectories(filesChanged)
-		// Note: In a CLI context, this would prompt the user interactively
-		// For now, we'll just prepare the infrastructure
-		// The actual prompting will be done in the CLI command handler
 		_ = dirs
 	}
 
 	return nil
+}
+
+// updateTaskInList modifies a task in place within a list.
+func (tm *TaskManager) updateTaskInList(taskID, listType string, update func(*models.Task)) {
+	list, err := tm.LoadTasks(listType)
+	if err != nil {
+		return
+	}
+	for i := range list.Tasks {
+		if list.Tasks[i].ID == taskID {
+			update(&list.Tasks[i])
+			tm.SaveTasks(listType, list)
+			return
+		}
+	}
+}
+
+// collectGitData gathers commit hashes and changed files since the given time.
+func collectGitData(since time.Time) (commits []string, files []string) {
+	sinceStr := since.Format("2006-01-02T15:04:05")
+
+	// Get commit hashes
+	out, err := execGit("log", "--since="+sinceStr, "--format=%H", "--no-merges")
+	if err != nil {
+		return nil, nil
+	}
+	for _, line := range splitLines(out) {
+		if line != "" {
+			commits = append(commits, line)
+		}
+	}
+
+	// Get files changed
+	out, err = execGit("log", "--since="+sinceStr, "--name-only", "--format=", "--no-merges")
+	if err != nil {
+		return commits, nil
+	}
+	seen := make(map[string]bool)
+	for _, line := range splitLines(out) {
+		if line != "" && !seen[line] {
+			seen[line] = true
+			files = append(files, line)
+		}
+	}
+
+	return commits, files
+}
+
+func execGit(args ...string) (string, error) {
+	out, err := exec.Command("git", args...).Output()
+	if err != nil {
+		return "", err
+	}
+	return string(out), nil
+}
+
+func splitLines(s string) []string {
+	var lines []string
+	for _, line := range strings.Split(strings.TrimSpace(s), "\n") {
+		lines = append(lines, strings.TrimSpace(line))
+	}
+	return lines
 }

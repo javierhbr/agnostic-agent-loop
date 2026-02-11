@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 
+	"github.com/javierbenavides/agentic-agent/internal/config"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 )
 
@@ -37,9 +39,11 @@ func (g *Generator) Generate(tool string) error {
 	// Load base rules
 	baseRules, err := os.ReadFile(".agentic/agent-rules/base.md")
 	if err != nil {
-		// Fallback if not initialized? Or error.
 		baseRules = []byte("No base rules found.")
 	}
+
+	// Load agent-specific rules
+	agentRules := g.loadAgentRules(tool)
 
 	// Parse template
 	tmplContent, err := templatesFS.ReadFile(skill.TemplatePath)
@@ -53,9 +57,11 @@ func (g *Generator) Generate(tool string) error {
 	}
 
 	data := struct {
-		BaseRules string
+		BaseRules  string
+		AgentRules string
 	}{
-		BaseRules: string(baseRules),
+		BaseRules:  string(baseRules),
+		AgentRules: agentRules,
 	}
 
 	var buf bytes.Buffer
@@ -76,6 +82,30 @@ func (g *Generator) Generate(tool string) error {
 	}
 
 	return nil
+}
+
+// loadAgentRules loads per-agent custom rules from .agentic/agent-rules/<tool>.md
+// and merges with ExtraRules from config overrides.
+func (g *Generator) loadAgentRules(tool string) string {
+	var parts []string
+
+	// 1. Load from file: .agentic/agent-rules/<tool>.md
+	content, err := os.ReadFile(filepath.Join(".agentic", "agent-rules", tool+".md"))
+	if err == nil && len(content) > 0 {
+		parts = append(parts, strings.TrimSpace(string(content)))
+	}
+
+	// 2. Load from config overrides
+	if g.Config != nil {
+		agentCfg := config.GetAgentConfig(g.Config, tool)
+		if len(agentCfg.ExtraRules) > 0 {
+			for _, rule := range agentCfg.ExtraRules {
+				parts = append(parts, "- "+rule)
+			}
+		}
+	}
+
+	return strings.Join(parts, "\n")
 }
 
 // GenerateGeminiSkills generates Gemini CLI slash command files for PRD and Ralph converter

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/javierbenavides/agentic-agent/internal/config"
+	"github.com/javierbenavides/agentic-agent/internal/skills"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 	"github.com/spf13/cobra"
 )
@@ -12,8 +13,10 @@ var (
 	Commit    = "none"
 	BuildDate = "unknown"
 
-	cfgFile   string
-	appConfig *models.Config
+	cfgFile       string
+	agentFlag     string
+	appConfig     *models.Config
+	detectedAgent skills.DetectedAgent
 )
 
 // getConfig returns the loaded config, falling back to defaults if not loaded.
@@ -25,6 +28,11 @@ func getConfig() *models.Config {
 	config.SetDefaults(cfg)
 	appConfig = cfg
 	return appConfig
+}
+
+// getAgent returns the detected agent, falling back to unknown.
+func getAgent() skills.DetectedAgent {
+	return detectedAgent
 }
 
 var rootCmd = &cobra.Command{
@@ -48,6 +56,13 @@ a unified task and context management system.`,
 			config.SetDefaults(cfg)
 		}
 		appConfig = cfg
+
+		// Detect active agent
+		detectedAgent = skills.DetectAgent(agentFlag, ".")
+		if detectedAgent.Name != "" {
+			appConfig.ActiveAgent = detectedAgent.Name
+		}
+
 		return nil
 	},
 }
@@ -59,6 +74,7 @@ func Execute() error {
 func init() {
 	// Global flags
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./agnostic-agent.yaml)")
+	rootCmd.PersistentFlags().StringVar(&agentFlag, "agent", "", "agent tool name (claude-code, cursor, gemini, windsurf, antigravity, codex)")
 	rootCmd.PersistentFlags().Bool("no-interactive", false, "disable interactive mode and use flag-based commands")
 
 	// Register commands
@@ -73,4 +89,8 @@ func init() {
 	rootCmd.AddCommand(learningsCmd)
 	rootCmd.AddCommand(specCmd)
 	rootCmd.AddCommand(autopilotCmd)
+	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(trackCmd)
+	rootCmd.AddCommand(planCmd)
+	rootCmd.AddCommand(simplifyCmd)
 }

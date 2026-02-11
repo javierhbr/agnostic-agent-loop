@@ -378,17 +378,54 @@ project/
 
 ## CLI Quick Reference
 
+### Task & Spec Commands
+
 | Command | Purpose |
 |---------|---------|
-| `spec list` | List all specs across configured directories |
-| `spec resolve <ref>` | Resolve a spec ref and print its content |
 | `task create --spec-refs "..."` | Create a task referencing specs |
 | `task claim <id>` | Claim task (runs readiness checks) |
-| `task complete <id>` | Mark task as done |
+| `task complete <id>` | Mark task as done (captures commits) |
+| `task list` | List tasks across backlog, in-progress, done |
+| `task show <id>` | Display task details |
+| `task decompose <id>` | Break task into subtasks |
+| `spec list` | List all specs across configured directories |
+| `spec resolve <ref>` | Resolve a spec ref and print its content |
+
+### Track & Plan Commands
+
+| Command | Purpose |
+|---------|---------|
+| `track create` | Create a new feature/bug track with brainstorm, spec, plan files |
+| `track list` | List all tracks |
+| `track show <id>` | Display track details |
+| `track archive <id>` | Archive a completed track |
+| `plan show` | Display parsed plan.md with phase/task breakdown |
+| `plan next` | Show the next pending task in the plan |
+| `plan mark <line> <status>` | Update a task's checkbox status in plan.md |
+
+### Context & Validation Commands
+
+| Command | Purpose |
+|---------|---------|
 | `context generate <dir>` | Generate context.md for a directory |
 | `context build --task <id>` | Build context bundle with resolved specs |
 | `context scan` | Find directories missing context.md |
 | `validate` | Run validation rules |
+
+### Skills & Status Commands
+
+| Command | Purpose |
+|---------|---------|
+| `skills ensure` | Idempotent setup: generate rules, install packs, fix drift |
+| `skills detect` | Show detected agent (flag/env/filesystem) |
+| `skills list` | List available skill packs |
+| `skills install <pack>` | Install a skill pack for the active agent |
+| `status` | Show project dashboard (task counts, blockers, next ready) |
+
+### Autopilot & Learnings Commands
+
+| Command | Purpose |
+|---------|---------|
 | `autopilot start` | Process backlog tasks sequentially |
 | `autopilot start --dry-run` | Preview autopilot without changes |
 | `learnings add "..."` | Record a learning (Ralph) |

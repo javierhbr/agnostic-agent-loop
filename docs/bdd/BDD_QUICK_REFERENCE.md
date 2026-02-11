@@ -140,6 +140,8 @@ Then the following files should exist:
 - **Task Operations**: `test/bdd/steps/task_steps.go`
 - **Assertions**: `test/bdd/steps/assertion_steps.go`
 - **Initialization**: `test/bdd/steps/init_steps.go`
+- **Skill Generation**: `test/bdd/steps/skill_steps.go`
+- **Agent Detection**: `test/bdd/steps/detection_steps.go`
 
 ## ATDD Workflow
 
@@ -179,6 +181,7 @@ Then the following files should exist:
 - `features/init/` - Project initialization
 - `features/tasks/` - Task management
 - `features/context/` - Context generation
+- `features/skills/` - Agent detection and skill generation
 - `features/workflows/` - Complete workflows
 
 ## Useful Commands
@@ -299,12 +302,13 @@ s.suite.RegisterCleanup(func() {
 
 ## Quick Stats
 
-- **Feature Files**: 7
-- **Scenarios**: 12
-- **Steps**: 107
-- **Step Definitions**: 50+
+- **Feature Files**: 9
+- **Scenarios**: 43
+- **Steps**: 255
+- **Step Definition Files**: 7
+- **Step Definitions**: 70+
 - **Pass Rate**: 100%
-- **Execution Time**: ~250ms
+- **Execution Time**: ~1s
 
 ---
 

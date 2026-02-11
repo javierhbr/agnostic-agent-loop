@@ -10,11 +10,13 @@ import (
 var templatesFS embed.FS
 
 const (
-	DirAgentic    = ".agentic"
-	DirSpec       = ".agentic/spec"
-	DirTasks      = ".agentic/tasks"
-	DirContext    = ".agentic/context"
-	DirAgentRules = ".agentic/agent-rules"
+	DirAgentic      = ".agentic"
+	DirSpec         = ".agentic/spec"
+	DirTasks        = ".agentic/tasks"
+	DirContext      = ".agentic/context"
+	DirAgentRules   = ".agentic/agent-rules"
+	DirTracks       = ".agentic/tracks"
+	DirTrackArchive = ".agentic/tracks/_archive"
 )
 
 var requiredDirs = []string{
@@ -23,6 +25,8 @@ var requiredDirs = []string{
 	DirTasks,
 	DirContext,
 	DirAgentRules,
+	DirTracks,
+	DirTrackArchive,
 }
 
 // CreateStructure creates the .agentic directory structure in the current directory.

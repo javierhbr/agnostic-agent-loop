@@ -2,10 +2,14 @@ package encoding
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/javierbenavides/agentic-agent/internal/context"
+	"github.com/javierbenavides/agentic-agent/internal/skills"
 	"github.com/javierbenavides/agentic-agent/internal/specs"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
@@ -15,9 +19,12 @@ type ContextBundle struct {
 	Task        *models.Task              `yaml:"task" json:"task"`
 	Global      *models.GlobalContext     `yaml:"global" json:"global"`
 	Rolling     string                    `yaml:"rolling" json:"rolling"`
+	TechStack   string                    `yaml:"tech_stack,omitempty" json:"tech_stack,omitempty"`
+	Workflow    string                    `yaml:"workflow,omitempty" json:"workflow,omitempty"`
 	Directories []*models.DirectoryContext `yaml:"directories" json:"directories"`
-	Specs       []*specs.ResolvedSpec     `yaml:"specs,omitempty" json:"specs,omitempty"`
-	BuiltAt     time.Time                 `yaml:"built_at" json:"built_at"`
+	Specs             []*specs.ResolvedSpec     `yaml:"specs,omitempty" json:"specs,omitempty"`
+	SkillInstructions string                    `yaml:"skill_instructions,omitempty" json:"skill_instructions,omitempty"`
+	BuiltAt           time.Time                 `yaml:"built_at" json:"built_at"`
 }
 
 func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]byte, error) {
@@ -82,10 +89,16 @@ func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]by
 		}
 	}
 
+	// Load supplementary context files (optional, non-blocking)
+	techStack, _ := os.ReadFile(".agentic/context/tech-stack.md")
+	workflow, _ := os.ReadFile(".agentic/context/workflow-preferences.md")
+
 	bundle := &ContextBundle{
 		Task:        task,
 		Global:      global,
 		Rolling:     rolling,
+		TechStack:   string(techStack),
+		Workflow:    string(workflow),
 		Directories: dirContexts,
 		BuiltAt:     time.Now(),
 	}
@@ -103,7 +116,55 @@ func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]by
 		}
 	}
 
+	// 5.5 Load skill instructions for the active agent
+	if cfg.ActiveAgent != "" {
+		bundle.SkillInstructions = loadSkillInstructions(cfg.ActiveAgent, task.SkillRefs)
+	}
+
 	// 6. Encode
 	encoder := NewToonEncoder()
 	return encoder.Encode(bundle)
+}
+
+// loadSkillInstructions gathers agent rules and installed skill pack content.
+// If skillRefs is non-empty, only those specific skill packs are included (targeted mode).
+// If skillRefs is empty, all installed skill packs are included (existing behavior).
+func loadSkillInstructions(agent string, skillRefs []string) string {
+	var parts []string
+
+	// 1. Always load the agent's generated rules file
+	registry := skills.NewSkillRegistry()
+	if skill, err := registry.GetSkill(agent); err == nil {
+		if content, err := os.ReadFile(skill.OutputFile); err == nil {
+			parts = append(parts, string(content))
+		}
+	}
+
+	// 2. Load skill pack content
+	if len(skillRefs) > 0 {
+		// Targeted mode: resolve only the referenced skill packs
+		resolved := skills.ResolveSkillRefs(skillRefs, agent)
+		for _, r := range resolved {
+			if r.Found {
+				parts = append(parts, r.Content)
+			}
+		}
+	} else {
+		// Default mode: walk the agent's skill directory, concatenate all SKILL.md files
+		if skillDir, ok := skills.ToolSkillDir[agent]; ok {
+			filepath.WalkDir(skillDir, func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return nil
+				}
+				if d.Name() == "SKILL.md" {
+					if content, readErr := os.ReadFile(path); readErr == nil {
+						parts = append(parts, string(content))
+					}
+				}
+				return nil
+			})
+		}
+	}
+
+	return strings.Join(parts, "\n\n---\n\n")
 }

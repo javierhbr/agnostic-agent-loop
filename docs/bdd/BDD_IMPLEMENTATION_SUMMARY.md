@@ -6,8 +6,9 @@ Successfully implemented a complete Behavior-Driven Development (BDD) / Acceptan
 
 **Status**: ✅ **COMPLETE** - All 5 phases delivered and tested
 
-**Total Scenarios**: 12
-**Total Steps**: 107
+**Feature Files**: 9
+**Total Scenarios**: 43
+**Total Steps**: 255
 **Pass Rate**: 100%
 **Coverage**: 11.7% (merged: unit + functional + BDD)
 
@@ -105,6 +106,10 @@ agnostic-agent-loop/
 │   │   └── error_handling.feature
 │   ├── context/
 │   │   └── context_generation.feature
+│   ├── skills/
+│   │   ├── agent_detection.feature    # Agent detection priority & heuristics
+│   │   └── gemini_skills.feature      # Gemini skill generation & drift
+│   ├── validation/                    # (reserved for future)
 │   └── workflows/
 │       ├── beginner_workflow.feature
 │       ├── intermediate_workflow.feature
@@ -114,14 +119,17 @@ agnostic-agent-loop/
 │   ├── suite_context.go           # Shared context
 │   ├── README.md                  # BDD infrastructure docs
 │   └── steps/
+│       ├── suite_context.go       # Shared state struct
 │       ├── common_steps.go        # Setup & commands
 │       ├── task_steps.go          # Task operations
 │       ├── assertion_steps.go     # Assertions
-│       └── init_steps.go          # Initialization
+│       ├── init_steps.go          # Initialization
+│       ├── skill_steps.go         # Skill generation & drift
+│       └── detection_steps.go     # Agent detection (flag/env/filesystem)
 ├── docs/
-│   ├── BDD_GUIDE.md               # Complete BDD guide
-│   ├── CLI_TUTORIAL.md            # Updated with ATDD section
-│   └── BDD_IMPLEMENTATION_SUMMARY.md  # This file
+│   ├── bdd/BDD_GUIDE.md          # Complete BDD guide
+│   ├── bdd/BDD_QUICK_REFERENCE.md
+│   └── bdd/BDD_IMPLEMENTATION_SUMMARY.md  # This file
 ├── Makefile                        # Enhanced with BDD targets
 └── README.md                       # Updated with BDD features
 ```
@@ -132,7 +140,7 @@ agnostic-agent-loop/
 
 ### 1. Gherkin Feature Files
 
-**7 feature files** with **12 scenarios** covering:
+**9 feature files** with **43 scenarios** covering:
 
 - ✅ Project initialization
 - ✅ Task lifecycle (create → claim → complete)
@@ -140,14 +148,18 @@ agnostic-agent-loop/
 - ✅ Error handling (nonexistent tasks, validation)
 - ✅ Context generation and validation
 - ✅ Complete workflows (beginner, intermediate, advanced)
+- ✅ Gemini skill generation, drift detection, and registry
+- ✅ Agent detection (flag priority, env vars, filesystem heuristics)
 
 ### 2. Step Definitions
 
-**50+ step definitions** organized by concern:
+**70+ step definitions** organized by concern in 7 files:
 
 - **Common Steps**: Environment setup, project init, validation
 - **Task Steps**: CRUD, lifecycle, decomposition, metadata
 - **Assertion Steps**: Command results, file/directory existence, state verification
+- **Skill Steps**: Skill generation, drift detection, registry assertions
+- **Detection Steps**: Agent detection via flag, env vars, filesystem markers
 
 ### 3. Test Infrastructure
 
@@ -182,9 +194,9 @@ agnostic-agent-loop/
 make test-bdd
 
 # Output:
-# 12 scenarios (12 passed)
-# 107 steps (107 passed)
-# 246ms
+# 43 scenarios (43 passed)
+# 255 steps (255 passed)
+# ~1s
 ```
 
 ### Coverage Reports
@@ -375,15 +387,16 @@ With confidence that tests will catch regressions.
 
 ### Code Statistics
 
-- **Feature Files**: 7
-- **Scenarios**: 12
-- **Steps**: 107
-- **Step Definitions**: 50+
+- **Feature Files**: 9
+- **Scenarios**: 43
+- **Steps**: 255
+- **Step Definition Files**: 7
+- **Step Definitions**: 70+
 - **Lines of Documentation**: 1,200+
 
 ### Test Performance
 
-- **Execution Time**: ~250ms for all BDD tests
+- **Execution Time**: ~1s for all BDD tests
 - **Pass Rate**: 100%
 - **Flakiness**: 0% (sequential execution)
 
@@ -407,7 +420,7 @@ With confidence that tests will catch regressions.
 
 ### After BDD Implementation
 
-- ✅ 12 executable specifications
+- ✅ 43 executable specifications
 - ✅ Plain-language Gherkin syntax
 - ✅ Tests double as living documentation
 - ✅ Automated workflow validation
@@ -470,8 +483,8 @@ All tests passing with 100% success rate and no flaky tests.
 **Implementation Date**: February 2026
 **Framework**: godog v0.15.1
 **Test Types**: Unit + Functional + BDD
-**Total Test Scenarios**: 12
-**Total Test Steps**: 107
+**Total Test Scenarios**: 43
+**Total Test Steps**: 255
 **Success Rate**: 100%
 
 ---

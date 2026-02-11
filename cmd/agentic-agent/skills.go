@@ -10,6 +10,7 @@ import (
 	"github.com/javierbenavides/agentic-agent/internal/ui/components"
 	"github.com/javierbenavides/agentic-agent/internal/ui/helpers"
 	"github.com/javierbenavides/agentic-agent/internal/ui/styles"
+	"github.com/javierbenavides/agentic-agent/pkg/models"
 	"github.com/spf13/cobra"
 )
 
@@ -165,8 +166,18 @@ var skillsCheckCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check for drift in skill files",
 	Run: func(cmd *cobra.Command, args []string) {
-		gen := skills.NewGenerator()
-		drifted, err := gen.CheckDrift()
+		cfg := getConfig()
+		gen := skills.NewGeneratorWithConfig(cfg)
+
+		// If --agent is set (global flag), check only that tool
+		agent := getAgent()
+		var drifted []string
+		var err error
+		if agent.Name != "" {
+			drifted, err = gen.CheckDriftFor(agent.Name)
+		} else {
+			drifted, err = gen.CheckDrift()
+		}
 		if err != nil {
 			fmt.Printf("Error checking drift: %v\n", err)
 			os.Exit(1)
@@ -280,12 +291,384 @@ var skillsGenerateGeminiCmd = &cobra.Command{
 	},
 }
 
+// skillsInstallModel is a Bubble Tea model for interactive pack installation
+type skillsInstallModel struct {
+	step      string // "select-pack", "select-tool", "done"
+	packSel   components.SimpleSelect
+	toolSel   components.SimpleSelect
+	installer *skills.Installer
+	packName  string
+	done      bool
+	success   bool
+	message   string
+}
+
+func (m skillsInstallModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m skillsInstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q", "esc":
+			return m, tea.Quit
+
+		case "enter":
+			if m.step == "select-pack" {
+				m.packName = m.packSel.SelectedOption().Value()
+				// Build tool selector
+				toolOptions := []components.SelectOption{}
+				for _, t := range skills.SupportedTools() {
+					dir := skills.ToolSkillDir[t]
+					toolOptions = append(toolOptions, components.NewSelectOption(
+						t,
+						fmt.Sprintf("Install to %s/", dir),
+						t,
+					))
+				}
+				m.toolSel = components.NewSimpleSelect("Select target tool", toolOptions)
+				m.step = "select-tool"
+			} else if m.step == "select-tool" {
+				tool := m.toolSel.SelectedOption().Value()
+				result, err := m.installer.Install(m.packName, tool, false)
+				if err != nil {
+					m.message = fmt.Sprintf("Error: %v", err)
+					m.success = false
+				} else {
+					m.message = fmt.Sprintf("Installed pack %q for %s (%d files to %s/)", result.PackName, result.Tool, len(result.FilesWritten), result.OutputDir)
+					m.success = true
+				}
+				m.done = true
+				return m, tea.Quit
+			}
+
+		default:
+			if m.step == "select-pack" {
+				m.packSel = m.packSel.Update(msg)
+			} else if m.step == "select-tool" {
+				m.toolSel = m.toolSel.Update(msg)
+			}
+		}
+	}
+
+	return m, nil
+}
+
+func (m skillsInstallModel) View() string {
+	if m.done {
+		if m.success {
+			return styles.RenderSuccess(m.message) + "\n"
+		}
+		return styles.RenderError(m.message) + "\n"
+	}
+
+	var b strings.Builder
+	b.WriteString(styles.TitleStyle.Render("Install Skill Pack") + "\n\n")
+
+	if m.step == "select-pack" {
+		b.WriteString(m.packSel.View() + "\n")
+	} else if m.step == "select-tool" {
+		b.WriteString(fmt.Sprintf("Pack: %s\n\n", styles.BoldStyle.Render(m.packName)))
+		b.WriteString(m.toolSel.View() + "\n")
+	}
+
+	b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
+	return styles.ContainerStyle.Render(b.String())
+}
+
+var skillsInstallCmd = &cobra.Command{
+	Use:   "install [pack-name]",
+	Short: "Install a skill pack",
+	Long: `Install a bundle of related skill files for an agent tool.
+
+Interactive Mode:
+  agentic-agent skills install
+
+Flag Mode:
+  agentic-agent skills install tdd --tool claude-code
+  agentic-agent skills install tdd --tool antigravity --global
+
+List available packs:
+  agentic-agent skills install --list`,
+	Run: func(cmd *cobra.Command, args []string) {
+		tool, _ := cmd.Flags().GetString("tool")
+		global, _ := cmd.Flags().GetBool("global")
+		listFlag, _ := cmd.Flags().GetBool("list")
+
+		installer := skills.NewInstaller()
+
+		// List mode
+		if listFlag {
+			packs := installer.ListPacks()
+			if helpers.ShouldUseInteractiveMode(cmd) {
+				var b strings.Builder
+				b.WriteString(styles.TitleStyle.Render("Available Skill Packs") + "\n\n")
+				for _, p := range packs {
+					b.WriteString(fmt.Sprintf("  %s %s  %s (%d files)\n",
+						styles.IconBullet,
+						styles.BoldStyle.Render(p.Name),
+						styles.MutedStyle.Render(p.Description),
+						len(p.Files),
+					))
+				}
+				fmt.Println(styles.ContainerStyle.Render(b.String()))
+			} else {
+				for _, p := range packs {
+					fmt.Printf("%-15s %s (%d files)\n", p.Name, p.Description, len(p.Files))
+				}
+			}
+			return
+		}
+
+		// Interactive mode
+		if helpers.ShouldUseInteractiveMode(cmd) && len(args) == 0 && tool == "" {
+			packs := installer.ListPacks()
+			options := []components.SelectOption{}
+			for _, p := range packs {
+				options = append(options, components.NewSelectOption(
+					p.Name,
+					fmt.Sprintf("%s (%d files)", p.Description, len(p.Files)),
+					p.Name,
+				))
+			}
+
+			model := &skillsInstallModel{
+				step:      "select-pack",
+				packSel:   components.NewSimpleSelect("Select skill pack to install", options),
+				installer: installer,
+			}
+
+			p := tea.NewProgram(model)
+			if _, err := p.Run(); err != nil {
+				fmt.Printf("Error: %v\n", err)
+				os.Exit(1)
+			}
+			return
+		}
+
+		// Flag mode
+		if len(args) == 0 {
+			fmt.Println("Error: pack name required")
+			fmt.Println("Usage: agentic-agent skills install <pack-name> --tool <tool>")
+			fmt.Println("   or: agentic-agent skills install --list")
+			fmt.Println("   or: agentic-agent skills install  (interactive mode)")
+			os.Exit(1)
+		}
+
+		if tool == "" {
+			fmt.Println("Error: --tool required in flag mode")
+			fmt.Printf("Supported tools: %s\n", strings.Join(skills.SupportedTools(), ", "))
+			os.Exit(1)
+		}
+
+		result, err := installer.Install(args[0], tool, global)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+
+		if helpers.ShouldUseInteractiveMode(cmd) {
+			var b strings.Builder
+			b.WriteString(styles.TitleStyle.Render("Skill Pack Installed") + "\n\n")
+			b.WriteString(styles.SuccessStyle.Render(fmt.Sprintf("%s Installed %q for %s", styles.IconCheckmark, result.PackName, result.Tool)) + "\n\n")
+			for _, f := range result.FilesWritten {
+				b.WriteString(styles.MutedStyle.Render(fmt.Sprintf("  %s %s", styles.IconBullet, f)) + "\n")
+			}
+			fmt.Println(styles.ContainerStyle.Render(b.String()))
+		} else {
+			fmt.Printf("Installed pack %q for %s:\n", result.PackName, result.Tool)
+			for _, f := range result.FilesWritten {
+				fmt.Printf("  - %s\n", f)
+			}
+		}
+	},
+}
+
+var skillsListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List available skill packs",
+	Run: func(cmd *cobra.Command, args []string) {
+		installer := skills.NewInstaller()
+		packs := installer.ListPacks()
+
+		if helpers.ShouldUseInteractiveMode(cmd) {
+			var b strings.Builder
+			b.WriteString(styles.TitleStyle.Render("Available Skill Packs") + "\n\n")
+			for _, p := range packs {
+				b.WriteString(fmt.Sprintf("  %s %s  %s (%d files)\n",
+					styles.IconBullet,
+					styles.BoldStyle.Render(p.Name),
+					styles.MutedStyle.Render(p.Description),
+					len(p.Files),
+				))
+			}
+			b.WriteString("\n")
+			b.WriteString(styles.HelpStyle.Render("Install: agentic-agent skills install <pack> --tool <tool>") + "\n")
+			fmt.Println(styles.ContainerStyle.Render(b.String()))
+		} else {
+			for _, p := range packs {
+				fmt.Printf("%-15s %s (%d files)\n", p.Name, p.Description, len(p.Files))
+			}
+		}
+	},
+}
+
+var skillsEnsureCmd = &cobra.Command{
+	Use:   "ensure",
+	Short: "Ensure all skills and rules are set up for the active agent",
+	Long: `Ensure that the detected (or specified) agent has all necessary
+skill files, rules, and packs installed. This is idempotent and safe to run repeatedly.
+
+Steps performed:
+1. Detect which agent(s) are active (via --agent flag, env var, or filesystem)
+2. Generate rules file if missing or drifted (e.g., CLAUDE.md)
+3. Install configured skill packs if not already installed
+4. Report status
+
+Usage:
+  agentic-agent skills ensure                       # Auto-detect agent
+  agentic-agent skills ensure --agent claude-code    # Explicit agent
+  agentic-agent skills ensure --all                  # All detected agents`,
+	Run: func(cmd *cobra.Command, args []string) {
+		all, _ := cmd.Flags().GetBool("all")
+		cfg := getConfig()
+		agent := getAgent()
+
+		var agents []skills.DetectedAgent
+		if all {
+			agents = skills.DetectAllAgents(".")
+			if len(agents) == 0 {
+				// Fall back to all registered tools
+				registry := skills.NewSkillRegistry()
+				for _, s := range registry.GetAll() {
+					agents = append(agents, skills.DetectedAgent{Name: s.ToolName, Source: "registry"})
+				}
+			}
+		} else if agent.Name != "" {
+			agents = []skills.DetectedAgent{agent}
+		} else {
+			// Interactive mode: prompt for agent selection
+			if helpers.ShouldUseInteractiveMode(cmd) {
+				registry := skills.NewSkillRegistry()
+				allSkills := registry.GetAll()
+				options := []components.SelectOption{}
+				for _, s := range allSkills {
+					options = append(options, components.NewSelectOption(
+						s.ToolName,
+						fmt.Sprintf("Ensure skills for %s", s.ToolName),
+						s.ToolName,
+					))
+				}
+
+				selector := components.NewSimpleSelect("Select agent tool to ensure", options)
+				model := &skillsEnsureModel{selector: selector, cfg: cfg}
+				p := tea.NewProgram(model)
+				if _, err := p.Run(); err != nil {
+					fmt.Printf("Error: %v\n", err)
+					os.Exit(1)
+				}
+				return
+			}
+
+			fmt.Println("No agent detected. Use --agent <name> or --all")
+			fmt.Printf("Supported: %s\n", strings.Join(skills.SupportedTools(), ", "))
+			os.Exit(1)
+		}
+
+		for _, a := range agents {
+			if helpers.ShouldUseInteractiveMode(cmd) {
+				var b strings.Builder
+				b.WriteString(styles.TitleStyle.Render(fmt.Sprintf("Ensuring skills for %s", a.Name)) + "\n\n")
+
+				result, err := skills.Ensure(a.Name, cfg)
+				if err != nil {
+					b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Error: %v", err)) + "\n")
+				} else {
+					b.WriteString(styles.SuccessStyle.Render(skills.FormatEnsureResult(result)))
+				}
+				fmt.Println(styles.ContainerStyle.Render(b.String()))
+			} else {
+				fmt.Printf("Ensuring skills for %s...\n", a.Name)
+				result, err := skills.Ensure(a.Name, cfg)
+				if err != nil {
+					fmt.Printf("Error: %v\n", err)
+					os.Exit(1)
+				}
+				fmt.Print(skills.FormatEnsureResult(result))
+			}
+		}
+	},
+}
+
+// skillsEnsureModel is a Bubble Tea model for interactive agent selection in ensure
+type skillsEnsureModel struct {
+	selector components.SimpleSelect
+	cfg      *models.Config
+	done     bool
+	message  string
+	success  bool
+}
+
+func (m *skillsEnsureModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m *skillsEnsureModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q", "esc":
+			return m, tea.Quit
+		case "enter":
+			tool := m.selector.SelectedOption().Value()
+			result, err := skills.Ensure(tool, m.cfg)
+			if err != nil {
+				m.message = fmt.Sprintf("Error: %v", err)
+				m.success = false
+			} else {
+				m.message = skills.FormatEnsureResult(result)
+				m.success = true
+			}
+			m.done = true
+			return m, tea.Quit
+		default:
+			m.selector = m.selector.Update(msg)
+		}
+	}
+	return m, nil
+}
+
+func (m *skillsEnsureModel) View() string {
+	if m.done {
+		if m.success {
+			return styles.RenderSuccess(m.message) + "\n"
+		}
+		return styles.RenderError(m.message) + "\n"
+	}
+
+	var b strings.Builder
+	b.WriteString(styles.TitleStyle.Render("Ensure Agent Skills") + "\n\n")
+	b.WriteString(m.selector.View() + "\n")
+	b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
+	return styles.ContainerStyle.Render(b.String())
+}
+
 func init() {
-	skillsGenerateCmd.Flags().String("tool", "", "Tool name (claude-code, cursor, gemini)")
+	skillsGenerateCmd.Flags().String("tool", "", "Tool name (claude-code, cursor, gemini, windsurf, codex)")
 	skillsGenerateCmd.Flags().Bool("all", false, "Generate for all tools")
+
+	skillsInstallCmd.Flags().String("tool", "", "Target agent tool (claude-code, cursor, gemini, windsurf, antigravity, codex)")
+	skillsInstallCmd.Flags().Bool("global", false, "Install to user-level directory instead of project-level")
+	skillsInstallCmd.Flags().Bool("list", false, "List available skill packs")
+
+	skillsEnsureCmd.Flags().Bool("all", false, "Ensure for all detected agents")
 
 	skillsCmd.AddCommand(skillsGenerateCmd)
 	skillsCmd.AddCommand(skillsCheckCmd)
 	skillsCmd.AddCommand(skillsGenerateClaudeCmd)
 	skillsCmd.AddCommand(skillsGenerateGeminiCmd)
+	skillsCmd.AddCommand(skillsInstallCmd)
+	skillsCmd.AddCommand(skillsListCmd)
+	skillsCmd.AddCommand(skillsEnsureCmd)
 }
