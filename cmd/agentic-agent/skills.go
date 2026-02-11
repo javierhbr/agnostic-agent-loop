@@ -10,6 +10,7 @@ import (
 	"github.com/javierbenavides/agentic-agent/internal/ui/components"
 	"github.com/javierbenavides/agentic-agent/internal/ui/helpers"
 	"github.com/javierbenavides/agentic-agent/internal/ui/styles"
+	"github.com/javierbenavides/agentic-agent/pkg/models"
 	"github.com/spf13/cobra"
 )
 
@@ -165,8 +166,18 @@ var skillsCheckCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check for drift in skill files",
 	Run: func(cmd *cobra.Command, args []string) {
-		gen := skills.NewGenerator()
-		drifted, err := gen.CheckDrift()
+		cfg := getConfig()
+		gen := skills.NewGeneratorWithConfig(cfg)
+
+		// If --agent is set (global flag), check only that tool
+		agent := getAgent()
+		var drifted []string
+		var err error
+		if agent.Name != "" {
+			drifted, err = gen.CheckDriftFor(agent.Name)
+		} else {
+			drifted, err = gen.CheckDrift()
+		}
 		if err != nil {
 			fmt.Printf("Error checking drift: %v\n", err)
 			os.Exit(1)
@@ -503,13 +514,155 @@ var skillsListCmd = &cobra.Command{
 	},
 }
 
+var skillsEnsureCmd = &cobra.Command{
+	Use:   "ensure",
+	Short: "Ensure all skills and rules are set up for the active agent",
+	Long: `Ensure that the detected (or specified) agent has all necessary
+skill files, rules, and packs installed. This is idempotent and safe to run repeatedly.
+
+Steps performed:
+1. Detect which agent(s) are active (via --agent flag, env var, or filesystem)
+2. Generate rules file if missing or drifted (e.g., CLAUDE.md)
+3. Install configured skill packs if not already installed
+4. Report status
+
+Usage:
+  agentic-agent skills ensure                       # Auto-detect agent
+  agentic-agent skills ensure --agent claude-code    # Explicit agent
+  agentic-agent skills ensure --all                  # All detected agents`,
+	Run: func(cmd *cobra.Command, args []string) {
+		all, _ := cmd.Flags().GetBool("all")
+		cfg := getConfig()
+		agent := getAgent()
+
+		var agents []skills.DetectedAgent
+		if all {
+			agents = skills.DetectAllAgents(".")
+			if len(agents) == 0 {
+				// Fall back to all registered tools
+				registry := skills.NewSkillRegistry()
+				for _, s := range registry.GetAll() {
+					agents = append(agents, skills.DetectedAgent{Name: s.ToolName, Source: "registry"})
+				}
+			}
+		} else if agent.Name != "" {
+			agents = []skills.DetectedAgent{agent}
+		} else {
+			// Interactive mode: prompt for agent selection
+			if helpers.ShouldUseInteractiveMode(cmd) {
+				registry := skills.NewSkillRegistry()
+				allSkills := registry.GetAll()
+				options := []components.SelectOption{}
+				for _, s := range allSkills {
+					options = append(options, components.NewSelectOption(
+						s.ToolName,
+						fmt.Sprintf("Ensure skills for %s", s.ToolName),
+						s.ToolName,
+					))
+				}
+
+				selector := components.NewSimpleSelect("Select agent tool to ensure", options)
+				model := &skillsEnsureModel{selector: selector, cfg: cfg}
+				p := tea.NewProgram(model)
+				if _, err := p.Run(); err != nil {
+					fmt.Printf("Error: %v\n", err)
+					os.Exit(1)
+				}
+				return
+			}
+
+			fmt.Println("No agent detected. Use --agent <name> or --all")
+			fmt.Printf("Supported: %s\n", strings.Join(skills.SupportedTools(), ", "))
+			os.Exit(1)
+		}
+
+		for _, a := range agents {
+			if helpers.ShouldUseInteractiveMode(cmd) {
+				var b strings.Builder
+				b.WriteString(styles.TitleStyle.Render(fmt.Sprintf("Ensuring skills for %s", a.Name)) + "\n\n")
+
+				result, err := skills.Ensure(a.Name, cfg)
+				if err != nil {
+					b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Error: %v", err)) + "\n")
+				} else {
+					b.WriteString(styles.SuccessStyle.Render(skills.FormatEnsureResult(result)))
+				}
+				fmt.Println(styles.ContainerStyle.Render(b.String()))
+			} else {
+				fmt.Printf("Ensuring skills for %s...\n", a.Name)
+				result, err := skills.Ensure(a.Name, cfg)
+				if err != nil {
+					fmt.Printf("Error: %v\n", err)
+					os.Exit(1)
+				}
+				fmt.Print(skills.FormatEnsureResult(result))
+			}
+		}
+	},
+}
+
+// skillsEnsureModel is a Bubble Tea model for interactive agent selection in ensure
+type skillsEnsureModel struct {
+	selector components.SimpleSelect
+	cfg      *models.Config
+	done     bool
+	message  string
+	success  bool
+}
+
+func (m *skillsEnsureModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m *skillsEnsureModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q", "esc":
+			return m, tea.Quit
+		case "enter":
+			tool := m.selector.SelectedOption().Value()
+			result, err := skills.Ensure(tool, m.cfg)
+			if err != nil {
+				m.message = fmt.Sprintf("Error: %v", err)
+				m.success = false
+			} else {
+				m.message = skills.FormatEnsureResult(result)
+				m.success = true
+			}
+			m.done = true
+			return m, tea.Quit
+		default:
+			m.selector = m.selector.Update(msg)
+		}
+	}
+	return m, nil
+}
+
+func (m *skillsEnsureModel) View() string {
+	if m.done {
+		if m.success {
+			return styles.RenderSuccess(m.message) + "\n"
+		}
+		return styles.RenderError(m.message) + "\n"
+	}
+
+	var b strings.Builder
+	b.WriteString(styles.TitleStyle.Render("Ensure Agent Skills") + "\n\n")
+	b.WriteString(m.selector.View() + "\n")
+	b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
+	return styles.ContainerStyle.Render(b.String())
+}
+
 func init() {
-	skillsGenerateCmd.Flags().String("tool", "", "Tool name (claude-code, cursor, gemini)")
+	skillsGenerateCmd.Flags().String("tool", "", "Tool name (claude-code, cursor, gemini, windsurf, codex)")
 	skillsGenerateCmd.Flags().Bool("all", false, "Generate for all tools")
 
 	skillsInstallCmd.Flags().String("tool", "", "Target agent tool (claude-code, cursor, gemini, windsurf, antigravity, codex)")
 	skillsInstallCmd.Flags().Bool("global", false, "Install to user-level directory instead of project-level")
 	skillsInstallCmd.Flags().Bool("list", false, "List available skill packs")
+
+	skillsEnsureCmd.Flags().Bool("all", false, "Ensure for all detected agents")
 
 	skillsCmd.AddCommand(skillsGenerateCmd)
 	skillsCmd.AddCommand(skillsCheckCmd)
@@ -517,4 +670,5 @@ func init() {
 	skillsCmd.AddCommand(skillsGenerateGeminiCmd)
 	skillsCmd.AddCommand(skillsInstallCmd)
 	skillsCmd.AddCommand(skillsListCmd)
+	skillsCmd.AddCommand(skillsEnsureCmd)
 }

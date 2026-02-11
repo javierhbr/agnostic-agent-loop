@@ -1,10 +1,11 @@
 package models
 
 type Config struct {
-	Project  ProjectConfig  `yaml:"project"`
-	Agents   AgentsConfig   `yaml:"agents"`
-	Workflow WorkflowConfig `yaml:"workflow"`
-	Paths    PathsConfig    `yaml:"paths"`
+	Project     ProjectConfig  `yaml:"project"`
+	Agents      AgentsConfig   `yaml:"agents"`
+	Workflow    WorkflowConfig `yaml:"workflow"`
+	Paths       PathsConfig    `yaml:"paths"`
+	ActiveAgent string         `yaml:"-"` // Runtime-only: detected agent name
 }
 
 type ProjectConfig struct {
@@ -24,9 +25,12 @@ type AgentDefaults struct {
 }
 
 type AgentConfig struct {
-	Name      string `yaml:"name"` // e.g., "claude-code", "cursor"
-	MaxTokens int    `yaml:"max_tokens,omitempty"`
-	Model     string `yaml:"model,omitempty"`
+	Name       string   `yaml:"name"` // e.g., "claude-code", "cursor"
+	MaxTokens  int      `yaml:"max_tokens,omitempty"`
+	Model      string   `yaml:"model,omitempty"`
+	SkillPacks []string `yaml:"skill_packs,omitempty"` // packs to auto-install
+	ExtraRules []string `yaml:"extra_rules,omitempty"` // additional rule lines
+	AutoSetup  bool     `yaml:"auto_setup,omitempty"`  // auto-generate on init/ensure
 }
 
 type WorkflowConfig struct {

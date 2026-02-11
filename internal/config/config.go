@@ -54,3 +54,30 @@ func SetDefaults(cfg *models.Config) {
 		cfg.Paths.TrackDir = ".agentic/tracks"
 	}
 }
+
+// GetAgentConfig returns the effective config for a specific agent,
+// merging defaults with agent-specific overrides.
+func GetAgentConfig(cfg *models.Config, agentName string) *models.AgentConfig {
+	result := &models.AgentConfig{
+		Name:      agentName,
+		MaxTokens: cfg.Agents.Defaults.MaxTokens,
+		Model:     cfg.Agents.Defaults.Model,
+	}
+
+	for _, override := range cfg.Agents.Overrides {
+		if override.Name == agentName {
+			if override.MaxTokens > 0 {
+				result.MaxTokens = override.MaxTokens
+			}
+			if override.Model != "" {
+				result.Model = override.Model
+			}
+			result.SkillPacks = override.SkillPacks
+			result.ExtraRules = override.ExtraRules
+			result.AutoSetup = override.AutoSetup
+			break
+		}
+	}
+
+	return result
+}

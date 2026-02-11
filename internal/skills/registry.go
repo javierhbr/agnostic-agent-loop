@@ -27,6 +27,8 @@ func NewSkillRegistry() *SkillRegistry {
 	r.Register("claude-code", "templates/claude.tmpl", "CLAUDE.md")
 	r.Register("cursor", "templates/cursor.tmpl", ".cursor/rules/agnostic-agent.mdc")
 	r.Register("gemini", "templates/gemini.tmpl", ".gemini/GEMINI.md")
+	r.Register("windsurf", "templates/windsurf.tmpl", ".windsurf/rules/agnostic-agent.md")
+	r.Register("codex", "templates/codex.tmpl", ".codex/CODEX.md")
 
 	return r
 }

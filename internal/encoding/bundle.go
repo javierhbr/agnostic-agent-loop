@@ -2,10 +2,14 @@ package encoding
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/javierbenavides/agentic-agent/internal/context"
+	"github.com/javierbenavides/agentic-agent/internal/skills"
 	"github.com/javierbenavides/agentic-agent/internal/specs"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
@@ -112,7 +116,42 @@ func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]by
 		}
 	}
 
+	// 5.5 Load skill instructions for the active agent
+	if cfg.ActiveAgent != "" {
+		bundle.SkillInstructions = loadSkillInstructions(cfg.ActiveAgent)
+	}
+
 	// 6. Encode
 	encoder := NewToonEncoder()
 	return encoder.Encode(bundle)
+}
+
+// loadSkillInstructions gathers agent rules and installed skill pack content.
+func loadSkillInstructions(agent string) string {
+	var parts []string
+
+	// 1. Load the agent's generated rules file
+	registry := skills.NewSkillRegistry()
+	if skill, err := registry.GetSkill(agent); err == nil {
+		if content, err := os.ReadFile(skill.OutputFile); err == nil {
+			parts = append(parts, string(content))
+		}
+	}
+
+	// 2. Walk the agent's skill directory, concatenate SKILL.md files
+	if skillDir, ok := skills.ToolSkillDir[agent]; ok {
+		filepath.WalkDir(skillDir, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return nil
+			}
+			if d.Name() == "SKILL.md" {
+				if content, readErr := os.ReadFile(path); readErr == nil {
+					parts = append(parts, string(content))
+				}
+			}
+			return nil
+		})
+	}
+
+	return strings.Join(parts, "\n\n---\n\n")
 }

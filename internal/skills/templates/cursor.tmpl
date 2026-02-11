@@ -1,6 +1,6 @@
 ---
 description: Agnostic Agent Rules for Cursor
-globs: 
+globs:
 ---
 
 # Agnostic Agent Rules
@@ -9,5 +9,25 @@ globs:
 {{ .BaseRules }}
 
 ## Cursor-Specific Rules
-- Always check `TODO.md` or `task.md` for active tasks.
-- Use the terminal to run `agentic-agent` commands.
+- Use the integrated terminal to run `agentic-agent` commands.
+- Run `agentic-agent task claim <TASK_ID>` before starting work.
+- Run `agentic-agent task complete <TASK_ID>` when finished.
+- Run `agentic-agent validate` to check quality before completing.
+- Use Cursor's inline edit for surgical changes; use terminal for CLI operations.
+
+## Workflow Commands
+- `agentic-agent task list` — View backlog and in-progress tasks
+- `agentic-agent status` — View project dashboard
+- `agentic-agent context generate <DIR>` — Generate context for a directory
+- `agentic-agent skills ensure` — Ensure skills/rules are set up
+
+## Key Files
+- `.agentic/tasks/backlog.yaml` — Available tasks
+- `.agentic/tasks/in-progress.yaml` — Current work
+- `.agentic/context/global-context.md` — Project overview
+- `agnostic-agent.yaml` — Project configuration
+{{ if .AgentRules }}
+
+## Project-Specific Agent Rules
+{{ .AgentRules }}
+{{ end }}

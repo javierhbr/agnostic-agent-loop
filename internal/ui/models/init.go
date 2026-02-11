@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/javierbenavides/agentic-agent/internal/project"
+	"github.com/javierbenavides/agentic-agent/internal/skills"
 	"github.com/javierbenavides/agentic-agent/internal/ui/components"
 	"github.com/javierbenavides/agentic-agent/internal/ui/styles"
 )
@@ -21,6 +22,7 @@ const (
 	InitStepDescription
 	InitStepTechStack
 	InitStepWorkflow
+	InitStepAgentTools
 	InitStepPreview
 	InitStepInitializing
 	InitStepComplete
@@ -32,6 +34,7 @@ type InitWizardModel struct {
 	projectName     components.ValidatedInput
 	modelSelect     components.SimpleSelect
 	validatorSelect components.SimpleSelect
+	agentToolSelect components.SimpleSelect
 	description     components.TextArea
 	techStack       components.TextArea
 	workflow        components.TextArea
@@ -116,6 +119,19 @@ func NewInitWizardModel() InitWizardModel {
 		true,
 	)
 
+	// Agent tool selection
+	agentToolOptions := []components.SelectOption{
+		components.NewSelectOption("Skip", "Don't generate agent rules now", "skip"),
+	}
+	for _, tool := range skills.SupportedTools() {
+		agentToolOptions = append(agentToolOptions, components.NewSelectOption(
+			tool,
+			fmt.Sprintf("Generate rules for %s", tool),
+			tool,
+		))
+	}
+	agentToolSelect := components.NewSimpleSelect("Agent Tool", agentToolOptions)
+
 	spinner := components.NewSpinner("Initializing project...")
 
 	return InitWizardModel{
@@ -123,6 +139,7 @@ func NewInitWizardModel() InitWizardModel {
 		projectName:     projectName,
 		modelSelect:     modelSelect,
 		validatorSelect: validatorSelect,
+		agentToolSelect: agentToolSelect,
 		description:     description,
 		techStack:       techStack,
 		workflow:        workflow,
@@ -166,7 +183,7 @@ func (m InitWizardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.step = InitStepWorkflow
 				return m, m.workflow.Focus()
 			case InitStepWorkflow:
-				m.step = InitStepPreview
+				m.step = InitStepAgentTools
 				return m, nil
 			}
 
@@ -217,6 +234,11 @@ func (m InitWizardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.workflow, cmd = m.workflow.Update(msg)
 		return m, cmd
 
+	case InitStepAgentTools:
+		if keyMsg, ok := msg.(tea.KeyMsg); ok {
+			m.agentToolSelect = m.agentToolSelect.Update(keyMsg)
+		}
+
 	case InitStepInitializing:
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
@@ -245,6 +267,10 @@ func (m InitWizardModel) handleEnter() (tea.Model, tea.Cmd) {
 	case InitStepValidators:
 		m.step = InitStepDescription
 		return m, m.description.Focus()
+
+	case InitStepAgentTools:
+		m.step = InitStepPreview
+		return m, nil
 
 	case InitStepPreview:
 		m.step = InitStepInitializing
@@ -276,6 +302,14 @@ func (m *InitWizardModel) initializeProject() tea.Cmd {
 		if err := project.InitProjectWithProfile(m.projectName.Value(), profile); err != nil {
 			return projectInitErrorMsg{err}
 		}
+
+		// Generate agent skills if a tool was selected
+		agentTool := m.agentToolSelect.SelectedOption().Value()
+		if agentTool != "" && agentTool != "skip" {
+			// Best-effort: don't fail init if skills generation fails
+			skills.Ensure(agentTool, nil)
+		}
+
 		return projectInitCompleteMsg{}
 	}
 }
@@ -301,6 +335,8 @@ func (m InitWizardModel) View() string {
 		return m.renderTechStack()
 	case InitStepWorkflow:
 		return m.renderWorkflow()
+	case InitStepAgentTools:
+		return m.renderAgentTools()
 	case InitStepPreview:
 		return m.renderPreview()
 	case InitStepInitializing:
@@ -395,18 +431,37 @@ func (m InitWizardModel) renderWorkflow() string {
 	return styles.ContainerStyle.Render(b.String())
 }
 
+func (m InitWizardModel) renderAgentTools() string {
+	var b strings.Builder
+
+	b.WriteString(styles.TitleStyle.Render("Agent Tool Setup") + "\n\n")
+	b.WriteString(styles.MutedStyle.Render("Select the AI agent you'll use with this project.\n") + "\n")
+	b.WriteString(styles.MutedStyle.Render("This generates tool-specific rules (e.g., CLAUDE.md, .cursor/rules).\n\n"))
+	b.WriteString(m.agentToolSelect.View() + "\n")
+	b.WriteString(styles.HelpStyle.Render("↑/↓ to navigate • Enter to continue • Esc to cancel") + "\n")
+
+	return styles.ContainerStyle.Render(b.String())
+}
+
 func (m InitWizardModel) renderPreview() string {
 	var b strings.Builder
 
 	b.WriteString(styles.TitleStyle.Render("Confirm Configuration") + "\n\n")
 
+	agentToolLabel := m.agentToolSelect.SelectedOption().Title()
+	if m.agentToolSelect.SelectedOption().Value() == "skip" {
+		agentToolLabel = "None"
+	}
+
 	config := fmt.Sprintf(
 		"Project Name: %s\n"+
 			"AI Model: %s\n"+
-			"Validators: %s",
+			"Validators: %s\n"+
+			"Agent Tool: %s",
 		styles.BoldStyle.Render(m.projectName.Value()),
 		styles.BoldStyle.Render(m.modelSelect.SelectedOption().Title()),
 		styles.BoldStyle.Render(m.validatorSelect.SelectedOption().Title()),
+		styles.BoldStyle.Render(agentToolLabel),
 	)
 
 	b.WriteString(styles.CardStyle.Render(config) + "\n")

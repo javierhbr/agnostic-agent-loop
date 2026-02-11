@@ -7,6 +7,7 @@ import (
 
 	appcontext "github.com/javierbenavides/agentic-agent/internal/context"
 	"github.com/javierbenavides/agentic-agent/internal/encoding"
+	"github.com/javierbenavides/agentic-agent/internal/skills"
 	"github.com/javierbenavides/agentic-agent/internal/specs"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
 	"github.com/javierbenavides/agentic-agent/internal/tracks"
@@ -45,6 +46,16 @@ func NewAutopilotLoop(cfg *models.Config, maxIterations int, stopSignal string, 
 
 // Run executes the autopilot loop.
 func (a *AutopilotLoop) Run(ctx context.Context) error {
+	// Ensure agent skills are set up before starting
+	if a.cfg.ActiveAgent != "" {
+		result, err := skills.Ensure(a.cfg.ActiveAgent, a.cfg)
+		if err != nil {
+			fmt.Printf("Warning: could not ensure agent skills: %v\n", err)
+		} else if result.RulesGenerated || result.DriftFixed || len(result.PacksInstalled) > 0 {
+			fmt.Print(skills.FormatEnsureResult(result))
+		}
+	}
+
 	user := os.Getenv("USER")
 	if user == "" {
 		user = "autopilot"

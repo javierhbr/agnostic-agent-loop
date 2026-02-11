@@ -7,6 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/javierbenavides/agentic-agent/internal/orchestrator"
+	"github.com/javierbenavides/agentic-agent/internal/skills"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
 	"github.com/javierbenavides/agentic-agent/internal/ui/components"
 	"github.com/javierbenavides/agentic-agent/internal/ui/helpers"
@@ -40,6 +41,26 @@ var runCmd = &cobra.Command{
 			fmt.Println("Usage: agentic-agent run --task <task-id>")
 			fmt.Println("   or: agentic-agent run  (interactive mode)")
 			os.Exit(1)
+		}
+
+		// Pre-run: ensure agent skills are set up
+		agent := getAgent()
+		if agent.Name != "" {
+			registry := skills.NewSkillRegistry()
+			if skill, err := registry.GetSkill(agent.Name); err == nil {
+				if _, statErr := os.Stat(skill.OutputFile); os.IsNotExist(statErr) {
+					if helpers.ShouldUseInteractiveMode(cmd) {
+						fmt.Printf("Skills not found for %s. Generating %s...\n", agent.Name, skill.OutputFile)
+					}
+					cfg := getConfig()
+					result, ensureErr := skills.Ensure(agent.Name, cfg)
+					if ensureErr != nil {
+						fmt.Printf("Warning: could not ensure skills: %v\n", ensureErr)
+					} else {
+						fmt.Print(skills.FormatEnsureResult(result))
+					}
+				}
+			}
 		}
 
 		if err := orchestrator.RunLoop(taskID); err != nil {
