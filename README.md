@@ -100,8 +100,8 @@ go install github.com/javierbenavides/agentic-agent/cmd/agentic-agent@latest
 # Option 2: Build from source
 git clone https://github.com/javierbenavides/agentic-agent.git
 cd agentic-agent
-go build -o agentic-agent ./cmd/agentic-agent
-sudo mv agentic-agent /usr/local/bin/
+make build
+sudo mv build/agentic-agent /usr/local/bin/
 
 # Option 3: Development (no install)
 go run ./cmd/agentic-agent version
@@ -162,6 +162,7 @@ Context Bundle for TASK-001
 |-- Rolling Summary (recent changes)
 |-- Task Details (title, acceptance criteria, scope)
 |-- Resolved Specs (full content from spec_refs)
+|-- Resolved Skills (targeted content from skill_refs, or all installed)
 +-- Directory Contexts (context.md from task scope)
 ```
 
@@ -227,6 +228,47 @@ agentic-agent skills install tdd --tool claude-code --global
 # Interactive mode — select pack, tool, and scope
 agentic-agent skills install
 ```
+
+### Task-level skill refs — targeted skills per task
+
+Instead of applying all installed skill packs to every task, declare `skill_refs` on individual tasks to include only the relevant skills:
+
+```yaml
+# .agentic/tasks/backlog.yaml
+tasks:
+  - id: "TASK-001"
+    title: "Refactor auth middleware"
+    skill_refs:
+      - code-simplification
+      - tdd
+    scope:
+      - "internal/auth"
+```
+
+When a context bundle is built for this task, only the referenced skill packs are included — not all installed packs. Tasks without `skill_refs` fall back to the existing behavior (all installed packs included).
+
+Skill refs resolve through a 3-tier fallback:
+
+1. Agent's installed skill directory (e.g., `.claude/skills/tdd/SKILL.md`)
+2. Any installed tool's skill directory
+3. Embedded pack content (compiled into the binary — always available)
+
+### Simplify command — targeted code review
+
+The `simplify` command generates a focused context bundle for code simplification review:
+
+```bash
+# Review specific directories
+agentic-agent simplify internal/auth internal/middleware
+
+# Review directories from a task's scope
+agentic-agent simplify --task TASK-001
+
+# Output as JSON
+agentic-agent simplify . --format json --output review.json
+```
+
+The bundle includes the code-simplification skill instructions, directory context, source file listings, and tech stack information.
 
 ### TDD workflow — RED/GREEN/REFACTOR
 
@@ -371,7 +413,7 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 | `work` | Interactive claim-to-complete workflow |
 | `work --follow-tdd` | TDD workflow: decompose into RED/GREEN/REFACTOR |
 
-### Validation and Skills
+### Validation, Skills, and Simplification
 
 | Command | Description |
 |---------|-------------|
@@ -381,6 +423,8 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 | `skills generate-gemini-skills` | Generate Gemini config |
 | `skills install [pack]` | Install a skill pack for an agent tool |
 | `skills list` | List available skill packs |
+| `simplify [dir...]` | Generate code simplification review bundle |
+| `simplify --task <id>` | Simplify using task scope directories |
 
 ### Progress Tracking
 
@@ -477,7 +521,8 @@ agentic-agent/
 |   |-- project/              # Project init + track templates
 |   |-- specs/                # Multi-directory spec resolution
 |   |-- status/               # Aggregated project status
-|   |-- skills/               # Skill packs, installer, registry
+|   |-- simplify/             # Code simplification bundle builder
+|   |-- skills/               # Skill packs, installer, registry, resolver
 |   |-- tasks/                # Task management + decomposition
 |   |-- tracks/               # Track management + spec validation
 |   +-- validator/            # Validation rules
@@ -506,11 +551,13 @@ make coverage-html
 # By package
 go test ./internal/specs -v           # Spec resolution
 go test ./internal/tasks -v           # Task management + decomposition + TDD
-go test ./internal/skills -v          # Skill packs + installer
+go test ./internal/skills -v          # Skill packs, installer, resolver
+go test ./internal/simplify -v        # Code simplification bundles
 go test ./internal/tracks -v          # Track management + spec validation
 go test ./internal/plans -v           # Plan parsing + generation
 go test ./internal/orchestrator -v    # Autopilot + loop
 go test ./internal/validator/rules -v # Validation rules
+go test ./test/functional -v          # Functional CLI tests
 go test ./test/integration -v         # Integration tests
 go test ./test/bdd -v                 # BDD/Gherkin tests
 ```

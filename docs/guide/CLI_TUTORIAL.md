@@ -10,6 +10,7 @@ A comprehensive, step-by-step guide to using the agentic-agent CLI tool for spec
 - [Scenario 1: Beginner - Your First Project](#scenario-1-beginner---your-first-project)
 - [Scenario 2: Intermediate - Building a Blog API](#scenario-2-intermediate---building-a-blog-api)
 - [Scenario 3: Advanced - Complex Feature Decomposition](#scenario-3-advanced---complex-feature-decomposition)
+- [Scenario 4: Skill Refs and Code Simplification](#scenario-4-skill-refs-and-code-simplification)
 - [Testing Workflow](#testing-workflow)
 - [ATDD/BDD Workflow](#atddbdd-workflow)
 - [Best Practices](#best-practices)
@@ -18,11 +19,12 @@ A comprehensive, step-by-step guide to using the agentic-agent CLI tool for spec
 
 ## Overview
 
-This tutorial guides you through three progressive scenarios:
+This tutorial guides you through four progressive scenarios:
 
 1. **Beginner**: Learn the basics by creating your first project and completing a simple task
 2. **Intermediate**: Build a blog API with proper specifications and context management
 3. **Advanced**: Decompose a complex feature into subtasks and manage them systematically
+4. **Skill Refs and Code Simplification**: Use task-level skill refs and the simplify command
 
 Each scenario includes:
 - Step-by-step CLI commands
@@ -68,6 +70,8 @@ By completing this tutorial, you will learn how to:
 ✅ Run validation rules
 ✅ Execute and verify tests
 ✅ Follow specification-driven development practices
+✅ Use task-level skill refs for targeted skill inclusion
+✅ Run code simplification reviews with the simplify command
 
 ### Tutorial Approach
 
@@ -635,7 +639,8 @@ This creates a focused context bundle for the task, combining:
 - Global context
 - Rolling summary
 - Relevant directory contexts
-- Task specifications
+- Task specifications (from `spec_refs`)
+- Skill instructions (targeted from `skill_refs`, or all installed packs)
 
 ### Step 10: Complete the Task
 
@@ -667,7 +672,7 @@ Excellent work! You've completed the intermediate scenario. You learned:
 ✅ Context bundling
 ✅ Comprehensive validation
 
-**Next**: Move to the Advanced scenario to learn about task decomposition.
+**Next**: Move to the Advanced scenario to learn about task decomposition, or skip to Scenario 4 for skill refs and code simplification.
 
 ---
 
@@ -942,6 +947,137 @@ Outstanding! You've completed the advanced scenario. You learned:
 ✅ Continuous validation
 ✅ Comprehensive testing workflow
 ✅ Context generation for all modules
+
+---
+
+## Scenario 4: Skill Refs and Code Simplification
+
+**Goal**: Learn how to attach skill packs to individual tasks and run targeted code simplification reviews.
+
+**Time**: ~10 minutes
+
+**What You'll Learn**:
+
+- Declaring `skill_refs` on tasks for targeted skill inclusion
+- How skill ref resolution works (installed → any tool → embedded)
+- Using the `simplify` command for code review bundles
+- Integrating skill refs with autopilot
+
+### Step 1: Create a Task with Skill Refs
+
+Skill refs let you declare which skill packs apply to a specific task. When the context bundle is built, only those skills are included instead of every installed pack.
+
+```yaml
+# .agentic/tasks/backlog.yaml
+tasks:
+  - id: "TASK-2001"
+    title: "Refactor auth middleware for clarity"
+    status: pending
+    skill_refs:
+      - code-simplification
+      - tdd
+    scope:
+      - "internal/auth"
+    spec_refs:
+      - "auth-requirements.md"
+```
+
+You can also create the task with the CLI and then edit the YAML to add `skill_refs`:
+
+```bash
+agentic-agent task create --title "Refactor auth middleware for clarity"
+# Then edit .agentic/tasks/backlog.yaml to add skill_refs and scope
+```
+
+### Step 2: Understand Skill Ref Resolution
+
+When a context bundle is built for a task with `skill_refs`, each ref resolves through a 3-tier fallback:
+
+1. **Installed for active agent** — e.g., `.claude/skills/tdd/SKILL.md`
+2. **Installed for any tool** — checks all tool skill directories
+3. **Embedded in binary** — built-in packs that ship with the CLI
+
+This means skill refs always resolve, even without explicit installation. The embedded packs (`tdd`, `code-simplification`, `api-docs`, `dev-plans`, `diataxis`, `extract-wisdom`) are always available.
+
+```bash
+# Verify a skill ref resolves
+agentic-agent skills list
+```
+
+### Step 3: Build a Context Bundle with Skill Refs
+
+Claim the task and build the context bundle. The bundle will include only the referenced skills:
+
+```bash
+agentic-agent task claim TASK-2001
+agentic-agent context build --task TASK-2001
+```
+
+The bundle's skill instructions section contains only the `code-simplification` and `tdd` pack content — not every installed pack. Tasks without `skill_refs` still get all installed packs (backwards compatible).
+
+### Step 4: Run a Simplification Review
+
+The `simplify` command generates a focused bundle for code review against simplification principles:
+
+```bash
+# Review specific directories
+agentic-agent simplify internal/auth
+
+# Review multiple directories
+agentic-agent simplify internal/auth internal/middleware
+
+# Use a task's scope directories
+agentic-agent simplify --task TASK-2001
+
+# Output as JSON for tooling
+agentic-agent simplify internal/auth --format json --output review.json
+```
+
+**Expected Output** (toon format):
+
+The bundle includes:
+
+- Code-simplification skill instructions (principles and checklist)
+- Directory context for each target directory
+- List of source files found in the target directories
+- Tech stack information (if `.agentic/context/tech-stack.md` exists)
+
+### Step 5: Use Skill Refs with Autopilot
+
+Skill refs work with autopilot. Each task's context bundle is built with its declared skills:
+
+```bash
+agentic-agent autopilot start --max-iterations 3
+```
+
+```
+--- Iteration 1/3 ---
+Next task: [TASK-2001] Refactor auth middleware for clarity
+  skill_refs: [code-simplification, tdd]
+Claimed TASK-2001
+Built context bundle (targeted: 2 skill packs)
+```
+
+### Step 6: Complete and Verify
+
+```bash
+agentic-agent task complete TASK-2001
+
+# Run tests to verify skill_refs persistence
+go test ./test/functional -run TestSkillRefs -v
+go test ./test/integration -run TestSkillRefsWorkflow -v
+```
+
+### Skill Refs and Simplify Summary
+
+You learned:
+
+✅ How to declare `skill_refs` on tasks in YAML
+✅ The 3-tier resolution order (installed → any tool → embedded)
+✅ Targeted vs default skill inclusion in context bundles
+✅ Running code simplification reviews with `simplify`
+✅ Outputting simplify bundles in different formats (toon, json, yaml)
+✅ Skill refs working with autopilot
 
 ---
 
@@ -1271,13 +1407,47 @@ agentic-agent context generate DIR
 agentic-agent context scan
 agentic-agent context build --task TASK-ID
 
+# Skills
+agentic-agent skills ensure                  # Idempotent: rules + packs + drift fix
+agentic-agent skills detect                  # Show detected agent (flag/env/filesystem)
+agentic-agent skills list                    # List available skill packs
+agentic-agent skills install tdd --tool claude-code
+
+# Simplification
+agentic-agent simplify internal/auth         # Review specific dirs
+agentic-agent simplify --task TASK-ID        # Review task scope dirs
+agentic-agent simplify . --format json       # JSON output
+
+# Tracks (feature/bug work units)
+agentic-agent track create                   # Create track with brainstorm, spec, plan
+agentic-agent track list                     # List all tracks
+agentic-agent track show TRACK-ID            # Display track details
+agentic-agent track archive TRACK-ID         # Archive completed track
+
+# Plans (markdown plan management)
+agentic-agent plan show                      # Display parsed plan.md
+agentic-agent plan next                      # Show next pending task
+agentic-agent plan mark LINE STATUS          # Update checkbox in plan.md
+
+# Status
+agentic-agent status                         # Project dashboard: counts, blockers, next ready
+
+# Specs
+agentic-agent spec list                      # List specs across configured directories
+agentic-agent spec resolve REF               # Resolve a spec ref and print content
+
 # Validation
 agentic-agent validate
 agentic-agent validate --format json
 
+# Autopilot
+agentic-agent autopilot start               # Process backlog tasks sequentially
+agentic-agent autopilot start --dry-run     # Preview without changes
+
 # Testing
 make test
 make test-verbose
+make test-bdd                                # Run BDD/ATDD tests
 make coverage-html
 go test ./test/functional -v
 ```
@@ -1298,7 +1468,8 @@ go test ./test/functional -v
 ├── tasks/              # Task YAML files
 ├── context/            # Context summaries
 ├── spec/               # Specifications
-└── agent-rules/        # Agent configs
+├── agent-rules/        # Agent configs
+└── tracks/             # Feature/bug tracks (brainstorm, spec, plan)
 
 src/                    # Source code
 └── */context.md        # Directory contexts
