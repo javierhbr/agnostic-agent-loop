@@ -44,6 +44,14 @@ Multi-directory spec resolution with Spec Kit, OpenSpec, and native specs. Shows
 
 See [README.md](spec-driven-workflow/README.md).
 
+### `agent-aware-skills/` - Agent Detection, Setup, and Per-Agent Rules
+
+Automatically detect which AI agent is running (Claude Code, Cursor, Gemini, etc.), ensure its skills and rules are installed, and tailor instructions per tool. Covers per-agent config overrides, custom rules files, scoped drift checks, auto-ensure in init/run/autopilot, task-level `skill_refs`, and the `simplify` command.
+
+Demonstrates: `skills ensure`, `--agent` flag, `AGENTIC_AGENT` env var, `.agentic/agent-rules/`, per-agent `skill_packs` and `extra_rules`, task-level `skill_refs`, `simplify`.
+
+See [README.md](agent-aware-skills/README.md).
+
 ---
 
 ## Running Any Example
@@ -106,6 +114,24 @@ agentic-agent skills install tdd --tool claude-code   # Install for a tool
 agentic-agent skills check                            # Detect drift
 ```
 
+### Ensure agent skills
+
+```bash
+agentic-agent skills ensure                           # Auto-detect agent
+agentic-agent skills ensure --agent claude-code       # Explicit agent
+agentic-agent skills ensure --all                     # All detected agents
+agentic-agent skills check --agent cursor             # Scoped drift check
+```
+
+### Run code simplification review
+
+```bash
+agentic-agent simplify internal/auth              # Review specific directories
+agentic-agent simplify --task TASK-001            # Review task scope directories
+agentic-agent simplify . --format json            # JSON output
+agentic-agent simplify . --output review.yaml     # Write to file
+```
+
 ### Run autopilot
 
 ```bash
@@ -130,6 +156,7 @@ agentic-agent status --format json  # Machine-readable output
 - **[tdd](tdd/README.md)** — RED/GREEN/REFACTOR decomposition
 - **[multi-agent-workflow](multi-agent-workflow/MULTI_AGENT_USE_CASE.md)** — 4 tools, 6 phases, cross-tool bug fix
 - **[spec-driven-workflow](spec-driven-workflow/README.md)** — Spec Kit, OpenSpec, autopilot mode
+- **[agent-aware-skills](agent-aware-skills/README.md)** — Agent detection, per-agent rules, `skills ensure`, `skill_refs`, `simplify`
 
 ---
 
@@ -153,6 +180,13 @@ agents:
   overrides:                    # Per-tool overrides (optional)
     - name: cursor
       max_tokens: 8000
+    - name: claude-code
+      max_tokens: 8000
+      skill_packs:              # Packs auto-installed by `skills ensure`
+        - tdd
+      extra_rules:              # Additional lines injected into rules file
+        - "Run tests before completing tasks"
+      auto_setup: true          # Generate rules during `init`
 
 # ── Paths ───────────────────────────────────────────────────────────
 # All paths are relative to the project root.
@@ -167,7 +201,7 @@ paths:
     - .agentic/context          # Global context files
 
   trackDir: .agentic/tracks     # Track work units (spec + plan + tasks)
-  prdOutputPath: .agentic/tasks/       # Where PRD converter writes tasks
+  prdOutputPath: .agentic/tasks/       # Where PRD converter writes tasks (task YAML supports skill_refs)
   progressTextPath: .agentic/progress.txt
   progressYAMLPath: .agentic/progress.yaml
   archiveDir: .agentic/archive/        # Archived tracks and tasks

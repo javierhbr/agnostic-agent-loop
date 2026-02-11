@@ -49,17 +49,50 @@ func TestNewPackRegistry_GetAll(t *testing.T) {
 	}
 }
 
-func TestPacksFS_FilesReadable(t *testing.T) {
+func TestPacksFS_AllFilesReadable(t *testing.T) {
 	r := NewPackRegistry()
-	pack, _ := r.GetPack("tdd")
 
-	for _, f := range pack.Files {
-		content, err := packsFS.ReadFile(f.SrcPath)
-		if err != nil {
-			t.Errorf("failed to read embedded file %s: %v", f.SrcPath, err)
+	for _, pack := range r.GetAll() {
+		for _, f := range pack.Files {
+			content, err := packsFS.ReadFile(f.SrcPath)
+			if err != nil {
+				t.Errorf("pack %q: failed to read embedded file %s: %v", pack.Name, f.SrcPath, err)
+			}
+			if len(content) == 0 {
+				t.Errorf("pack %q: embedded file %s is empty", pack.Name, f.SrcPath)
+			}
 		}
-		if len(content) == 0 {
-			t.Errorf("embedded file %s is empty", f.SrcPath)
+	}
+}
+
+func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
+	r := NewPackRegistry()
+
+	expected := []struct {
+		name      string
+		fileCount int
+	}{
+		{"tdd", 3},
+		{"api-docs", 1},
+		{"code-simplification", 1},
+		{"dev-plans", 1},
+		{"diataxis", 3},
+		{"extract-wisdom", 1},
+	}
+
+	packs := r.GetAll()
+	if len(packs) != len(expected) {
+		t.Errorf("expected %d packs, got %d", len(expected), len(packs))
+	}
+
+	for _, exp := range expected {
+		pack, err := r.GetPack(exp.name)
+		if err != nil {
+			t.Errorf("expected pack %q to exist: %v", exp.name, err)
+			continue
+		}
+		if len(pack.Files) != exp.fileCount {
+			t.Errorf("pack %q: expected %d files, got %d", exp.name, exp.fileCount, len(pack.Files))
 		}
 	}
 }

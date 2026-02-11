@@ -92,4 +92,5 @@ func init() {
 	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(trackCmd)
 	rootCmd.AddCommand(planCmd)
+	rootCmd.AddCommand(simplifyCmd)
 }

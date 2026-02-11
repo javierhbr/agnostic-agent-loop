@@ -12,6 +12,8 @@ Install tool-agnostic skill bundles so that any AI agent tool gets the right ins
 - Use interactive mode to select pack and tool
 - Detect and fix skill drift
 - Understand where skill files land for each tool
+- Reference skills per-task with `skill_refs`
+- Run targeted code simplification with `simplify`
 
 ---
 
@@ -40,10 +42,15 @@ Output:
 ```text
 Available Skill Packs
 
-  • tdd         Test-Driven Development (RED/GREEN/REFACTOR) (3 files)
+  • tdd                    Test-Driven Development with red-green-refactor workflow (3 files)
+  • api-docs               Generate comprehensive API documentation from code (1 file)
+  • code-simplification    Review and refactor code for simplicity and maintainability (1 file)
+  • dev-plans              Create structured development plans with phased task breakdowns (1 file)
+  • diataxis               Write documentation using the Diataxis framework (3 files)
+  • extract-wisdom         Extract insights and actionable takeaways from text sources (1 file)
 ```
 
-Each pack contains multiple skill files that teach the AI agent a specific workflow.
+Each pack contains skill files that teach the AI agent a specific workflow or capability.
 
 ---
 
@@ -179,6 +186,55 @@ Beyond skill packs, generate PRD and converter skills for specific tools:
 
 ---
 
+## 8. Task-Level Skill Refs
+
+Instead of including all installed packs in every context bundle, tasks can declare which skill packs they need:
+
+```yaml
+tasks:
+  - id: "TASK-001"
+    title: "Refactor auth middleware"
+    skill_refs:
+      - code-simplification
+      - tdd
+    scope:
+      - "internal/auth"
+```
+
+When a task has `skill_refs`, the context bundle includes **only** those packs. Without `skill_refs`, all installed packs are included (backwards compatible).
+
+Skill refs resolve through a 3-tier fallback:
+
+1. Agent's installed directory (e.g., `.claude/skills/tdd/SKILL.md`)
+2. Any other tool's installed directory
+3. Embedded content (compiled into the binary)
+
+This means `skill_refs` always resolve, even if the pack isn't installed locally.
+
+See [agent-aware-skills/README.md](../agent-aware-skills/README.md) for detailed examples.
+
+---
+
+## 9. Simplify Command
+
+The `simplify` command generates a focused review bundle using the `code-simplification` skill pack:
+
+```bash
+# Review specific directories
+./agentic-agent simplify internal/auth
+
+# Review a task's scope directories
+./agentic-agent simplify --task TASK-001
+
+# Output as JSON or YAML
+./agentic-agent simplify internal/auth --format json
+./agentic-agent simplify internal/auth --output review.yaml --format yaml
+```
+
+The bundle contains the code-simplification skill instructions, directory context, source file listings, and tech stack info.
+
+---
+
 ## Quick Reference
 
 | Action                | Command                                          |
@@ -191,3 +247,5 @@ Beyond skill packs, generate PRD and converter skills for specific tools:
 | Regenerate all        | `skills generate --all`                          |
 | Claude Code skills    | `skills generate-claude-skills`                  |
 | Gemini skills         | `skills generate-gemini-skills`                  |
+| Simplify directories  | `simplify internal/auth`                         |
+| Simplify task scope   | `simplify --task TASK-001`                       |

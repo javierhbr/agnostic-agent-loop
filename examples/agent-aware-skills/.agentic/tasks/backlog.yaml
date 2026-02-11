@@ -1,0 +1,34 @@
+tasks:
+  - id: "TASK-1001"
+    title: "Implement user authentication endpoint"
+    description: "Create POST /auth/login with JWT token generation"
+    priority: high
+    spec_refs:
+      - auth-spec.md
+    skill_refs:
+      - tdd
+      - api-docs
+    scope:
+      - "internal/auth"
+    track_id: "auth-feature"
+  - id: "TASK-1002"
+    title: "Add input validation middleware"
+    description: "Validate request bodies using JSON schema"
+    priority: medium
+    skill_refs:
+      - code-simplification
+    scope:
+      - "internal/middleware"
+    track_id: "auth-feature"
+  - id: "TASK-1003"
+    title: "Write authentication integration tests"
+    description: "End-to-end tests for login, token refresh, and logout"
+    priority: medium
+    spec_refs:
+      - auth-spec.md
+    skill_refs:
+      - tdd
+    scope:
+      - "internal/auth"
+      - "test/integration"
+    track_id: "auth-feature"

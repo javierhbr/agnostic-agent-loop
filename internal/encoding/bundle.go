@@ -118,7 +118,7 @@ func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]by
 
 	// 5.5 Load skill instructions for the active agent
 	if cfg.ActiveAgent != "" {
-		bundle.SkillInstructions = loadSkillInstructions(cfg.ActiveAgent)
+		bundle.SkillInstructions = loadSkillInstructions(cfg.ActiveAgent, task.SkillRefs)
 	}
 
 	// 6. Encode
@@ -127,10 +127,12 @@ func CreateContextBundle(taskID string, format string, cfg *models.Config) ([]by
 }
 
 // loadSkillInstructions gathers agent rules and installed skill pack content.
-func loadSkillInstructions(agent string) string {
+// If skillRefs is non-empty, only those specific skill packs are included (targeted mode).
+// If skillRefs is empty, all installed skill packs are included (existing behavior).
+func loadSkillInstructions(agent string, skillRefs []string) string {
 	var parts []string
 
-	// 1. Load the agent's generated rules file
+	// 1. Always load the agent's generated rules file
 	registry := skills.NewSkillRegistry()
 	if skill, err := registry.GetSkill(agent); err == nil {
 		if content, err := os.ReadFile(skill.OutputFile); err == nil {
@@ -138,19 +140,30 @@ func loadSkillInstructions(agent string) string {
 		}
 	}
 
-	// 2. Walk the agent's skill directory, concatenate SKILL.md files
-	if skillDir, ok := skills.ToolSkillDir[agent]; ok {
-		filepath.WalkDir(skillDir, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return nil
+	// 2. Load skill pack content
+	if len(skillRefs) > 0 {
+		// Targeted mode: resolve only the referenced skill packs
+		resolved := skills.ResolveSkillRefs(skillRefs, agent)
+		for _, r := range resolved {
+			if r.Found {
+				parts = append(parts, r.Content)
 			}
-			if d.Name() == "SKILL.md" {
-				if content, readErr := os.ReadFile(path); readErr == nil {
-					parts = append(parts, string(content))
+		}
+	} else {
+		// Default mode: walk the agent's skill directory, concatenate all SKILL.md files
+		if skillDir, ok := skills.ToolSkillDir[agent]; ok {
+			filepath.WalkDir(skillDir, func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return nil
 				}
-			}
-			return nil
-		})
+				if d.Name() == "SKILL.md" {
+					if content, readErr := os.ReadFile(path); readErr == nil {
+						parts = append(parts, string(content))
+					}
+				}
+				return nil
+			})
+		}
 	}
 
 	return strings.Join(parts, "\n\n---\n\n")

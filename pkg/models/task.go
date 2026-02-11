@@ -18,6 +18,7 @@ type Task struct {
 	AssignedTo  string     `yaml:"assigned_to,omitempty"`
 	Scope       []string   `yaml:"scope,omitempty"`
 	SpecRefs    []string   `yaml:"spec_refs,omitempty"`    // Specification file references
+	SkillRefs   []string   `yaml:"skill_refs,omitempty"`   // Skill pack references
 	Inputs      []string   `yaml:"inputs,omitempty"`       // Required input files
 	Outputs     []string   `yaml:"outputs,omitempty"`      // Expected output files
 	Acceptance  []string   `yaml:"acceptance,omitempty"`   // Acceptance criteria

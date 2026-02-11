@@ -71,6 +71,48 @@ func NewPackRegistry() *PackRegistry {
 		},
 	})
 
+	r.Register(SkillPack{
+		Name:        "api-docs",
+		Description: "Generate comprehensive API documentation from code",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/api-docs/SKILL.md", DstPath: "api-docs/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "code-simplification",
+		Description: "Review and refactor code for simplicity and maintainability",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/code-simplification/SKILL.md", DstPath: "code-simplification/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "dev-plans",
+		Description: "Create structured development plans with phased task breakdowns",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/dev-plans/SKILL.md", DstPath: "dev-plans/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "diataxis",
+		Description: "Write documentation using the Diataxis framework (tutorials, how-to, reference, explanation)",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/diataxis/SKILL.md", DstPath: "diataxis/SKILL.md"},
+			{SrcPath: "packs/diataxis/resources/principles.md", DstPath: "diataxis/resources/principles.md"},
+			{SrcPath: "packs/diataxis/resources/reference.md", DstPath: "diataxis/resources/reference.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "extract-wisdom",
+		Description: "Extract insights and actionable takeaways from text sources",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/extract-wisdom/SKILL.md", DstPath: "extract-wisdom/SKILL.md"},
+		},
+	})
+
 	return r
 }
 

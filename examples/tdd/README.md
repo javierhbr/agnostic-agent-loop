@@ -9,6 +9,7 @@ Use `work --follow-tdd` to decompose a task into three phased sub-tasks and guid
 - Install the TDD skill pack for your AI agent tool
 - Use `--follow-tdd` to decompose a task into RED/GREEN/REFACTOR phases
 - Work through each phase with agent-specific skill files
+- Use `skill_refs: [tdd]` on tasks for targeted TDD skill inclusion
 
 ---
 
@@ -173,6 +174,24 @@ The agent reads `.claude/skills/tdd/refactor.md` which instructs it to:
 | antigravity | `.agent/skills/tdd/`     |
 | codex       | `.codex/skills/tdd/`     |
 
+## Task-Level Skill Refs
+
+Instead of using `--follow-tdd` at claim time, you can declare TDD as a `skill_ref` directly in the task YAML. This ensures the TDD skill content is included in the context bundle when the task is processed:
+
+```yaml
+tasks:
+  - id: "TASK-001"
+    title: "Add email validation utility"
+    skill_refs:
+      - tdd
+    scope:
+      - "internal/validation"
+```
+
+When the context bundle is built for this task, only the TDD skill pack content is included (not all installed packs). The TDD skill ref resolves even if the pack isn't installed locally — it falls back to the embedded content compiled into the binary.
+
+This approach works well with autopilot, where tasks are processed automatically without `--follow-tdd`.
+
 ## Quick Reference
 
 | Action           | Command                                          |
@@ -180,4 +199,5 @@ The agent reads `.claude/skills/tdd/refactor.md` which instructs it to:
 | Install TDD pack | `skills install tdd --tool claude-code`          |
 | Install globally | `skills install tdd --tool claude-code --global` |
 | Run TDD workflow | `work --task <id> --follow-tdd`                  |
+| Use via task ref | Add `skill_refs: [tdd]` to task YAML             |
 | List packs       | `skills list`                                    |
