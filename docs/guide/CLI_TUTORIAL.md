@@ -1436,6 +1436,15 @@ agentic-agent status                         # Project dashboard: counts, blocke
 agentic-agent spec list                      # List specs across configured directories
 agentic-agent spec resolve REF               # Resolve a spec ref and print content
 
+# OpenSpec (change lifecycle)
+agentic-agent openspec init "Name" --from FILE  # Create change from requirements
+agentic-agent openspec import ID                # Import tasks.md into backlog
+agentic-agent openspec list                     # List all changes
+agentic-agent openspec show ID                  # Show change details
+agentic-agent openspec status ID                # Show task progress
+agentic-agent openspec complete ID              # Mark change as implemented
+agentic-agent openspec archive ID               # Archive completed change
+
 # Validation
 agentic-agent validate
 agentic-agent validate --format json
@@ -1469,6 +1478,8 @@ go test ./test/functional -v
 ├── context/            # Context summaries
 ├── spec/               # Specifications
 ├── agent-rules/        # Agent configs
+├── openspec/           # OpenSpec change lifecycle
+│   └── changes/        # Change directories (proposal, tasks, specs)
 └── tracks/             # Feature/bug tracks (brainstorm, spec, plan)
 
 src/                    # Source code

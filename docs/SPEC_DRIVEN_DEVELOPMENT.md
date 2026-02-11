@@ -193,7 +193,33 @@ agentic-agent validate
 agentic-agent task complete TASK-001
 ```
 
-### OpenSpec Workflow
+### OpenSpec CLI Workflow
+
+The `openspec` command group handles the full change lifecycle from a requirements file:
+
+```bash
+# 1. Initialize a change from requirements
+agentic-agent openspec init "Add Authentication" --from docs/auth-requirements.md
+
+# 2. Fill in proposal.md and tasks.md (the agent does this)
+
+# 3. Import tasks into the backlog
+agentic-agent openspec import add-authentication
+
+# 4. Execute tasks sequentially
+agentic-agent openspec status add-authentication   # Check progress
+agentic-agent task claim TASK-001
+# ... implement ...
+agentic-agent task complete TASK-001
+
+# 5. Complete and archive when all tasks are done
+agentic-agent openspec complete add-authentication
+agentic-agent openspec archive add-authentication
+```
+
+### OpenSpec Manual Workflow
+
+You can also reference OpenSpec specs directly with `--spec-refs`:
 
 ```bash
 # 1. Plan with OpenSpec
@@ -331,17 +357,20 @@ project/
 ```
 project/
 ├── openspec/
-│   ├── specs/
-│   │   └── auth/
-│   │       └── spec.md             # Source-of-truth specs
-│   ├── changes/
-│   │   └── add-authentication/
-│   │       ├── proposal.md         # Why and what
-│   │       ├── design.md           # Technical approach
-│   │       ├── tasks.md            # Implementation checklist
-│   │       └── specs/              # Delta specs
-│   └── config.yaml
+│   └── specs/
+│       └── auth/
+│           └── spec.md             # Source-of-truth specs (manual)
 ├── .agentic/
+│   ├── openspec/
+│   │   └── changes/                # Managed by `openspec` commands
+│   │       ├── changes.yaml        # Change registry
+│   │       ├── add-authentication/
+│   │       │   ├── proposal.md     # Seeded from requirements
+│   │       │   ├── tasks.md        # Numbered task list
+│   │       │   ├── metadata.yaml   # Change metadata
+│   │       │   ├── specs/          # Delta specs
+│   │       │   └── IMPLEMENTED     # Completion marker
+│   │       └── _archive/           # Archived changes
 │   ├── spec/                       # Native specs (fallback)
 │   ├── tasks/
 │   ├── context/
@@ -422,6 +451,18 @@ project/
 | `skills install <pack>` | Install a skill pack for the active agent |
 | `status` | Show project dashboard (task counts, blockers, next ready) |
 
+### OpenSpec Commands
+
+| Command | Purpose |
+|---------|---------|
+| `openspec init <name> --from <file>` | Create change from requirements file |
+| `openspec import <id>` | Import tasks.md into backlog |
+| `openspec status <id>` | Show change progress (tasks done/total) |
+| `openspec complete <id>` | Validate all tasks done, write IMPLEMENTED marker |
+| `openspec archive <id>` | Move completed change to archive |
+| `openspec list` | List all changes |
+| `openspec show <id>` | Show change details |
+
 ### Autopilot & Learnings Commands
 
 | Command | Purpose |
@@ -441,6 +482,5 @@ The following are not yet implemented:
 - **Priority levels** — `priority: high/medium/low` for task sorting
 - **Agent spawning** — Autopilot spawns agents (Claude API, etc.) automatically
 - **OpenSpec bidirectional sync** — `openspec sync` to update OpenSpec tasks.md from agentic completion status
-- **OpenSpec auto-import** — `openspec import <change>` to parse tasks.md into agentic tasks
 - **Parallel task execution** — Run independent tasks concurrently
 - **Cost tracking** — Budget limits for autopilot runs

@@ -5,6 +5,7 @@
 *.so
 *.dylib
 build/bin/agentic-agent
+/agentic-agent
 examples/test-sandbox/
 # Test binary, built with `go test -c`
 *.test

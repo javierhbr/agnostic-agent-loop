@@ -16,6 +16,7 @@ paths:
     - .specify/specs       # Spec Kit specs (if using Spec Kit)
     - openspec/specs        # OpenSpec specs (if using OpenSpec)
     - .agentic/spec         # Agentic native specs (fallback)
+  openSpecDir: .agentic/openspec/changes  # OpenSpec change lifecycle
   contextDirs:
     - .agentic/context
 

@@ -81,6 +81,9 @@ docs/
 **Use spec-driven development with Spec Kit, OpenSpec, or native specs**
 > See [Spec-Driven Development](SPEC_DRIVEN_DEVELOPMENT.md)
 
+**Run the full OpenSpec change lifecycle (init → import → execute → complete → archive)**
+> See [Spec-Driven Development — OpenSpec CLI](SPEC_DRIVEN_DEVELOPMENT.md#openspec-cli-workflow)
+
 **Use task-level skill refs or the simplify command**
 > See [CLI Tutorial — Skill Refs and Simplify](guide/CLI_TUTORIAL.md#scenario-4-skill-refs-and-code-simplification)
 
@@ -105,6 +108,7 @@ Key internal packages:
 | [internal/orchestrator/](../internal/orchestrator/) | Autopilot loop, state machine, task archival |
 | [internal/status/](../internal/status/) | Project status dashboard (counts, blockers, readiness) |
 | [internal/gitops/](../internal/gitops/) | Read-only git integration (branch, commits, changed files) |
+| [internal/openspec/](../internal/openspec/) | OpenSpec change lifecycle (init, import, complete, archive) |
 | [internal/specs/](../internal/specs/) | Multi-directory spec resolution |
 | [internal/config/](../internal/config/) | YAML config loading and agent-specific overrides |
 | [internal/simplify/](../internal/simplify/) | Code simplification bundle builder |

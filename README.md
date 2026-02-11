@@ -315,6 +315,25 @@ agentic-agent spec resolve "auth/spec.md"
 
 See [docs/SPEC_DRIVEN_DEVELOPMENT.md](docs/SPEC_DRIVEN_DEVELOPMENT.md) for Spec Kit, OpenSpec, and native spec workflows.
 
+### OpenSpec CLI
+
+The `openspec` command group handles the full change lifecycle — from a requirements file to archived implementation:
+
+```bash
+# Initialize a change from requirements
+agentic-agent openspec init "Auth Feature" --from .agentic/spec/auth-requirements.md
+
+# Fill in proposal.md and tasks.md, then import into backlog
+agentic-agent openspec import auth-feature
+
+# Track progress, complete, and archive
+agentic-agent openspec status auth-feature
+agentic-agent openspec complete auth-feature
+agentic-agent openspec archive auth-feature
+```
+
+Tell your agent: *"Start a project from requirements.md following openspec"* — the openspec skill handles the full flow automatically.
+
 ---
 
 ## Autopilot Mode
@@ -403,6 +422,18 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 | `spec list` | List all specs across configured directories |
 | `spec resolve <ref>` | Resolve a spec ref and print content |
 
+### OpenSpec
+
+| Command | Description |
+|---------|-------------|
+| `openspec init <name> --from <file>` | Create change from requirements file |
+| `openspec import <id>` | Import tasks.md into backlog |
+| `openspec list` | List all changes |
+| `openspec show <id>` | Show change details and proposal excerpt |
+| `openspec status <id>` | Show task progress for a change |
+| `openspec complete <id>` | Validate all tasks done, write IMPLEMENTED marker |
+| `openspec archive <id>` | Archive a completed change |
+
 ### Automation
 
 | Command | Description |
@@ -463,6 +494,7 @@ paths:
   prdOutputPath: .agentic/tasks/
   progressTextPath: .agentic/progress.txt
   progressYAMLPath: .agentic/progress.yaml
+  openSpecDir: .agentic/openspec/changes  # OpenSpec change lifecycle
   archiveDir: .agentic/archive/
 
 workflow:
@@ -492,6 +524,13 @@ workflow:
 |       |-- spec.md          # Enhanced specification
 |       |-- plan.md          # Phased implementation plan
 |       +-- metadata.yaml
+|-- openspec/            # OpenSpec change lifecycle
+|   +-- changes/
+|       +-- auth-feature/
+|           |-- proposal.md      # Change proposal
+|           |-- tasks.md         # Implementation tasks
+|           |-- specs/           # Change-specific specs
+|           +-- metadata.yaml
 +-- agent-rules/         # Tool-specific agent configs
     +-- base.md
 agnostic-agent.yaml      # Project configuration
@@ -519,6 +558,7 @@ agentic-agent/
 |   |-- orchestrator/         # Autopilot and loop orchestration
 |   |-- plans/                # Plan parsing + generation from specs
 |   |-- project/              # Project init + track templates
+|   |-- openspec/             # OpenSpec change lifecycle manager
 |   |-- specs/                # Multi-directory spec resolution
 |   |-- status/               # Aggregated project status
 |   |-- simplify/             # Code simplification bundle builder
@@ -549,6 +589,7 @@ go test ./... -cover
 make coverage-html
 
 # By package
+go test ./internal/openspec -v        # OpenSpec change lifecycle
 go test ./internal/specs -v           # Spec resolution
 go test ./internal/tasks -v           # Task management + decomposition + TDD
 go test ./internal/skills -v          # Skill packs, installer, resolver

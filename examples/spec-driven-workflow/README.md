@@ -167,7 +167,88 @@ For the full spec-driven development guide, see [docs/SPEC_DRIVEN_DEVELOPMENT.md
 
 ---
 
-## Part C: Autopilot Mode
+## Part C: OpenSpec CLI (End-to-End)
+
+The `openspec` command group handles the full change lifecycle — from a requirements file to archived implementation. Tell your agent:
+
+> "Start a project from .agentic/spec/auth-requirements.md following openspec"
+
+The agent uses the `openspec` skill to run these commands automatically:
+
+### 1. Initialize a change from requirements
+
+```bash
+agentic-agent openspec init "Auth Feature" --from .agentic/spec/auth-requirements.md
+```
+
+```
+Created change: auth-feature
+  → Proposal:  .agentic/openspec/changes/auth-feature/proposal.md
+  → Tasks:     .agentic/openspec/changes/auth-feature/tasks.md
+  → Specs:     .agentic/openspec/changes/auth-feature/specs/
+  → Status:    draft
+
+→ Fill in proposal.md, then write tasks in tasks.md.
+→ Then run: agentic-agent openspec import auth-feature
+```
+
+The agent reads the generated proposal template, fills in Problem/Approach/Scope/Acceptance, then writes `tasks.md` with a numbered implementation plan.
+
+### 2. Import tasks into the backlog
+
+```bash
+agentic-agent openspec import auth-feature
+```
+
+```
+Imported 4 tasks from auth-feature
+  • TASK-1739000001: [auth-feature] Create User model with bcrypt
+  • TASK-1739000002: [auth-feature] Add JWT token service
+  • TASK-1739000003: [auth-feature] Implement login/register endpoints
+  • TASK-1739000004: [auth-feature] Write integration tests
+
+→ Run: agentic-agent task claim TASK-1739000001
+```
+
+### 3. Execute tasks sequentially
+
+```bash
+# Check progress at any time
+agentic-agent openspec status auth-feature
+
+# Work through each task
+agentic-agent task claim TASK-1739000001
+# ... implement ...
+agentic-agent task complete TASK-1739000001
+
+agentic-agent task claim TASK-1739000002
+# ... implement ...
+agentic-agent task complete TASK-1739000002
+# ... repeat for all tasks ...
+```
+
+### 4. Complete and archive
+
+```bash
+# Validates all tasks are done, writes IMPLEMENTED marker
+agentic-agent openspec complete auth-feature
+
+# Moves to archive
+agentic-agent openspec archive auth-feature
+```
+
+### Example prompts for your agent
+
+| Prompt | What happens |
+| ------ | ------------ |
+| "Start a project from requirements.md following openspec" | Full lifecycle: init → fill proposal → write tasks → import → execute → complete |
+| "Implement the features in docs/payment-spec.md using openspec" | Same flow, different source file |
+| "openspec status auth-feature" | Shows task progress for an existing change |
+| "Continue implementing change auth-feature" | Resumes at the next unclaimed task |
+
+---
+
+## Part D: Autopilot Mode
 
 Autopilot processes backlog tasks sequentially: readiness check, claim, generate context, build bundle.
 

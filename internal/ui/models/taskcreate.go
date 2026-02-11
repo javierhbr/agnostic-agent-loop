@@ -558,9 +558,9 @@ func (m TaskCreateModel) renderComplete() string {
 	b.WriteString(styles.SubtitleStyle.Render(fmt.Sprintf("Task ID: %s", m.taskID)) + "\n\n")
 
 	b.WriteString(styles.SubtitleStyle.Render("Next steps:") + "\n\n")
-	b.WriteString(styles.ListItemStyle.Render(fmt.Sprintf("1. View task: %s\n", styles.BoldStyle.Render("agentic-agent task show "+m.taskID))))
-	b.WriteString(styles.ListItemStyle.Render(fmt.Sprintf("2. Claim task: %s\n", styles.BoldStyle.Render("agentic-agent task claim "+m.taskID))))
-	b.WriteString(styles.ListItemStyle.Render(fmt.Sprintf("3. List all tasks: %s\n\n", styles.BoldStyle.Render("agentic-agent task list"))))
+	b.WriteString(fmt.Sprintf("  1. View task: %s\n", styles.BoldStyle.Render("agentic-agent task show "+m.taskID)))
+	b.WriteString(fmt.Sprintf("  2. Claim task: %s\n", styles.BoldStyle.Render("agentic-agent task claim "+m.taskID)))
+	b.WriteString(fmt.Sprintf("  3. List all tasks: %s\n\n", styles.BoldStyle.Render("agentic-agent task list")))
 
 	b.WriteString(styles.HelpStyle.Render("Press Enter to exit") + "\n")
 
