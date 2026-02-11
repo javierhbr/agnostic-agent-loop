@@ -53,6 +53,9 @@ func SetDefaults(cfg *models.Config) {
 	if cfg.Paths.TrackDir == "" {
 		cfg.Paths.TrackDir = ".agentic/tracks"
 	}
+	if cfg.Paths.OpenSpecDir == "" {
+		cfg.Paths.OpenSpecDir = ".agentic/openspec/changes"
+	}
 }
 
 // GetAgentConfig returns the effective config for a specific agent,

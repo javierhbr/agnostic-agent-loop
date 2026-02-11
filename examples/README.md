@@ -38,9 +38,9 @@ Bounce between Claude Code CLI, Claude Code VSCode, GitHub Copilot, and Antigrav
 
 See [MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md).
 
-### `spec-driven-workflow/` - Spec Kit and OpenSpec Integration
+### `spec-driven-workflow/` - Spec Kit, OpenSpec CLI, and Autopilot
 
-Multi-directory spec resolution with Spec Kit, OpenSpec, and native specs. Shows how tasks reference specs across directories and how autopilot processes them sequentially.
+Multi-directory spec resolution with Spec Kit, OpenSpec, and native specs. Includes the full OpenSpec CLI lifecycle (init → import → execute → complete → archive) and autopilot mode for sequential task processing.
 
 See [README.md](spec-driven-workflow/README.md).
 
@@ -106,6 +106,17 @@ agentic-agent spec list                     # All specs across directories
 agentic-agent spec resolve auth-spec.md     # Resolve and print
 ```
 
+### Work with OpenSpec changes
+
+```bash
+agentic-agent openspec init "Auth Feature" --from .agentic/spec/auth-requirements.md
+# Fill in proposal.md and tasks.md...
+agentic-agent openspec import auth-feature
+agentic-agent openspec status auth-feature
+agentic-agent openspec complete auth-feature
+agentic-agent openspec archive auth-feature
+```
+
 ### Install skill packs
 
 ```bash
@@ -155,7 +166,7 @@ agentic-agent status --format json  # Machine-readable output
 - **[skill-packs](skill-packs/README.md)** — Multi-tool skill installation, drift detection
 - **[tdd](tdd/README.md)** — RED/GREEN/REFACTOR decomposition
 - **[multi-agent-workflow](multi-agent-workflow/MULTI_AGENT_USE_CASE.md)** — 4 tools, 6 phases, cross-tool bug fix
-- **[spec-driven-workflow](spec-driven-workflow/README.md)** — Spec Kit, OpenSpec, autopilot mode
+- **[spec-driven-workflow](spec-driven-workflow/README.md)** — Spec Kit, OpenSpec CLI, autopilot mode
 - **[agent-aware-skills](agent-aware-skills/README.md)** — Agent detection, per-agent rules, `skills ensure`, `skill_refs`, `simplify`
 
 ---
@@ -201,6 +212,7 @@ paths:
     - .agentic/context          # Global context files
 
   trackDir: .agentic/tracks     # Track work units (spec + plan + tasks)
+  openSpecDir: .agentic/openspec/changes  # OpenSpec change lifecycle
   prdOutputPath: .agentic/tasks/       # Where PRD converter writes tasks (task YAML supports skill_refs)
   progressTextPath: .agentic/progress.txt
   progressYAMLPath: .agentic/progress.yaml
@@ -242,6 +254,7 @@ Omitted fields use these defaults:
 | `paths.specDirs`   | `[.agentic/spec]`             |
 | `paths.contextDirs`| `[.agentic/context]`          |
 | `paths.trackDir`   | `.agentic/tracks`             |
+| `paths.openSpecDir`| `.agentic/openspec/changes`   |
 | `paths.archiveDir` | `.agentic/archive/`           |
 
 ---

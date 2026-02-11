@@ -93,4 +93,5 @@ func init() {
 	rootCmd.AddCommand(trackCmd)
 	rootCmd.AddCommand(planCmd)
 	rootCmd.AddCommand(simplifyCmd)
+	rootCmd.AddCommand(openspecCmd)
 }

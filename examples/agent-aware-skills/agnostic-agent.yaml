@@ -50,6 +50,7 @@ paths:
   contextDirs:
     - .agentic/context
   trackDir: .agentic/tracks
+  openSpecDir: .agentic/openspec/changes
   prdOutputPath: .agentic/tasks/
 
 workflow:

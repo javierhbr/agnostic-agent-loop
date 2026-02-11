@@ -353,12 +353,12 @@ func (m InitWizardModel) renderWelcome() string {
 
 	b.WriteString(styles.TitleStyle.Render("Initialize Agentic Agent Project") + "\n\n")
 	b.WriteString("This wizard will guide you through setting up a new project with:\n\n")
-	b.WriteString(styles.ListItemStyle.Render("  • Project configuration\n"))
-	b.WriteString(styles.ListItemStyle.Render("  • Directory structure (.agentic/)\n"))
-	b.WriteString(styles.ListItemStyle.Render("  • Specification templates\n"))
-	b.WriteString(styles.ListItemStyle.Render("  • Task management files\n"))
-	b.WriteString(styles.ListItemStyle.Render("  • AI model configuration\n"))
-	b.WriteString(styles.ListItemStyle.Render("  • Project profile (optional)\n\n"))
+	b.WriteString("  • Project configuration\n")
+	b.WriteString("  • Directory structure (.agentic/)\n")
+	b.WriteString("  • Specification templates\n")
+	b.WriteString("  • Task management files\n")
+	b.WriteString("  • AI model configuration\n")
+	b.WriteString("  • Project profile (optional)\n\n")
 
 	b.WriteString(styles.HelpStyle.Render("Press Enter to continue • Esc to cancel") + "\n")
 
@@ -391,10 +391,10 @@ func (m InitWizardModel) renderValidators() string {
 	b.WriteString(styles.TitleStyle.Render("Validation Rules") + "\n\n")
 	b.WriteString(m.validatorSelect.View() + "\n\n")
 
-	b.WriteString(styles.MutedStyle.Render("Validators enforce best practices:\n"))
-	b.WriteString(styles.MutedStyle.Render("  • Context files in directories\n"))
-	b.WriteString(styles.MutedStyle.Render("  • Task scope enforcement\n"))
-	b.WriteString(styles.MutedStyle.Render("  • Task size limits\n\n"))
+	b.WriteString(styles.MutedStyle.Render("Validators enforce best practices:\n"+
+		"  • Context files in directories\n"+
+		"  • Task scope enforcement\n"+
+		"  • Task size limits") + "\n\n")
 
 	b.WriteString(styles.HelpStyle.Render("↑/↓ to navigate • Enter to continue • Esc to cancel") + "\n")
 
@@ -482,13 +482,13 @@ func (m InitWizardModel) renderPreview() string {
 	}
 
 	b.WriteString(styles.SubtitleStyle.Render("Directory structure to be created:") + "\n\n")
-	b.WriteString(styles.MutedStyle.Render(".agentic/\n"))
-	b.WriteString(styles.MutedStyle.Render("├── spec/              # Specifications\n"))
-	b.WriteString(styles.MutedStyle.Render("├── context/           # Context summaries\n"))
-	b.WriteString(styles.MutedStyle.Render("├── tasks/             # Task management\n"))
-	b.WriteString(styles.MutedStyle.Render("├── tracks/            # Feature/bug tracks\n"))
-	b.WriteString(styles.MutedStyle.Render("└── agent-rules/       # Tool configs\n"))
-	b.WriteString(styles.MutedStyle.Render("agnostic-agent.yaml    # Project config\n\n"))
+	b.WriteString(styles.MutedStyle.Render(".agentic/\n"+
+		"├── spec/              # Specifications\n"+
+		"├── context/           # Context summaries\n"+
+		"├── tasks/             # Task management\n"+
+		"├── tracks/            # Feature/bug tracks\n"+
+		"└── agent-rules/       # Tool configs\n"+
+		"agnostic-agent.yaml    # Project config") + "\n\n")
 
 	b.WriteString(styles.HelpStyle.Render("Press Enter to initialize • Esc to cancel") + "\n")
 

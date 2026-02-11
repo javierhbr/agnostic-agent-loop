@@ -24,6 +24,7 @@ type Task struct {
 	Acceptance  []string   `yaml:"acceptance,omitempty"`   // Acceptance criteria
 	SubTasks    []SubTask  `yaml:"subtasks,omitempty"`
 	TrackID     string     `yaml:"track_id,omitempty"`     // Associated track ID
+	ChangeID    string     `yaml:"change_id,omitempty"`    // Associated openspec change
 	ClaimedAt   time.Time  `yaml:"claimed_at,omitempty"`   // When the task was claimed
 	CompletedAt time.Time  `yaml:"completed_at,omitempty"` // When the task was completed
 	Branch      string     `yaml:"branch,omitempty"`       // Git branch when claimed
