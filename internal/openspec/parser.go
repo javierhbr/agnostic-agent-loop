@@ -17,6 +17,8 @@ var (
 	verLinkSuffixRe = regexp.MustCompile(`\s*\(ver\s+\[.*?\]\(.*?\)\)\s*$`)
 	// Matches a bare markdown link "[text](path)" at end of title
 	bareLinkSuffixRe = regexp.MustCompile(`\s*\[.*?\]\(.*?\)\s*$`)
+	// Matches HTML comment wrappers around task lines
+	htmlCommentRe = regexp.MustCompile(`^<!--\s*(.*?)\s*-->$`)
 )
 
 // TaskEntry represents a parsed line from tasks.md — title plus optional file reference.
@@ -32,6 +34,7 @@ type TaskDetail struct {
 	Prerequisites []string // items under ## Prerequisites
 	Acceptance    []string // items under ## Acceptance Criteria
 	Notes         string   // content under ## Technical Notes
+	Skills        []string // skill pack references under ## Skills
 }
 
 // ParseTasksFile reads a tasks.md file and extracts task titles.
@@ -44,9 +47,14 @@ func ParseTasksFile(path string) ([]string, error) {
 	defer f.Close()
 
 	var tasks []string
+	var inComment bool
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
+		line := scanner.Text()
+		line, inComment = filterCommentLine(line, inComment)
+		if line == "" {
+			continue
+		}
 		if title := extractTaskTitle(line); title != "" {
 			tasks = append(tasks, title)
 		}
@@ -67,6 +75,67 @@ func extractTaskTitle(line string) string {
 	if m := checkboxRe.FindStringSubmatch(line); len(m) == 2 {
 		return strings.TrimSpace(m[1])
 	}
+	// Retry after stripping HTML comment wrappers (agents sometimes wrap tasks in <!-- -->)
+	if inner := stripHTMLComment(line); inner != line {
+		if m := numberedListRe.FindStringSubmatch(inner); len(m) == 2 {
+			return strings.TrimSpace(m[1])
+		}
+		if m := checkboxRe.FindStringSubmatch(inner); len(m) == 2 {
+			return strings.TrimSpace(m[1])
+		}
+	}
+	return ""
+}
+
+// filterCommentLine handles HTML comment state tracking for line-by-line parsing.
+// It skips lines inside multi-line <!-- ... --> blocks but returns the inner content
+// of single-line <!-- task --> wrappers so they can be parsed as tasks.
+// Returns the processed line (empty string to skip) and the updated inComment state.
+func filterCommentLine(raw string, inComment bool) (string, bool) {
+	trimmed := strings.TrimSpace(raw)
+
+	// Single-line comment: <!-- content --> — return content for task matching
+	if htmlCommentRe.MatchString(trimmed) {
+		return trimmed, inComment
+	}
+
+	// Entering a multi-line comment block
+	if !inComment && strings.Contains(trimmed, "<!--") {
+		// Check if it also closes on the same line (already handled above for full wrap)
+		if strings.Contains(trimmed, "-->") {
+			return "", inComment
+		}
+		return "", true
+	}
+
+	// Inside a multi-line comment block
+	if inComment {
+		if strings.Contains(trimmed, "-->") {
+			return "", false
+		}
+		return "", true
+	}
+
+	return trimmed, false
+}
+
+// stripHTMLComment removes <!-- --> wrappers from a line, returning the inner content.
+// Returns the original line unchanged if it is not wrapped in a comment.
+func stripHTMLComment(line string) string {
+	if m := htmlCommentRe.FindStringSubmatch(line); len(m) == 2 {
+		return strings.TrimSpace(m[1])
+	}
+	return line
+}
+
+// matchTaskLine tries to match a numbered or checkbox task pattern, returning the raw title.
+func matchTaskLine(line string) string {
+	if m := numberedListRe.FindStringSubmatch(line); len(m) == 2 {
+		return strings.TrimSpace(m[1])
+	}
+	if m := checkboxRe.FindStringSubmatch(line); len(m) == 2 {
+		return strings.TrimSpace(m[1])
+	}
 	return ""
 }
 
@@ -80,9 +149,14 @@ func ParseTasksFileStructured(path string) ([]TaskEntry, error) {
 	defer f.Close()
 
 	var entries []TaskEntry
+	var inComment bool
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
+		var line string
+		line, inComment = filterCommentLine(scanner.Text(), inComment)
+		if line == "" {
+			continue
+		}
 		if entry := extractTaskEntry(line); entry != nil {
 			entries = append(entries, *entry)
 		}
@@ -99,11 +173,12 @@ func ParseTasksFileStructured(path string) ([]TaskEntry, error) {
 // extractTaskEntry parses a single line from tasks.md into a TaskEntry.
 // Returns nil if the line is not a task line.
 func extractTaskEntry(line string) *TaskEntry {
-	var rawTitle string
-	if m := numberedListRe.FindStringSubmatch(line); len(m) == 2 {
-		rawTitle = strings.TrimSpace(m[1])
-	} else if m := checkboxRe.FindStringSubmatch(line); len(m) == 2 {
-		rawTitle = strings.TrimSpace(m[1])
+	rawTitle := matchTaskLine(line)
+	// Retry after stripping HTML comment wrappers
+	if rawTitle == "" {
+		if inner := stripHTMLComment(line); inner != line {
+			rawTitle = matchTaskLine(inner)
+		}
 	}
 	if rawTitle == "" {
 		return nil
@@ -195,6 +270,8 @@ func normalizeSectionName(heading string) string {
 		return "acceptance"
 	case strings.Contains(lower, "technical") || lower == "notes":
 		return "notes"
+	case strings.Contains(lower, "skill"):
+		return "skills"
 	default:
 		return lower
 	}
@@ -214,6 +291,8 @@ func flushSection(detail *TaskDetail, section string, lines []string) {
 		detail.Acceptance = extractListItems(lines)
 	case "notes":
 		detail.Notes = strings.TrimSpace(strings.Join(lines, "\n"))
+	case "skills":
+		detail.Skills = extractListItems(lines)
 	}
 }
 

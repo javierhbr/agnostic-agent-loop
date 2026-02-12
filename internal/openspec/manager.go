@@ -220,6 +220,9 @@ func applyTaskDetail(task *models.Task, detail *TaskDetail) {
 			task.Description = "Technical Notes:\n" + detail.Notes
 		}
 	}
+	if len(detail.Skills) > 0 {
+		task.SkillRefs = detail.Skills
+	}
 }
 
 // ScaffoldTaskFiles creates the tasks/ subdirectory and renders a task-detail

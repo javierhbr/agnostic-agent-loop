@@ -57,6 +57,9 @@ func (tm *TaskManager) LoadTasks(listType string) (*TaskList, error) {
 }
 
 func (tm *TaskManager) SaveTasks(listType string, list *TaskList) error {
+	if err := os.MkdirAll(tm.baseDir, 0755); err != nil {
+		return fmt.Errorf("failed to create tasks directory: %w", err)
+	}
 	path := filepath.Join(tm.baseDir, listType+".yaml")
 	data, err := yaml.Marshal(list)
 	if err != nil {

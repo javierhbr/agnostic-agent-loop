@@ -26,7 +26,7 @@ The CLI maintains state consistency — bypassing it causes data corruption.
 - "Start a project from requirements.md following openspec"
 - "Implement the features described in docs/auth-spec.md using openspec"
 - "openspec init from .agentic/spec/payment-requirements.md"
-- "Continue implementing change auth-feature" (resumes Phase 5)
+- "Continue implementing change auth-feature" (resumes Phase 6)
 
 ## Instructions
 
@@ -49,7 +49,6 @@ This auto-installs mandatory skill packs and generates rules files. Safe to run 
 3. **Ask clarifying questions** — before proceeding, ask the user 3-5 targeted questions to fill gaps:
    - Scope boundaries (what's in/out for v1?)
    - Target audience or users
-   - Technical constraints (stack, existing systems, integrations)
    - Priority order if multiple features are described
    - Any known risks or blockers
 
@@ -74,12 +73,71 @@ This auto-installs mandatory skill packs and generates rules files. Safe to run 
 3. Read the generated proposal at the path printed by the command
 4. Edit `proposal.md` — fill in the Problem, Approach, Scope, and Acceptance Criteria sections using the requirements and the user's answers from Phase 1
 
-### Phase 3: Create the development plan
+### Phase 3: Define the tech stack
+
+Before planning tasks, establish the technical foundation for this change.
+
+1. **Check for an existing tech stack definition** — read `.agentic/context/tech-stack.md`
+   - If the file exists and has real content (not just template comments): show it to the user and ask:
+     ```
+     I found an existing tech stack definition:
+     [show contents]
+
+     Is this still accurate for this change? Anything to add or change?
+     ```
+   - If the file doesn't exist, is empty, or only has template placeholders: proceed to discovery below.
+
+2. **Ask the user about their tech stack** — present structured questions with lettered options:
+   ```
+   1. What language(s) will this project use?
+      A. TypeScript/JavaScript (Node.js)
+      B. Go
+      C. Python
+      D. Other: [please specify]
+
+   2. What frontend framework (if any)?
+      A. React (Next.js, Vite, etc.)
+      B. Vue (Nuxt, etc.)
+      C. Svelte (SvelteKit)
+      D. None — backend/CLI only
+
+   3. What data storage?
+      A. PostgreSQL
+      B. SQLite / local storage
+      C. MongoDB
+      D. None needed / TBD
+
+   4. Any specific infrastructure or deployment target?
+      A. Docker + cloud (AWS/GCP/Azure)
+      B. Vercel/Netlify (serverless)
+      C. Local only / CLI tool
+      D. Other: [please specify]
+   ```
+   Wait for the user to answer before continuing.
+
+3. **Write or update `.agentic/context/tech-stack.md`** with the user's answers:
+   ```markdown
+   # Tech Stack
+
+   - **Language**: TypeScript (Node.js 20+)
+   - **Frontend**: React 18 with Vite
+   - **Storage**: localStorage (offline-first), sync via REST API
+   - **Styling**: Tailwind CSS
+   - **Testing**: Vitest + Testing Library
+   - **Build**: Vite
+   ```
+   Create the `.agentic/context/` directory if it doesn't exist.
+
+4. **Update `proposal.md`** — add a Tech Stack subsection under Approach with the chosen stack, so it becomes part of the change's permanent record.
+
+### Phase 4: Create the development plan
 
 **Use the `creating-development-plans` skill** to analyse the requirements and generate technical tasks.
 
+The tech stack defined in Phase 3 (available in `.agentic/context/tech-stack.md`) should directly inform what tasks are created and how they are scoped.
+
 The dev-plans skill will:
-1. Gather context from existing code and documentation
+1. Gather context from existing code, documentation, and the tech stack definition
 2. Analyse requirements and identify implementation approach
 3. Break work into phased tasks with dependencies
 4. Include QA checklists and review checkpoints
@@ -116,8 +174,20 @@ For changes with **4 or more tasks**, create individual task detail files to giv
 
    ## Technical Notes
    Implementation hints and architecture decisions.
+
+   ## Skills
+   - tdd
    ```
-3. Update `tasks.md` to be an index that references the detail files:
+3. **Ask the user which skills each task needs.** Present the available skill packs and ask which ones apply:
+   ```
+   Which skill packs should each task use?
+   Available: tdd, api-docs, code-simplification, dev-plans, diataxis, extract-wisdom, openspec
+
+   Task 1 (Set up project structure): [none / list packs]
+   Task 2 (Implement storage): [none / list packs]
+   ```
+   Add the answers as a `## Skills` section in each task detail file. If the user says "none" or skips, omit the section — all installed skills load by default.
+4. Update `tasks.md` to be an index that references the detail files:
    ```markdown
    - [ ] Set up project structure (ver [tasks/01-project-setup.md](./tasks/01-project-setup.md))
    - [ ] Implement storage (ver [tasks/02-storage.md](./tasks/02-storage.md))
@@ -125,7 +195,7 @@ For changes with **4 or more tasks**, create individual task detail files to giv
 
 **Skip detailed files** for simple changes (1-3 tasks) where `tasks.md` titles are sufficient.
 
-### Phase 4: Write detailed specs (for complex changes)
+### Phase 5: Write detailed specs (for complex changes)
 
 For changes with **4 or more tasks** or **multiple components**, write specification files in the `specs/` directory:
 
@@ -143,7 +213,7 @@ For changes with **4 or more tasks** or **multiple components**, write specifica
 
 **Skip this phase** for simple changes (1-3 tasks) where `proposal.md` covers everything.
 
-### Phase 5: Execute tasks sequentially
+### Phase 6: Execute tasks sequentially
 
 Tasks are **auto-imported** into the backlog when you run `task list` or `task claim`.
 No manual import step is needed.
@@ -166,7 +236,7 @@ For each task (check progress with `agentic-agent openspec status <change-id>`):
 **Never skip ahead.** Complete and verify each task before starting the next.
 **Never modify `.agentic/tasks/*.yaml` files directly.**
 
-### Phase 6: Complete and archive
+### Phase 7: Complete and archive
 
 When all tasks are done:
 

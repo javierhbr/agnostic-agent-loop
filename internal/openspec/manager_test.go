@@ -292,6 +292,102 @@ func TestParser(t *testing.T) {
 	}
 }
 
+func TestParserHTMLCommentWrapped(t *testing.T) {
+	dir := t.TempDir()
+
+	tests := []struct {
+		name     string
+		content  string
+		expected []string
+	}{
+		{
+			name: "numbered list in comments",
+			content: `# Tasks
+<!-- 1. Set up the project structure using Next.js and Node.js. -->
+<!-- 2. Implement service workers for offline functionality. -->
+<!-- 3. Create a customizable button with a default cool feature. -->
+`,
+			expected: []string{
+				"Set up the project structure using Next.js and Node.js.",
+				"Implement service workers for offline functionality.",
+				"Create a customizable button with a default cool feature.",
+			},
+		},
+		{
+			name: "checkbox list in comments",
+			content: `# Tasks
+<!-- - [ ] Alpha task -->
+<!-- - [ ] Beta task -->
+<!-- - [x] Gamma task -->
+`,
+			expected: []string{"Alpha task", "Beta task", "Gamma task"},
+		},
+		{
+			name: "mixed commented and uncommented",
+			content: `# Tasks
+1. Normal task
+<!-- 2. Commented task -->
+3. Another normal task
+`,
+			expected: []string{"Normal task", "Commented task", "Another normal task"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(dir, tt.name+".md")
+			if err := os.WriteFile(path, []byte(tt.content), 0644); err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := ParseTasksFile(path)
+			if err != nil {
+				t.Fatalf("ParseTasksFile failed: %v", err)
+			}
+
+			if len(got) != len(tt.expected) {
+				t.Fatalf("expected %d tasks, got %d: %v", len(tt.expected), len(got), got)
+			}
+			for i, title := range got {
+				if title != tt.expected[i] {
+					t.Errorf("task %d: expected %q, got %q", i, tt.expected[i], title)
+				}
+			}
+		})
+	}
+}
+
+func TestParserStructuredHTMLCommentWrapped(t *testing.T) {
+	dir := t.TempDir()
+
+	content := `# Tasks
+<!-- - [ ] Setup project (ver [tasks/01-setup.md](./tasks/01-setup.md)) -->
+<!-- - [ ] Build API -->
+`
+	path := filepath.Join(dir, "commented-structured.md")
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := ParseTasksFileStructured(path)
+	if err != nil {
+		t.Fatalf("ParseTasksFileStructured failed: %v", err)
+	}
+
+	if len(got) != 2 {
+		t.Fatalf("expected 2 entries, got %d: %v", len(got), got)
+	}
+	if got[0].Title != "Setup project" {
+		t.Errorf("entry 0 title: expected %q, got %q", "Setup project", got[0].Title)
+	}
+	if got[0].FileRef != "tasks/01-setup.md" {
+		t.Errorf("entry 0 fileref: expected %q, got %q", "tasks/01-setup.md", got[0].FileRef)
+	}
+	if got[1].Title != "Build API" {
+		t.Errorf("entry 1 title: expected %q, got %q", "Build API", got[1].Title)
+	}
+}
+
 func TestParserEmpty(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "empty.md")
@@ -788,6 +884,61 @@ This should be ignored.
 			t.Errorf("prerequisites[1]: expected 'Star item', got %q", detail.Prerequisites[1])
 		}
 	})
+
+	t.Run("with skills section", func(t *testing.T) {
+		content := `# Task with skills
+
+## Description
+A task that needs specific skills.
+
+## Skills
+- tdd
+- api-docs
+- code-simplification
+`
+		path := filepath.Join(dir, "skills.md")
+		os.WriteFile(path, []byte(content), 0644)
+
+		detail, err := ParseTaskDetailFile(path)
+		if err != nil {
+			t.Fatalf("ParseTaskDetailFile failed: %v", err)
+		}
+
+		if detail.Title != "Task with skills" {
+			t.Errorf("title: expected 'Task with skills', got %q", detail.Title)
+		}
+		if len(detail.Skills) != 3 {
+			t.Fatalf("skills: expected 3, got %d: %v", len(detail.Skills), detail.Skills)
+		}
+		if detail.Skills[0] != "tdd" {
+			t.Errorf("skills[0]: expected 'tdd', got %q", detail.Skills[0])
+		}
+		if detail.Skills[1] != "api-docs" {
+			t.Errorf("skills[1]: expected 'api-docs', got %q", detail.Skills[1])
+		}
+		if detail.Skills[2] != "code-simplification" {
+			t.Errorf("skills[2]: expected 'code-simplification', got %q", detail.Skills[2])
+		}
+	})
+
+	t.Run("no skills section", func(t *testing.T) {
+		content := `# No skills task
+
+## Description
+A task without skills section.
+`
+		path := filepath.Join(dir, "no-skills.md")
+		os.WriteFile(path, []byte(content), 0644)
+
+		detail, err := ParseTaskDetailFile(path)
+		if err != nil {
+			t.Fatalf("ParseTaskDetailFile failed: %v", err)
+		}
+
+		if len(detail.Skills) != 0 {
+			t.Errorf("skills: expected 0, got %d: %v", len(detail.Skills), detail.Skills)
+		}
+	})
 }
 
 func TestHasTasksDir(t *testing.T) {
@@ -1038,6 +1189,65 @@ func TestImportWithTasksDirButNoReferences(t *testing.T) {
 		if len(task.SpecRefs) != 1 {
 			t.Errorf("task %d should have 1 spec ref, got %d", i, len(task.SpecRefs))
 		}
+	}
+}
+
+func TestImportWithTasksDir_SkillRefs(t *testing.T) {
+	dir := t.TempDir()
+	changesDir := filepath.Join(dir, "changes")
+	taskDir := filepath.Join(dir, "tasks")
+	os.MkdirAll(taskDir, 0755)
+
+	m := NewManager(changesDir)
+	tm := tasks.NewTaskManager(taskDir)
+
+	reqFile := filepath.Join(dir, "req.md")
+	os.WriteFile(reqFile, []byte("requirements"), 0644)
+	change, err := m.Init("Skills Test", reqFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	changeDir := filepath.Join(changesDir, change.ID)
+	tasksSubDir := filepath.Join(changeDir, "tasks")
+	os.MkdirAll(tasksSubDir, 0755)
+
+	os.WriteFile(filepath.Join(tasksSubDir, "01-setup.md"), []byte(`# Project Setup
+
+## Description
+Create the project structure.
+
+## Acceptance Criteria
+- [ ] Project builds
+
+## Skills
+- tdd
+- code-simplification
+`), 0644)
+
+	tasksPath := filepath.Join(changeDir, "tasks.md")
+	os.WriteFile(tasksPath, []byte(
+		"- [ ] Project Setup (ver [tasks/01-setup.md](./tasks/01-setup.md))\n",
+	), 0644)
+
+	created, err := m.Import(change.ID, tm)
+	if err != nil {
+		t.Fatalf("Import failed: %v", err)
+	}
+
+	if len(created) != 1 {
+		t.Fatalf("expected 1 task, got %d", len(created))
+	}
+
+	task := created[0]
+	if len(task.SkillRefs) != 2 {
+		t.Fatalf("expected 2 skill refs, got %d: %v", len(task.SkillRefs), task.SkillRefs)
+	}
+	if task.SkillRefs[0] != "tdd" {
+		t.Errorf("skill_refs[0]: expected 'tdd', got %q", task.SkillRefs[0])
+	}
+	if task.SkillRefs[1] != "code-simplification" {
+		t.Errorf("skill_refs[1]: expected 'code-simplification', got %q", task.SkillRefs[1])
 	}
 }
 
