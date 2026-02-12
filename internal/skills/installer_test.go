@@ -129,6 +129,72 @@ func TestInstaller_Install_Idempotent(t *testing.T) {
 	}
 }
 
+func TestInstaller_InstallMulti(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Override two tool dirs
+	origClaude := ToolSkillDir["claude-code"]
+	origCursor := ToolSkillDir["cursor"]
+	ToolSkillDir["claude-code"] = filepath.Join(tmpDir, ".claude", "skills")
+	ToolSkillDir["cursor"] = filepath.Join(tmpDir, ".cursor", "skills")
+	defer func() {
+		ToolSkillDir["claude-code"] = origClaude
+		ToolSkillDir["cursor"] = origCursor
+	}()
+
+	installer := NewInstaller()
+	results, err := installer.InstallMulti("tdd", []string{"claude-code", "cursor"}, false)
+	if err != nil {
+		t.Fatalf("InstallMulti failed: %v", err)
+	}
+
+	if len(results) != 2 {
+		t.Fatalf("expected 2 results, got %d", len(results))
+	}
+
+	// Verify each result
+	for _, r := range results {
+		if r.PackName != "tdd" {
+			t.Errorf("expected PackName 'tdd', got %q", r.PackName)
+		}
+		if len(r.FilesWritten) == 0 {
+			t.Errorf("expected files written for tool %s", r.Tool)
+		}
+		for _, f := range r.FilesWritten {
+			if _, err := os.Stat(f); err != nil {
+				t.Errorf("file %s does not exist: %v", f, err)
+			}
+		}
+	}
+
+	// Verify both tools report installed
+	if !installer.IsInstalled("tdd", "claude-code") {
+		t.Error("expected tdd installed for claude-code")
+	}
+	if !installer.IsInstalled("tdd", "cursor") {
+		t.Error("expected tdd installed for cursor")
+	}
+}
+
+func TestInstaller_InstallMulti_PartialFailure(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	origClaude := ToolSkillDir["claude-code"]
+	ToolSkillDir["claude-code"] = filepath.Join(tmpDir, ".claude", "skills")
+	defer func() { ToolSkillDir["claude-code"] = origClaude }()
+
+	installer := NewInstaller()
+	results, err := installer.InstallMulti("tdd", []string{"claude-code", "unknown-tool"}, false)
+	if err == nil {
+		t.Fatal("expected error for unknown tool")
+	}
+
+	// Should have partial results from the first successful install
+	if len(results) != 1 {
+		t.Errorf("expected 1 partial result, got %d", len(results))
+	}
+}
+
 func TestInstaller_ListPacks(t *testing.T) {
 	installer := NewInstaller()
 	packs := installer.ListPacks()

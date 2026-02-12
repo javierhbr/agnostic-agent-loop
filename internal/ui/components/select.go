@@ -174,3 +174,94 @@ func (ss SimpleSelect) SelectedOption() *SelectOption {
 	}
 	return nil
 }
+
+// MultiSelect is a select component that allows toggling multiple options
+type MultiSelect struct {
+	Label     string
+	Options   []SelectOption
+	CursorIdx int
+	Selected  map[int]bool
+}
+
+// NewMultiSelect creates a multi-select component
+func NewMultiSelect(label string, options []SelectOption) MultiSelect {
+	return MultiSelect{
+		Label:     label,
+		Options:   options,
+		CursorIdx: 0,
+		Selected:  make(map[int]bool),
+	}
+}
+
+// Update handles key presses for multi-select
+func (ms *MultiSelect) Update(msg tea.Msg) MultiSelect {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "up", "k":
+			if ms.CursorIdx > 0 {
+				ms.CursorIdx--
+			}
+		case "down", "j":
+			if ms.CursorIdx < len(ms.Options)-1 {
+				ms.CursorIdx++
+			}
+		case " ":
+			ms.Selected[ms.CursorIdx] = !ms.Selected[ms.CursorIdx]
+		}
+	}
+	return *ms
+}
+
+// View renders the multi-select
+func (ms MultiSelect) View() string {
+	var b strings.Builder
+
+	b.WriteString(styles.BoldStyle.Render(ms.Label) + "\n\n")
+
+	for i, opt := range ms.Options {
+		cursor := "  "
+		if i == ms.CursorIdx {
+			cursor = styles.IconArrow + " "
+		}
+
+		check := "[ ]"
+		if ms.Selected[i] {
+			check = "[" + styles.IconCheckmark + "]"
+		}
+
+		optStyle := styles.ListItemStyle
+		if i == ms.CursorIdx {
+			optStyle = styles.SelectedItemStyle
+		}
+
+		b.WriteString(fmt.Sprintf("%s%s %s\n", cursor, check, optStyle.Render(opt.Title())))
+		if opt.Description() != "" {
+			desc := styles.MutedStyle.Render("     " + opt.Description())
+			b.WriteString(fmt.Sprintf("   %s\n", desc))
+		}
+	}
+
+	return b.String()
+}
+
+// SelectedValues returns the values of all selected options
+func (ms MultiSelect) SelectedValues() []string {
+	var values []string
+	for i, opt := range ms.Options {
+		if ms.Selected[i] {
+			values = append(values, opt.Value())
+		}
+	}
+	return values
+}
+
+// HasSelection returns true if at least one option is selected
+func (ms MultiSelect) HasSelection() bool {
+	for _, v := range ms.Selected {
+		if v {
+			return true
+		}
+	}
+	return false
+}

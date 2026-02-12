@@ -17,6 +17,13 @@ import (
 var skillsCmd = &cobra.Command{
 	Use:   "skills",
 	Short: "Manage agent skills",
+	Run: func(cmd *cobra.Command, args []string) {
+		if helpers.ShouldUseInteractiveMode(cmd) {
+			runSkillsSubmenu()
+			return
+		}
+		cmd.Help()
+	},
 }
 
 // skillsGenerateModel is a simple Bubble Tea model for tool selection
@@ -293,11 +300,14 @@ var skillsGenerateGeminiCmd = &cobra.Command{
 
 // skillsInstallModel is a Bubble Tea model for interactive pack installation
 type skillsInstallModel struct {
-	step      string // "select-pack", "select-tool", "done"
+	step      string // "select-pack", "select-tool", "select-scope", "done"
 	packSel   components.SimpleSelect
-	toolSel   components.SimpleSelect
+	toolSel   components.MultiSelect
+	scopeSel  components.SimpleSelect
 	installer *skills.Installer
 	packName  string
+	tools     []string
+	results   []*skills.InstallResult
 	done      bool
 	success   bool
 	message   string
@@ -317,7 +327,7 @@ func (m skillsInstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if m.step == "select-pack" {
 				m.packName = m.packSel.SelectedOption().Value()
-				// Build tool selector
+				// Build tool multi-selector
 				toolOptions := []components.SelectOption{}
 				for _, t := range skills.SupportedTools() {
 					dir := skills.ToolSkillDir[t]
@@ -327,16 +337,39 @@ func (m skillsInstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						t,
 					))
 				}
-				m.toolSel = components.NewSimpleSelect("Select target tool", toolOptions)
+				m.toolSel = components.NewMultiSelect("Select target tools (Space to toggle, Enter to confirm)", toolOptions)
 				m.step = "select-tool"
 			} else if m.step == "select-tool" {
-				tool := m.toolSel.SelectedOption().Value()
-				result, err := m.installer.Install(m.packName, tool, false)
+				m.tools = m.toolSel.SelectedValues()
+				if len(m.tools) == 0 {
+					m.message = "No tools selected"
+					m.success = false
+					m.done = true
+					return m, tea.Quit
+				}
+				// Build scope selector
+				m.scopeSel = components.NewSimpleSelect("Install scope", []components.SelectOption{
+					components.NewSelectOption("Project-level", "Install to the current project directory", "local"),
+					components.NewSelectOption("Global (user-level)", "Install to your home directory for all projects", "global"),
+				})
+				m.step = "select-scope"
+			} else if m.step == "select-scope" {
+				global := m.scopeSel.SelectedOption().Value() == "global"
+				results, err := m.installer.InstallMulti(m.packName, m.tools, global)
+				m.results = results
 				if err != nil {
 					m.message = fmt.Sprintf("Error: %v", err)
 					m.success = false
 				} else {
-					m.message = fmt.Sprintf("Installed pack %q for %s (%d files to %s/)", result.PackName, result.Tool, len(result.FilesWritten), result.OutputDir)
+					var toolNames []string
+					for _, r := range results {
+						toolNames = append(toolNames, r.Tool)
+					}
+					scope := "project"
+					if global {
+						scope = "global"
+					}
+					m.message = fmt.Sprintf("Installed pack %q (%s) for %s", m.packName, scope, strings.Join(toolNames, ", "))
 					m.success = true
 				}
 				m.done = true
@@ -348,6 +381,8 @@ func (m skillsInstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.packSel = m.packSel.Update(msg)
 			} else if m.step == "select-tool" {
 				m.toolSel = m.toolSel.Update(msg)
+			} else if m.step == "select-scope" {
+				m.scopeSel = m.scopeSel.Update(msg)
 			}
 		}
 	}
@@ -358,7 +393,15 @@ func (m skillsInstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m skillsInstallModel) View() string {
 	if m.done {
 		if m.success {
-			return styles.RenderSuccess(m.message) + "\n"
+			var b strings.Builder
+			b.WriteString(styles.TitleStyle.Render("Skill Pack Installed") + "\n\n")
+			for _, r := range m.results {
+				b.WriteString(styles.SuccessStyle.Render(fmt.Sprintf("%s %s", styles.IconCheckmark, r.Tool)) + "\n")
+				for _, f := range r.FilesWritten {
+					b.WriteString(styles.MutedStyle.Render(fmt.Sprintf("  %s %s", styles.IconBullet, f)) + "\n")
+				}
+			}
+			return styles.ContainerStyle.Render(b.String())
 		}
 		return styles.RenderError(m.message) + "\n"
 	}
@@ -368,25 +411,38 @@ func (m skillsInstallModel) View() string {
 
 	if m.step == "select-pack" {
 		b.WriteString(m.packSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
 	} else if m.step == "select-tool" {
 		b.WriteString(fmt.Sprintf("Pack: %s\n\n", styles.BoldStyle.Render(m.packName)))
 		b.WriteString(m.toolSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Space toggle • Enter confirm • Esc cancel") + "\n")
+	} else if m.step == "select-scope" {
+		b.WriteString(fmt.Sprintf("Pack: %s  Tools: %s\n\n",
+			styles.BoldStyle.Render(m.packName),
+			styles.BoldStyle.Render(strings.Join(m.tools, ", ")),
+		))
+		b.WriteString(m.scopeSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
 	}
 
-	b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
 	return styles.ContainerStyle.Render(b.String())
 }
 
 var skillsInstallCmd = &cobra.Command{
 	Use:   "install [pack-name]",
 	Short: "Install a skill pack",
-	Long: `Install a bundle of related skill files for an agent tool.
+	Long: `Install a bundle of related skill files for one or more agent tools.
 
 Interactive Mode:
   agentic-agent skills install
 
-Flag Mode:
+Flag Mode (single tool):
   agentic-agent skills install tdd --tool claude-code
+
+Flag Mode (multiple tools):
+  agentic-agent skills install tdd --tool claude-code,cursor,gemini
+
+Global install:
   agentic-agent skills install tdd --tool antigravity --global
 
 List available packs:
@@ -451,6 +507,7 @@ List available packs:
 		if len(args) == 0 {
 			fmt.Println("Error: pack name required")
 			fmt.Println("Usage: agentic-agent skills install <pack-name> --tool <tool>")
+			fmt.Println("       agentic-agent skills install <pack-name> --tool tool1,tool2")
 			fmt.Println("   or: agentic-agent skills install --list")
 			fmt.Println("   or: agentic-agent skills install  (interactive mode)")
 			os.Exit(1)
@@ -462,8 +519,18 @@ List available packs:
 			os.Exit(1)
 		}
 
-		result, err := installer.Install(args[0], tool, global)
+		// Split comma-separated tools
+		tools := strings.Split(tool, ",")
+		for i := range tools {
+			tools[i] = strings.TrimSpace(tools[i])
+		}
+
+		results, err := installer.InstallMulti(args[0], tools, global)
 		if err != nil {
+			// Print any partial successes before the error
+			for _, r := range results {
+				fmt.Printf("Installed pack %q for %s\n", r.PackName, r.Tool)
+			}
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
@@ -471,15 +538,20 @@ List available packs:
 		if helpers.ShouldUseInteractiveMode(cmd) {
 			var b strings.Builder
 			b.WriteString(styles.TitleStyle.Render("Skill Pack Installed") + "\n\n")
-			b.WriteString(styles.SuccessStyle.Render(fmt.Sprintf("%s Installed %q for %s", styles.IconCheckmark, result.PackName, result.Tool)) + "\n\n")
-			for _, f := range result.FilesWritten {
-				b.WriteString(styles.MutedStyle.Render(fmt.Sprintf("  %s %s", styles.IconBullet, f)) + "\n")
+			for _, r := range results {
+				b.WriteString(styles.SuccessStyle.Render(fmt.Sprintf("%s Installed %q for %s", styles.IconCheckmark, r.PackName, r.Tool)) + "\n")
+				for _, f := range r.FilesWritten {
+					b.WriteString(styles.MutedStyle.Render(fmt.Sprintf("  %s %s", styles.IconBullet, f)) + "\n")
+				}
+				b.WriteString("\n")
 			}
 			fmt.Println(styles.ContainerStyle.Render(b.String()))
 		} else {
-			fmt.Printf("Installed pack %q for %s:\n", result.PackName, result.Tool)
-			for _, f := range result.FilesWritten {
-				fmt.Printf("  - %s\n", f)
+			for _, r := range results {
+				fmt.Printf("Installed pack %q for %s:\n", r.PackName, r.Tool)
+				for _, f := range r.FilesWritten {
+					fmt.Printf("  - %s\n", f)
+				}
 			}
 		}
 	},
@@ -561,7 +633,7 @@ Usage:
 					))
 				}
 
-				selector := components.NewSimpleSelect("Select agent tool to ensure", options)
+				selector := components.NewMultiSelect("Select agent tools to ensure", options)
 				model := &skillsEnsureModel{selector: selector, cfg: cfg}
 				p := tea.NewProgram(model)
 				if _, err := p.Run(); err != nil {
@@ -601,9 +673,9 @@ Usage:
 	},
 }
 
-// skillsEnsureModel is a Bubble Tea model for interactive agent selection in ensure
+// skillsEnsureModel is a Bubble Tea model for interactive multi-agent selection in ensure
 type skillsEnsureModel struct {
-	selector components.SimpleSelect
+	selector components.MultiSelect
 	cfg      *models.Config
 	done     bool
 	message  string
@@ -621,15 +693,25 @@ func (m *skillsEnsureModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
 		case "enter":
-			tool := m.selector.SelectedOption().Value()
-			result, err := skills.Ensure(tool, m.cfg)
-			if err != nil {
-				m.message = fmt.Sprintf("Error: %v", err)
+			selected := m.selector.SelectedValues()
+			if len(selected) == 0 {
+				m.message = "No agents selected"
 				m.success = false
-			} else {
-				m.message = skills.FormatEnsureResult(result)
-				m.success = true
+				m.done = true
+				return m, tea.Quit
 			}
+			var msgs []string
+			m.success = true
+			for _, tool := range selected {
+				result, err := skills.Ensure(tool, m.cfg)
+				if err != nil {
+					msgs = append(msgs, fmt.Sprintf("%s: Error: %v", tool, err))
+					m.success = false
+				} else {
+					msgs = append(msgs, fmt.Sprintf("%s: %s", tool, skills.FormatEnsureResult(result)))
+				}
+			}
+			m.message = strings.Join(msgs, "")
 			m.done = true
 			return m, tea.Quit
 		default:
@@ -650,15 +732,15 @@ func (m *skillsEnsureModel) View() string {
 	var b strings.Builder
 	b.WriteString(styles.TitleStyle.Render("Ensure Agent Skills") + "\n\n")
 	b.WriteString(m.selector.View() + "\n")
-	b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
+	b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Space toggle • Enter confirm • Esc cancel") + "\n")
 	return styles.ContainerStyle.Render(b.String())
 }
 
 func init() {
-	skillsGenerateCmd.Flags().String("tool", "", "Tool name (claude-code, cursor, gemini, windsurf, codex)")
+	skillsGenerateCmd.Flags().String("tool", "", "Tool name (claude-code, cursor, gemini, windsurf, codex, copilot, opencode)")
 	skillsGenerateCmd.Flags().Bool("all", false, "Generate for all tools")
 
-	skillsInstallCmd.Flags().String("tool", "", "Target agent tool (claude-code, cursor, gemini, windsurf, antigravity, codex)")
+	skillsInstallCmd.Flags().String("tool", "", "Target agent tool (claude-code, cursor, gemini, windsurf, antigravity, codex, copilot, opencode)")
 	skillsInstallCmd.Flags().Bool("global", false, "Install to user-level directory instead of project-level")
 	skillsInstallCmd.Flags().Bool("list", false, "List available skill packs")
 

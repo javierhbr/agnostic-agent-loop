@@ -3,13 +3,14 @@ package main
 import (
 	"github.com/javierbenavides/agentic-agent/internal/config"
 	"github.com/javierbenavides/agentic-agent/internal/skills"
+	"github.com/javierbenavides/agentic-agent/internal/ui/helpers"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 	"github.com/spf13/cobra"
 )
 
 var (
 	// Version information (set via ldflags at build time)
-	Version   = "dev"
+	Version   = "0.2.6"
 	Commit    = "none"
 	BuildDate = "unknown"
 
@@ -43,6 +44,7 @@ development with token management, context isolation, and multi-tool support.
 
 It orchestrates AI coding agents (Claude Code, Cursor, Windsurf, etc.) through
 a unified task and context management system.`,
+	Version:      Version,
 	SilenceUsage: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		path := cfgFile
@@ -57,10 +59,22 @@ a unified task and context management system.`,
 		}
 		appConfig = cfg
 
-		// Detect active agent
+		// Detect active agent and propagate to UI helpers
+		// so all commands auto-disable interactive TUI when an agent is driving.
 		detectedAgent = skills.DetectAgent(agentFlag, ".")
 		if detectedAgent.Name != "" {
 			appConfig.ActiveAgent = detectedAgent.Name
+			helpers.SetActiveAgent(detectedAgent.Name)
+		}
+
+		// Auto-ensure mandatory skills for detected agent.
+		// Skip for commands that don't need it (version, help, skills, start, init).
+		cmdName := cmd.Name()
+		skipEnsure := cmdName == "version" || cmdName == "help" || cmdName == "start" ||
+			cmdName == "init" || cmd.Parent() != nil && cmd.Parent().Name() == "skills"
+		if !skipEnsure && detectedAgent.Name != "" {
+			// Silent ensure — only installs missing mandatory packs
+			skills.Ensure(detectedAgent.Name, appConfig)
 		}
 
 		return nil
@@ -74,7 +88,7 @@ func Execute() error {
 func init() {
 	// Global flags
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./agnostic-agent.yaml)")
-	rootCmd.PersistentFlags().StringVar(&agentFlag, "agent", "", "agent tool name (claude-code, cursor, gemini, windsurf, antigravity, codex)")
+	rootCmd.PersistentFlags().StringVar(&agentFlag, "agent", "", "agent tool name (claude-code, cursor, gemini, windsurf, antigravity, codex, copilot, opencode)")
 	rootCmd.PersistentFlags().Bool("no-interactive", false, "disable interactive mode and use flag-based commands")
 
 	// Register commands

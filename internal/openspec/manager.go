@@ -72,11 +72,6 @@ func (m *Manager) Init(name, fromFile string) (*Change, error) {
 		return nil, fmt.Errorf("failed to create change directory: %w", err)
 	}
 
-	// Create specs/ subdirectory
-	if err := os.MkdirAll(filepath.Join(changeDir, "specs"), 0755); err != nil {
-		return nil, fmt.Errorf("failed to create specs directory: %w", err)
-	}
-
 	// Read source requirements file
 	var requirements string
 	if fromFile != "" {
@@ -133,27 +128,48 @@ func (m *Manager) Init(name, fromFile string) (*Change, error) {
 }
 
 // Import reads tasks.md for the given change and creates tasks in the backlog.
+// When a tasks/ subdirectory exists alongside tasks.md, individual task detail
+// files are parsed to populate Description, Acceptance, and Inputs fields.
 func (m *Manager) Import(id string, tm *tasks.TaskManager) ([]*models.Task, error) {
 	change, err := m.Get(id)
 	if err != nil {
 		return nil, err
 	}
 
+	if change.Status != StatusDraft {
+		return nil, fmt.Errorf("change %q has already been imported (status: %s)", id, change.Status)
+	}
+
 	tasksPath := filepath.Join(m.baseDir, id, "tasks.md")
-	titles, err := ParseTasksFile(tasksPath)
+	entries, err := ParseTasksFileStructured(tasksPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse tasks: %w", err)
 	}
 
+	changeDir := filepath.Join(m.baseDir, id)
+	hasDir := HasTasksDir(tasksPath)
+
 	var created []*models.Task
-	for _, title := range titles {
-		task, err := tm.CreateTask(fmt.Sprintf("[%s] %s", id, title))
+	for _, entry := range entries {
+		task, err := tm.CreateTask(fmt.Sprintf("[%s] %s", id, entry.Title))
 		if err != nil {
-			return created, fmt.Errorf("failed to create task %q: %w", title, err)
+			return created, fmt.Errorf("failed to create task %q: %w", entry.Title, err)
 		}
 
 		task.ChangeID = id
 		task.SpecRefs = []string{filepath.Join(id, "proposal.md")}
+
+		// If tasks/ dir exists and this entry references a detail file, parse it
+		if hasDir && entry.FileRef != "" {
+			detailPath := filepath.Join(changeDir, entry.FileRef)
+			detail, detailErr := ParseTaskDetailFile(detailPath)
+			if detailErr != nil {
+				fmt.Fprintf(os.Stderr, "Warning: could not parse task detail %s: %v\n", entry.FileRef, detailErr)
+			} else {
+				applyTaskDetail(task, detail)
+				task.SpecRefs = append(task.SpecRefs, filepath.Join(id, entry.FileRef))
+			}
+		}
 
 		// Save updated task back to backlog
 		backlog, err := tm.LoadTasks("backlog")
@@ -179,12 +195,55 @@ func (m *Manager) Import(id string, tm *tasks.TaskManager) ([]*models.Task, erro
 	if err := m.updateInRegistry(change); err != nil {
 		return created, err
 	}
-	changeDir := filepath.Join(m.baseDir, id)
 	if err := m.writeMetadata(changeDir, change); err != nil {
 		return created, err
 	}
 
 	return created, nil
+}
+
+// applyTaskDetail maps parsed TaskDetail fields onto a Task model.
+func applyTaskDetail(task *models.Task, detail *TaskDetail) {
+	if detail.Description != "" {
+		task.Description = detail.Description
+	}
+	if len(detail.Acceptance) > 0 {
+		task.Acceptance = detail.Acceptance
+	}
+	if len(detail.Prerequisites) > 0 {
+		task.Inputs = detail.Prerequisites
+	}
+	if detail.Notes != "" {
+		if task.Description != "" {
+			task.Description += "\n\n---\nTechnical Notes:\n" + detail.Notes
+		} else {
+			task.Description = "Technical Notes:\n" + detail.Notes
+		}
+	}
+}
+
+// ScaffoldTaskFiles creates the tasks/ subdirectory and renders a task-detail
+// template for each title. Called by agents during Phase 2 for complex changes.
+func (m *Manager) ScaffoldTaskFiles(id string, titles []string) error {
+	changeDir := filepath.Join(m.baseDir, id)
+	tasksSubDir := filepath.Join(changeDir, "tasks")
+	if err := os.MkdirAll(tasksSubDir, 0755); err != nil {
+		return fmt.Errorf("failed to create tasks/ directory: %w", err)
+	}
+
+	for i, title := range titles {
+		filename := fmt.Sprintf("%02d-%s.md", i+1, toKebabCase(title))
+		tmplData := TemplateData{TaskTitle: title}
+		content, err := renderTemplate("task-detail.md.tmpl", tmplData)
+		if err != nil {
+			return fmt.Errorf("failed to render task template for %q: %w", title, err)
+		}
+		filePath := filepath.Join(tasksSubDir, filename)
+		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+			return fmt.Errorf("failed to write %s: %w", filePath, err)
+		}
+	}
+	return nil
 }
 
 // Get returns a single change by ID.
@@ -310,6 +369,49 @@ func (m *Manager) Archive(id string) error {
 	}
 
 	return nil
+}
+
+// SyncResult holds the outcome of an auto-sync operation.
+type SyncResult struct {
+	ChangesImported []string
+	TasksCreated    int
+	Errors          []string
+}
+
+// Sync checks all draft changes for populated tasks.md and auto-imports them.
+// This eliminates the need for an explicit "openspec import" step.
+// Already-imported changes are skipped via the status guard in Import().
+func (m *Manager) Sync(tm *tasks.TaskManager) (*SyncResult, error) {
+	result := &SyncResult{}
+
+	reg, err := m.loadRegistry()
+	if err != nil {
+		return result, nil
+	}
+
+	for _, change := range reg.Changes {
+		if change.Status != StatusDraft {
+			continue
+		}
+
+		tasksPath := filepath.Join(m.baseDir, change.ID, "tasks.md")
+		titles, err := ParseTasksFile(tasksPath)
+		if err != nil || len(titles) == 0 {
+			// tasks.md is empty or template-only — not ready for import, skip
+			continue
+		}
+
+		created, err := m.Import(change.ID, tm)
+		if err != nil {
+			result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", change.ID, err))
+			continue
+		}
+
+		result.ChangesImported = append(result.ChangesImported, change.ID)
+		result.TasksCreated += len(created)
+	}
+
+	return result, nil
 }
 
 // --- internal helpers ---

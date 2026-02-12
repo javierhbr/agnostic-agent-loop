@@ -144,9 +144,9 @@ func runTaskSubmenu() {
 				fmt.Printf("Error: %v\n", err)
 			}
 		case "decompose":
-			taskDecomposeCmd.Run(nil, []string{})
+			taskDecomposeCmd.Run(taskDecomposeCmd, []string{})
 		case "sample":
-			taskSampleCmd.Run(nil, []string{})
+			taskSampleCmd.Run(taskSampleCmd, []string{})
 		case "exit":
 			// Do nothing, return to main menu
 		}
@@ -198,13 +198,13 @@ func runContextSubmenu() {
 	if m, ok := finalModel.(submenuModel); ok {
 		switch m.selectedAction {
 		case "generate":
-			contextGenerateCmd.Run(nil, []string{})
+			contextGenerateCmd.Run(contextGenerateCmd, []string{})
 		case "scan":
-			contextScanCmd.Run(nil, []string{})
+			contextScanCmd.Run(contextScanCmd, []string{})
 		case "build":
-			contextBuildCmd.Run(nil, []string{})
+			contextBuildCmd.Run(contextBuildCmd, []string{})
 		case "update":
-			contextUpdateCmd.Run(nil, []string{})
+			contextUpdateCmd.Run(contextUpdateCmd, []string{})
 		case "exit":
 			// Do nothing, return to main menu
 		}
@@ -220,9 +220,24 @@ func runSkillsSubmenu() {
 			"generate",
 		),
 		components.NewSelectOption(
+			"📦 Install skill pack",
+			"Install a bundle of skill files for one or more tools",
+			"install",
+		),
+		components.NewSelectOption(
+			"📋 List skill packs",
+			"Show all available skill packs",
+			"list",
+		),
+		components.NewSelectOption(
 			"🔄 Check skill drift",
 			"Check if skill files need regeneration",
 			"check",
+		),
+		components.NewSelectOption(
+			"✅ Ensure skills",
+			"Ensure skills are up to date for an agent",
+			"ensure",
 		),
 		components.NewSelectOption(
 			"🚪 Back",
@@ -246,9 +261,15 @@ func runSkillsSubmenu() {
 	if m, ok := finalModel.(submenuModel); ok {
 		switch m.selectedAction {
 		case "generate":
-			skillsGenerateCmd.Run(nil, []string{})
+			skillsGenerateCmd.Run(skillsGenerateCmd, []string{})
+		case "install":
+			skillsInstallCmd.Run(skillsInstallCmd, []string{})
+		case "list":
+			skillsListCmd.Run(skillsListCmd, []string{})
 		case "check":
-			skillsCheckCmd.Run(nil, []string{})
+			skillsCheckCmd.Run(skillsCheckCmd, []string{})
+		case "ensure":
+			skillsEnsureCmd.Run(skillsEnsureCmd, []string{})
 		case "exit":
 			// Do nothing, return to main menu
 		}
@@ -258,7 +279,7 @@ func runSkillsSubmenu() {
 // Commands are already declared in their respective files:
 // - task.go: taskDecomposeCmd, taskSampleCmd
 // - context.go: contextGenerateCmd, contextScanCmd, contextBuildCmd, contextUpdateCmd
-// - skills.go: skillsGenerateCmd, skillsCheckCmd
+// - skills.go: skillsGenerateCmd, skillsInstallCmd, skillsListCmd, skillsCheckCmd, skillsEnsureCmd
 // - validate.go: validateCmd
 // - token.go: tokenStatusCmd
 // - run.go: runCmd

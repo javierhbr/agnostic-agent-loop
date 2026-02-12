@@ -2,7 +2,7 @@
 BINARY_NAME  := agentic-agent
 CMD_PKG      := ./cmd/agentic-agent
 BUILD_DIR    := build
-VERSION      := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+VERSION      := $(shell git describe --tags --always --dirty 2>/dev/null | grep -q '^v' && git describe --tags --always --dirty || grep 'Version.*=' cmd/agentic-agent/root.go | head -1 | sed 's/.*"\(.*\)"/\1/')
 COMMIT       := $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 BUILD_DATE   := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS      := -ldflags "-X main.Version=$(VERSION) -X main.Commit=$(COMMIT) -X main.BuildDate=$(BUILD_DATE)"

@@ -19,7 +19,9 @@ var envMapping = map[string]string{
 	"CURSOR_SESSION": "cursor",
 	"GEMINI_CLI":     "gemini",
 	"WINDSURF_SESSION": "windsurf",
-	"CODEX_SANDBOX":   "codex",
+	"CODEX_SANDBOX":    "codex",
+	"GITHUB_COPILOT":   "copilot",
+	"OPENCODE":         "opencode",
 }
 
 // fsMapping maps filesystem paths to agent tool names.
@@ -30,7 +32,9 @@ var fsMapping = map[string]string{
 	".gemini":  "gemini",
 	".windsurf": "windsurf",
 	".codex":   "codex",
-	".agent":   "antigravity",
+	".agent":                       "antigravity",
+	".github/copilot-instructions.md": "copilot",
+	".opencode":                       "opencode",
 }
 
 // DetectAgent tries to determine which agent is running.

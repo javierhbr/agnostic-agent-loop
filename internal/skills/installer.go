@@ -67,6 +67,20 @@ func (inst *Installer) Install(packName, tool string, global bool) (*InstallResu
 	return result, nil
 }
 
+// InstallMulti installs a skill pack to multiple tools in one call.
+// Returns all results collected so far plus the first error encountered (if any).
+func (inst *Installer) InstallMulti(packName string, tools []string, global bool) ([]*InstallResult, error) {
+	var results []*InstallResult
+	for _, tool := range tools {
+		result, err := inst.Install(packName, tool, global)
+		if err != nil {
+			return results, fmt.Errorf("failed for tool %s: %w", tool, err)
+		}
+		results = append(results, result)
+	}
+	return results, nil
+}
+
 // IsInstalled checks whether a pack's files exist at the tool's project-level skill dir.
 func (inst *Installer) IsInstalled(packName, tool string) bool {
 	dir, ok := ToolSkillDir[tool]

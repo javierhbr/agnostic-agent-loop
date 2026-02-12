@@ -138,6 +138,9 @@ Flag Mode (with flags or --no-interactive):
 
   Simple text output listing all tasks.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Auto-import tasks from draft openspec changes
+		syncOpenSpecChanges(getConfig())
+
 		// Check if we should use interactive mode
 		if helpers.ShouldUseInteractiveMode(cmd) {
 			runInteractiveTaskList()
@@ -176,6 +179,9 @@ var taskClaimCmd = &cobra.Command{
 	Short: "Claim a task",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Auto-import tasks from draft openspec changes
+		syncOpenSpecChanges(getConfig())
+
 		// Interactive mode if no args
 		if helpers.ShouldUseInteractiveMode(cmd) && len(args) == 0 {
 			model := uimodels.NewSimpleTaskSelectModel(uimodels.ActionClaim, "backlog")

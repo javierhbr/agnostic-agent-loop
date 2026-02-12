@@ -3,6 +3,7 @@ package skills
 import (
 	"embed"
 	"fmt"
+	"sort"
 )
 
 //go:embed templates/*
@@ -29,6 +30,8 @@ func NewSkillRegistry() *SkillRegistry {
 	r.Register("gemini", "templates/gemini.tmpl", ".gemini/GEMINI.md")
 	r.Register("windsurf", "templates/windsurf.tmpl", ".windsurf/rules/agnostic-agent.md")
 	r.Register("codex", "templates/codex.tmpl", ".codex/CODEX.md")
+	r.Register("copilot", "templates/copilot.tmpl", ".github/copilot-instructions.md")
+	r.Register("opencode", "templates/opencode.tmpl", "AGENTS.md")
 
 	return r
 }
@@ -54,5 +57,8 @@ func (r *SkillRegistry) GetAll() []SkillDefinition {
 	for _, s := range r.skills {
 		list = append(list, s)
 	}
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].ToolName < list[j].ToolName
+	})
 	return list
 }

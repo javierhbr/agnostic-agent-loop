@@ -6,11 +6,16 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 	"gopkg.in/yaml.v3"
 )
+
+// taskSeq is an atomic counter to ensure unique IDs when multiple tasks
+// are created within the same second.
+var taskSeq uint64
 
 type TaskList struct {
 	Tasks []models.Task `yaml:"tasks"`
@@ -66,8 +71,9 @@ func (tm *TaskManager) CreateTask(title string) (*models.Task, error) {
 		return nil, err
 	}
 
-	// Simple ID generation (can be improved)
-	id := fmt.Sprintf("TASK-%d", time.Now().Unix())
+	// Unique ID: 6-digit truncated timestamp + atomic sequence to avoid collisions
+	seq := atomic.AddUint64(&taskSeq, 1)
+	id := fmt.Sprintf("TASK-%06d-%d", time.Now().Unix()%1000000, seq)
 
 	task := models.Task{
 		ID:     id,

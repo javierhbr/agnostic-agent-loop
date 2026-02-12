@@ -162,6 +162,30 @@ func TestDetectAgent_CodexSandboxEnvVar(t *testing.T) {
 	}
 }
 
+func TestDetectAgent_GithubCopilotEnvVar(t *testing.T) {
+	t.Setenv("GITHUB_COPILOT", "1")
+	agent := DetectAgent("", t.TempDir())
+
+	if agent.Name != "copilot" {
+		t.Errorf("expected Name=copilot, got %s", agent.Name)
+	}
+	if agent.Source != "env" {
+		t.Errorf("expected Source=env, got %s", agent.Source)
+	}
+}
+
+func TestDetectAgent_OpenCodeEnvVar(t *testing.T) {
+	t.Setenv("OPENCODE", "1")
+	agent := DetectAgent("", t.TempDir())
+
+	if agent.Name != "opencode" {
+		t.Errorf("expected Name=opencode, got %s", agent.Name)
+	}
+	if agent.Source != "env" {
+		t.Errorf("expected Source=env, got %s", agent.Source)
+	}
+}
+
 // ---------------------------------------------------------------------------
 // DetectAgent — Priority: env over filesystem
 // ---------------------------------------------------------------------------
@@ -269,6 +293,35 @@ func TestDetectAgent_FilesystemCodex(t *testing.T) {
 	}
 }
 
+func TestDetectAgent_FilesystemCopilot(t *testing.T) {
+	dir := t.TempDir()
+	os.MkdirAll(filepath.Join(dir, ".github"), 0755)
+	os.WriteFile(filepath.Join(dir, ".github", "copilot-instructions.md"), []byte("# instructions"), 0644)
+
+	agent := DetectAgent("", dir)
+
+	if agent.Name != "copilot" {
+		t.Errorf("expected Name=copilot, got %s", agent.Name)
+	}
+	if agent.Source != "filesystem" {
+		t.Errorf("expected Source=filesystem, got %s", agent.Source)
+	}
+}
+
+func TestDetectAgent_FilesystemOpenCode(t *testing.T) {
+	dir := t.TempDir()
+	os.MkdirAll(filepath.Join(dir, ".opencode"), 0755)
+
+	agent := DetectAgent("", dir)
+
+	if agent.Name != "opencode" {
+		t.Errorf("expected Name=opencode, got %s", agent.Name)
+	}
+	if agent.Source != "filesystem" {
+		t.Errorf("expected Source=filesystem, got %s", agent.Source)
+	}
+}
+
 func TestDetectAgent_FilesystemAntigravity(t *testing.T) {
 	dir := t.TempDir()
 	os.MkdirAll(filepath.Join(dir, ".agent"), 0755)
@@ -354,6 +407,9 @@ func TestDetectAllAgents_AllTools(t *testing.T) {
 	os.MkdirAll(filepath.Join(dir, ".windsurf"), 0755)
 	os.MkdirAll(filepath.Join(dir, ".codex"), 0755)
 	os.MkdirAll(filepath.Join(dir, ".agent"), 0755)
+	os.MkdirAll(filepath.Join(dir, ".github"), 0755)
+	os.WriteFile(filepath.Join(dir, ".github", "copilot-instructions.md"), []byte("# instructions"), 0644)
+	os.MkdirAll(filepath.Join(dir, ".opencode"), 0755)
 
 	agents := DetectAllAgents(dir)
 
@@ -362,7 +418,7 @@ func TestDetectAllAgents_AllTools(t *testing.T) {
 		names[a.Name] = true
 	}
 
-	for _, expected := range []string{"claude-code", "cursor", "gemini", "windsurf", "codex", "antigravity"} {
+	for _, expected := range []string{"claude-code", "cursor", "gemini", "windsurf", "codex", "antigravity", "copilot", "opencode"} {
 		if !names[expected] {
 			t.Errorf("expected %s in detected agents", expected)
 		}
