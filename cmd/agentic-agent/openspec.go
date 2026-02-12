@@ -92,12 +92,14 @@ Examples:
 			fmt.Printf("  %s Tasks:     %s/tasks.md\n", styles.IconArrow, changeDir)
 			fmt.Printf("  %s Status:    %s\n", styles.IconArrow, change.Status)
 			fmt.Printf("\n%s Fill in proposal.md, then write tasks in tasks.md.\n", styles.IconArrow)
+			fmt.Printf("%s Define the high-level tech stack in .agentic/context/tech-stack.md\n", styles.IconArrow)
 			fmt.Printf("%s For complex changes (4+ tasks), write specs in %s/specs/\n", styles.IconArrow, changeDir)
 			fmt.Printf("%s Tasks auto-import when you run: agentic-agent task list  or  task claim\n", styles.IconArrow)
 		} else {
 			fmt.Printf("Created change: %s\n", change.ID)
 			fmt.Printf("proposal: %s/proposal.md\n", changeDir)
 			fmt.Printf("tasks: %s/tasks.md\n", changeDir)
+			fmt.Printf("tech-stack: .agentic/context/tech-stack.md\n")
 		}
 	},
 }
