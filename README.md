@@ -199,9 +199,9 @@ The same project structure works across Claude Code, Cursor, Copilot, Gemini, Wi
 agentic-agent skills generate-claude-skills
 agentic-agent skills generate-gemini-skills
 
-# Install skill packs for any supported tool
+# Install skill packs for one or more tools
 agentic-agent skills install tdd --tool claude-code
-agentic-agent skills install tdd --tool cursor --global
+agentic-agent skills install tdd --tool claude-code,cursor,gemini
 agentic-agent skills list
 ```
 
@@ -222,11 +222,17 @@ Skill packs are tool-agnostic bundles of instructions that install into the corr
 # Install TDD skill pack for Claude Code (project-level)
 agentic-agent skills install tdd --tool claude-code
 
+# Install for multiple tools at once
+agentic-agent skills install tdd --tool claude-code,cursor,gemini
+
 # Install globally (user-level)
 agentic-agent skills install tdd --tool claude-code --global
 
-# Interactive mode — select pack, tool, and scope
+# Interactive mode — select pack, then multi-select tools
 agentic-agent skills install
+
+# Interactive skills menu — browse all skills subcommands
+agentic-agent skills
 ```
 
 ### Task-level skill refs — targeted skills per task
@@ -452,8 +458,10 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 | `validate --format json` | JSON output for CI/CD |
 | `skills generate-claude-skills` | Generate Claude Code config |
 | `skills generate-gemini-skills` | Generate Gemini config |
-| `skills install [pack]` | Install a skill pack for an agent tool |
+| `skills` | Interactive skills menu (generate, install, list, check, ensure) |
+| `skills install [pack]` | Install a skill pack for one or more tools (`--tool a,b,c`) |
 | `skills list` | List available skill packs |
+| `skills ensure` | Ensure skills are up to date for an agent |
 | `simplify [dir...]` | Generate code simplification review bundle |
 | `simplify --task <id>` | Simplify using task scope directories |
 

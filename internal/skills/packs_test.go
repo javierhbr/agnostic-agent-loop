@@ -78,6 +78,7 @@ func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
 		{"dev-plans", 1},
 		{"diataxis", 3},
 		{"extract-wisdom", 1},
+		{"openspec", 1},
 	}
 
 	packs := r.GetAll()
@@ -98,7 +99,7 @@ func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
 }
 
 func TestToolSkillDir_AllToolsPresent(t *testing.T) {
-	expected := []string{"claude-code", "cursor", "gemini", "windsurf", "antigravity", "codex"}
+	expected := []string{"claude-code", "cursor", "gemini", "windsurf", "antigravity", "codex", "copilot", "opencode"}
 	for _, tool := range expected {
 		if _, ok := ToolSkillDir[tool]; !ok {
 			t.Errorf("ToolSkillDir missing tool %q", tool)

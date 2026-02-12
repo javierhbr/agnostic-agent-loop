@@ -7,6 +7,7 @@ import (
 
 	appcontext "github.com/javierbenavides/agentic-agent/internal/context"
 	"github.com/javierbenavides/agentic-agent/internal/encoding"
+	"github.com/javierbenavides/agentic-agent/internal/openspec"
 	"github.com/javierbenavides/agentic-agent/internal/skills"
 	"github.com/javierbenavides/agentic-agent/internal/specs"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
@@ -53,6 +54,16 @@ func (a *AutopilotLoop) Run(ctx context.Context) error {
 			fmt.Printf("Warning: could not ensure agent skills: %v\n", err)
 		} else if result.RulesGenerated || result.DriftFixed || len(result.PacksInstalled) > 0 {
 			fmt.Print(skills.FormatEnsureResult(result))
+		}
+	}
+
+	// Auto-import tasks from draft openspec changes
+	if a.cfg.Paths.OpenSpecDir != "" {
+		om := openspec.NewManager(a.cfg.Paths.OpenSpecDir)
+		syncResult, _ := om.Sync(a.taskManager)
+		if syncResult != nil && len(syncResult.ChangesImported) > 0 {
+			fmt.Printf("Auto-imported %d tasks from %d change(s)\n",
+				syncResult.TasksCreated, len(syncResult.ChangesImported))
 		}
 	}
 

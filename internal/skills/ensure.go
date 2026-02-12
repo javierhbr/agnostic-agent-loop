@@ -53,37 +53,42 @@ func Ensure(agentName string, cfg *models.Config) (*EnsureResult, error) {
 		}
 	}
 
-	// 2. Install configured skill packs
-	agentCfg := config.GetAgentConfig(cfg, agentName)
-	if len(agentCfg.SkillPacks) > 0 {
-		installer := NewInstaller()
-		for _, packName := range agentCfg.SkillPacks {
-			if !installer.IsInstalled(packName, agentName) {
-				_, installErr := installer.Install(packName, agentName, false)
-				if installErr != nil {
-					result.Warnings = append(result.Warnings,
-						fmt.Sprintf("Failed to install pack %s: %v", packName, installErr))
-				} else {
-					result.PacksInstalled = append(result.PacksInstalled, packName)
-				}
+	// 2. Install mandatory skill packs + configured skill packs
+	installer := NewInstaller()
+
+	// Mandatory packs are always installed regardless of config
+	for _, packName := range MandatoryPacks {
+		if !installer.IsInstalled(packName, agentName) {
+			_, installErr := installer.Install(packName, agentName, false)
+			if installErr != nil {
+				result.Warnings = append(result.Warnings,
+					fmt.Sprintf("Failed to install mandatory pack %s: %v", packName, installErr))
+			} else {
+				result.PacksInstalled = append(result.PacksInstalled, packName)
 			}
 		}
 	}
 
-	// 3. Generate tool-specific skill files
-	switch agentName {
-	case "claude-code":
-		if gen.Config != nil {
-			if err := gen.GenerateClaudeCodeSkills(); err != nil {
+	// Additional configured packs from agent config
+	agentCfg := config.GetAgentConfig(cfg, agentName)
+	for _, packName := range agentCfg.SkillPacks {
+		if !installer.IsInstalled(packName, agentName) {
+			_, installErr := installer.Install(packName, agentName, false)
+			if installErr != nil {
 				result.Warnings = append(result.Warnings,
-					fmt.Sprintf("Failed to generate Claude Code skills: %v", err))
+					fmt.Sprintf("Failed to install pack %s: %v", packName, installErr))
+			} else {
+				result.PacksInstalled = append(result.PacksInstalled, packName)
 			}
 		}
-	case "gemini":
-		if gen.Config != nil {
-			if err := gen.GenerateGeminiSkills(); err != nil {
+	}
+
+	// 3. Generate prd and ralph-converter skill files for this agent
+	if gen.Config != nil {
+		if _, ok := ToolSkillDir[agentName]; ok {
+			if err := gen.GenerateToolSkills(agentName); err != nil {
 				result.Warnings = append(result.Warnings,
-					fmt.Sprintf("Failed to generate Gemini skills: %v", err))
+					fmt.Sprintf("Failed to generate skills for %s: %v", agentName, err))
 			}
 		}
 	}

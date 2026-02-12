@@ -6,12 +6,30 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/javierbenavides/agentic-agent/internal/config"
 	"github.com/javierbenavides/agentic-agent/internal/openspec"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
 	"github.com/javierbenavides/agentic-agent/internal/ui/helpers"
 	"github.com/javierbenavides/agentic-agent/internal/ui/styles"
+	"github.com/javierbenavides/agentic-agent/pkg/models"
 	"github.com/spf13/cobra"
 )
+
+// syncOpenSpecChanges auto-imports tasks from any draft openspec changes
+// that have a populated tasks.md. Returns the sync result for optional logging.
+func syncOpenSpecChanges(cfg *models.Config) *openspec.SyncResult {
+	if cfg.Paths.OpenSpecDir == "" {
+		return &openspec.SyncResult{}
+	}
+	m := openspec.NewManager(cfg.Paths.OpenSpecDir)
+	tm := tasks.NewTaskManager(".agentic/tasks")
+	result, _ := m.Sync(tm)
+	if result != nil && len(result.ChangesImported) > 0 {
+		fmt.Printf("Auto-imported %d tasks from %d change(s)\n",
+			result.TasksCreated, len(result.ChangesImported))
+	}
+	return result
+}
 
 var openspecCmd = &cobra.Command{
 	Use:   "openspec",
@@ -33,6 +51,26 @@ Examples:
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := getConfig()
+
+		// Ensure agnostic-agent.yaml exists in the project root
+		cwd, _ := os.Getwd()
+		configResult, err := openspec.EnsureConfig(cwd, "")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: could not create config: %v\n", err)
+		} else if configResult.Created {
+			if helpers.ShouldUseInteractiveMode(cmd) {
+				fmt.Println(styles.RenderSuccess("Created agnostic-agent.yaml"))
+			} else {
+				fmt.Println("Created agnostic-agent.yaml")
+			}
+			// Reload config so paths.openSpecDir is set
+			reloaded, loadErr := config.LoadConfig(configResult.Path)
+			if loadErr == nil {
+				cfg = reloaded
+				appConfig = cfg
+			}
+		}
+
 		m := openspec.NewManager(cfg.Paths.OpenSpecDir)
 
 		fromFile, _ := cmd.Flags().GetString("from")
@@ -52,22 +90,29 @@ Examples:
 			fmt.Println(styles.RenderSuccess(fmt.Sprintf("Created change: %s", change.ID)))
 			fmt.Printf("  %s Proposal:  %s/proposal.md\n", styles.IconArrow, changeDir)
 			fmt.Printf("  %s Tasks:     %s/tasks.md\n", styles.IconArrow, changeDir)
-			fmt.Printf("  %s Specs:     %s/specs/\n", styles.IconArrow, changeDir)
 			fmt.Printf("  %s Status:    %s\n", styles.IconArrow, change.Status)
 			fmt.Printf("\n%s Fill in proposal.md, then write tasks in tasks.md.\n", styles.IconArrow)
-			fmt.Printf("%s Then run: agentic-agent openspec import %s\n", styles.IconArrow, change.ID)
+			fmt.Printf("%s Define the high-level tech stack in .agentic/context/tech-stack.md\n", styles.IconArrow)
+			fmt.Printf("%s For complex changes (4+ tasks), write specs in %s/specs/\n", styles.IconArrow, changeDir)
+			fmt.Printf("%s Tasks auto-import when you run: agentic-agent task list  or  task claim\n", styles.IconArrow)
 		} else {
 			fmt.Printf("Created change: %s\n", change.ID)
 			fmt.Printf("proposal: %s/proposal.md\n", changeDir)
 			fmt.Printf("tasks: %s/tasks.md\n", changeDir)
+			fmt.Printf("tech-stack: .agentic/context/tech-stack.md\n")
 		}
 	},
 }
 
 var openspecImportCmd = &cobra.Command{
-	Use:   "import <id>",
-	Short: "Import tasks from tasks.md into the backlog",
+	Use:        "import <id>",
+	Short:      "Import tasks from tasks.md into the backlog (deprecated)",
+	Hidden:     true,
+	Deprecated: "tasks are now auto-imported when you run 'task list' or 'task claim'.",
 	Long: `Parse tasks.md for the given change and create tasks in the backlog.
+
+DEPRECATED: Tasks are now auto-imported when you run 'task list' or 'task claim'.
+This command is kept for backward compatibility.
 
 Supports numbered lists (1. Task) and checkbox lists (- [ ] Task).
 

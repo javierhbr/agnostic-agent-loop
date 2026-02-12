@@ -3,6 +3,7 @@ package skills
 import (
 	"embed"
 	"fmt"
+	"sort"
 )
 
 //go:embed packs/*
@@ -16,6 +17,8 @@ var ToolSkillDir = map[string]string{
 	"windsurf":    ".windsurf/skills",
 	"antigravity": ".agent/skills",
 	"codex":       ".codex/skills",
+	"copilot":     ".github/skills",
+	"opencode":    ".opencode/skills",
 }
 
 // ToolGlobalSkillDir maps agent tool names to their global/user-level skill directory.
@@ -26,14 +29,17 @@ var ToolGlobalSkillDir = map[string]string{
 	"windsurf":    "~/.codeium/windsurf/skills",
 	"antigravity": "~/.gemini/antigravity/skills",
 	"codex":       "~/.codex/skills",
+	"copilot":     "~/.config/github-copilot/skills",
+	"opencode":    "~/.config/opencode/skills",
 }
 
-// SupportedTools returns the list of supported tool names.
+// SupportedTools returns the list of supported tool names in sorted order.
 func SupportedTools() []string {
 	tools := make([]string, 0, len(ToolSkillDir))
 	for t := range ToolSkillDir {
 		tools = append(tools, t)
 	}
+	sort.Strings(tools)
 	return tools
 }
 
@@ -48,6 +54,14 @@ type SkillPack struct {
 	Name        string
 	Description string
 	Files       []SkillPackFile
+}
+
+// MandatoryPacks lists skill packs that must be installed for every agent.
+// These are auto-installed during `skills ensure` and validated on startup.
+var MandatoryPacks = []string{
+	"code-simplification",
+	"dev-plans",
+	"openspec",
 }
 
 // PackRegistry maintains a map of available skill packs.
@@ -113,6 +127,14 @@ func NewPackRegistry() *PackRegistry {
 		},
 	})
 
+	r.Register(SkillPack{
+		Name:        "openspec",
+		Description: "Spec-driven development from requirements files using the openspec change lifecycle",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/openspec/SKILL.md", DstPath: "openspec/SKILL.md"},
+		},
+	})
+
 	return r
 }
 
@@ -130,11 +152,14 @@ func (r *PackRegistry) GetPack(name string) (SkillPack, error) {
 	return p, nil
 }
 
-// GetAll returns all registered skill packs.
+// GetAll returns all registered skill packs in sorted order.
 func (r *PackRegistry) GetAll() []SkillPack {
 	var list []SkillPack
 	for _, p := range r.packs {
 		list = append(list, p)
 	}
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Name < list[j].Name
+	})
 	return list
 }

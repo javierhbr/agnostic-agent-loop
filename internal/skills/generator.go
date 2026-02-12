@@ -108,24 +108,25 @@ func (g *Generator) loadAgentRules(tool string) string {
 	return strings.Join(parts, "\n")
 }
 
-// GenerateGeminiSkills generates Gemini CLI slash command files for PRD and Ralph converter
-func (g *Generator) GenerateGeminiSkills() error {
+// toolSkillTemplates lists the skill templates that are generated for every agent tool.
+var toolSkillTemplates = []struct {
+	templateFile string
+	outputName   string // relative to tool skill dir (e.g., "prd.md")
+}{
+	{templateFile: "templates/prd-skill.md", outputName: "prd.md"},
+	{templateFile: "templates/ralph-converter-skill.md", outputName: "ralph-converter.md"},
+}
+
+// GenerateToolSkills generates prd and ralph-converter skill files for any agent tool.
+// Files are placed in the tool's skill directory (e.g., .claude/skills/, .cursor/skills/).
+func (g *Generator) GenerateToolSkills(agentName string) error {
 	if g.Config == nil {
-		return fmt.Errorf("config required for generating Gemini skills")
+		return fmt.Errorf("config required for generating tool skills")
 	}
 
-	skills := []struct {
-		templateFile string
-		outputFile   string
-	}{
-		{
-			templateFile: "templates/gemini-prd-command.toml",
-			outputFile:   ".gemini/commands/prd/gen.toml",
-		},
-		{
-			templateFile: "templates/gemini-ralph-command.toml",
-			outputFile:   ".gemini/commands/ralph/convert.toml",
-		},
+	skillDir, ok := ToolSkillDir[agentName]
+	if !ok {
+		return fmt.Errorf("unsupported tool: %s", agentName)
 	}
 
 	data := struct {
@@ -134,7 +135,7 @@ func (g *Generator) GenerateGeminiSkills() error {
 		PRDOutputPath: g.Config.Paths.PRDOutputPath,
 	}
 
-	for _, skill := range skills {
+	for _, skill := range toolSkillTemplates {
 		tmplContent, err := templatesFS.ReadFile(skill.templateFile)
 		if err != nil {
 			return fmt.Errorf("failed to read template %s: %w", skill.templateFile, err)
@@ -150,55 +151,42 @@ func (g *Generator) GenerateGeminiSkills() error {
 			return fmt.Errorf("failed to execute template: %w", err)
 		}
 
-		outputDir := filepath.Dir(skill.outputFile)
-		if err := os.MkdirAll(outputDir, 0755); err != nil {
-			return fmt.Errorf("failed to create directory %s: %w", outputDir, err)
+		outputFile := filepath.Join(skillDir, skill.outputName)
+		if err := os.MkdirAll(filepath.Dir(outputFile), 0755); err != nil {
+			return fmt.Errorf("failed to create directory for %s: %w", outputFile, err)
 		}
 
-		if err := os.WriteFile(skill.outputFile, buf.Bytes(), 0644); err != nil {
-			return fmt.Errorf("failed to write skill file %s: %w", skill.outputFile, err)
+		if err := os.WriteFile(outputFile, buf.Bytes(), 0644); err != nil {
+			return fmt.Errorf("failed to write skill file %s: %w", outputFile, err)
+		}
+	}
+
+	// Gemini also gets slash command TOML files
+	if agentName == "gemini" {
+		if err := g.generateGeminiCommands(data); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-// GenerateClaudeCodeSkills generates Claude Code skill files for PRD and Ralph converter
-func (g *Generator) GenerateClaudeCodeSkills() error {
-	if g.Config == nil {
-		return fmt.Errorf("config required for generating Claude Code skills")
-	}
-
-	// Define skill templates to generate
-	skills := []struct {
+// generateGeminiCommands generates Gemini CLI slash command TOML files.
+func (g *Generator) generateGeminiCommands(data struct{ PRDOutputPath string }) error {
+	commands := []struct {
 		templateFile string
 		outputFile   string
 	}{
-		{
-			templateFile: "templates/prd-skill.md",
-			outputFile:   ".claude/skills/prd.md",
-		},
-		{
-			templateFile: "templates/ralph-converter-skill.md",
-			outputFile:   ".claude/skills/ralph-converter.md",
-		},
+		{templateFile: "templates/gemini-prd-command.toml", outputFile: ".gemini/commands/prd/gen.toml"},
+		{templateFile: "templates/gemini-ralph-command.toml", outputFile: ".gemini/commands/ralph/convert.toml"},
 	}
 
-	// Template data with config paths
-	data := struct {
-		PRDOutputPath string
-	}{
-		PRDOutputPath: g.Config.Paths.PRDOutputPath,
-	}
-
-	for _, skill := range skills {
-		// Read template
-		tmplContent, err := templatesFS.ReadFile(skill.templateFile)
+	for _, cmd := range commands {
+		tmplContent, err := templatesFS.ReadFile(cmd.templateFile)
 		if err != nil {
-			return fmt.Errorf("failed to read template %s: %w", skill.templateFile, err)
+			return fmt.Errorf("failed to read template %s: %w", cmd.templateFile, err)
 		}
 
-		// Parse and execute template
 		t, err := template.New("skill").Parse(string(tmplContent))
 		if err != nil {
 			return fmt.Errorf("failed to parse template: %w", err)
@@ -209,17 +197,31 @@ func (g *Generator) GenerateClaudeCodeSkills() error {
 			return fmt.Errorf("failed to execute template: %w", err)
 		}
 
-		// Ensure output directory exists
-		outputDir := filepath.Dir(skill.outputFile)
-		if err := os.MkdirAll(outputDir, 0755); err != nil {
-			return fmt.Errorf("failed to create directory %s: %w", outputDir, err)
+		if err := os.MkdirAll(filepath.Dir(cmd.outputFile), 0755); err != nil {
+			return fmt.Errorf("failed to create directory %s: %w", filepath.Dir(cmd.outputFile), err)
 		}
 
-		// Write skill file
-		if err := os.WriteFile(skill.outputFile, buf.Bytes(), 0644); err != nil {
-			return fmt.Errorf("failed to write skill file %s: %w", skill.outputFile, err)
+		if err := os.WriteFile(cmd.outputFile, buf.Bytes(), 0644); err != nil {
+			return fmt.Errorf("failed to write skill file %s: %w", cmd.outputFile, err)
 		}
 	}
 
 	return nil
+}
+
+// GenerateGeminiSkills generates Gemini CLI slash command files for PRD and Ralph converter.
+// Deprecated: Use GenerateToolSkills("gemini") instead, which generates both skill files and commands.
+func (g *Generator) GenerateGeminiSkills() error {
+	if g.Config == nil {
+		return fmt.Errorf("config required for generating Gemini skills")
+	}
+	return g.generateGeminiCommands(struct{ PRDOutputPath string }{
+		PRDOutputPath: g.Config.Paths.PRDOutputPath,
+	})
+}
+
+// GenerateClaudeCodeSkills generates Claude Code skill files for PRD and Ralph converter.
+// Deprecated: Use GenerateToolSkills("claude-code") instead.
+func (g *Generator) GenerateClaudeCodeSkills() error {
+	return g.GenerateToolSkills("claude-code")
 }

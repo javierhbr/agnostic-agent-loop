@@ -3,6 +3,7 @@ package skills
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/javierbenavides/agentic-agent/pkg/models"
@@ -155,6 +156,123 @@ func TestEnsure_CursorTool(t *testing.T) {
 
 	if _, err := os.Stat(".cursor/rules/agnostic-agent.mdc"); os.IsNotExist(err) {
 		t.Error("cursor rules file was not created")
+	}
+}
+
+func TestEnsure_GeneratesPrdAndRalphForAllTools(t *testing.T) {
+	tools := []struct {
+		name     string
+		skillDir string
+	}{
+		{"claude-code", ".claude/skills"},
+		{"cursor", ".cursor/skills"},
+		{"gemini", ".gemini/skills"},
+		{"windsurf", ".windsurf/skills"},
+		{"codex", ".codex/skills"},
+		{"copilot", ".github/skills"},
+		{"opencode", ".opencode/skills"},
+		{"antigravity", ".agent/skills"},
+	}
+
+	for _, tc := range tools {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			origDir, _ := os.Getwd()
+			os.Chdir(dir)
+			defer os.Chdir(origDir)
+
+			os.MkdirAll(".agentic/agent-rules", 0755)
+			os.WriteFile(".agentic/agent-rules/base.md", []byte("- Base rule\n"), 0644)
+
+			// Override ToolSkillDir for this tool to use temp dir
+			origSkillDir := ToolSkillDir[tc.name]
+			ToolSkillDir[tc.name] = tc.skillDir
+			defer func() { ToolSkillDir[tc.name] = origSkillDir }()
+
+			cfg := &models.Config{}
+			cfg.Paths.PRDOutputPath = ".agentic/tasks/"
+
+			_, err := Ensure(tc.name, cfg)
+			if err != nil {
+				t.Fatalf("Ensure failed for %s: %v", tc.name, err)
+			}
+
+			// Verify prd.md exists in the tool's skill dir
+			prdPath := filepath.Join(tc.skillDir, "prd.md")
+			if _, err := os.Stat(prdPath); os.IsNotExist(err) {
+				t.Errorf("expected %s to exist for %s", prdPath, tc.name)
+			}
+
+			// Verify ralph-converter.md exists
+			ralphPath := filepath.Join(tc.skillDir, "ralph-converter.md")
+			if _, err := os.Stat(ralphPath); os.IsNotExist(err) {
+				t.Errorf("expected %s to exist for %s", ralphPath, tc.name)
+			}
+
+			// Verify template variable was rendered
+			content, _ := os.ReadFile(prdPath)
+			if !strings.Contains(string(content), ".agentic/tasks/") {
+				t.Errorf("prd.md should contain rendered PRDOutputPath")
+			}
+			if strings.Contains(string(content), "{{.PRDOutputPath}}") {
+				t.Errorf("prd.md should not contain unrendered template variable")
+			}
+		})
+	}
+}
+
+func TestEnsure_GeminiAlsoGetsCommands(t *testing.T) {
+	dir := t.TempDir()
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(origDir)
+
+	os.MkdirAll(".agentic/agent-rules", 0755)
+	os.WriteFile(".agentic/agent-rules/base.md", []byte("- Base rule\n"), 0644)
+
+	cfg := &models.Config{}
+	cfg.Paths.PRDOutputPath = ".agentic/tasks/"
+
+	_, err := Ensure("gemini", cfg)
+	if err != nil {
+		t.Fatalf("Ensure failed: %v", err)
+	}
+
+	// Gemini should have skill files AND command TOML files
+	for _, path := range []string{
+		".gemini/skills/prd.md",
+		".gemini/skills/ralph-converter.md",
+		".gemini/commands/prd/gen.toml",
+		".gemini/commands/ralph/convert.toml",
+	} {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			t.Errorf("expected %s to exist for gemini", path)
+		}
+	}
+}
+
+func TestGenerateToolSkills_UnsupportedTool(t *testing.T) {
+	cfg := &models.Config{}
+	cfg.Paths.PRDOutputPath = ".agentic/tasks/"
+	gen := NewGeneratorWithConfig(cfg)
+
+	err := gen.GenerateToolSkills("nonexistent-tool")
+	if err == nil {
+		t.Fatal("expected error for unsupported tool")
+	}
+	if !strings.Contains(err.Error(), "unsupported tool") {
+		t.Errorf("expected 'unsupported tool' in error, got: %s", err.Error())
+	}
+}
+
+func TestGenerateToolSkills_RequiresConfig(t *testing.T) {
+	gen := NewGenerator() // no config
+	err := gen.GenerateToolSkills("claude-code")
+	if err == nil {
+		t.Fatal("expected error without config")
+	}
+	if !strings.Contains(err.Error(), "config required") {
+		t.Errorf("expected 'config required' in error, got: %s", err.Error())
 	}
 }
 
