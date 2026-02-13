@@ -10,7 +10,7 @@ import (
 
 var (
 	// Version information (set via ldflags at build time)
-	Version   = "0.2.10"
+	Version   = "0.2.14"
 	Commit    = "none"
 	BuildDate = "unknown"
 
@@ -90,6 +90,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./agnostic-agent.yaml)")
 	rootCmd.PersistentFlags().StringVar(&agentFlag, "agent", "", "agent tool name (claude-code, cursor, gemini, windsurf, antigravity, codex, copilot, opencode)")
 	rootCmd.PersistentFlags().Bool("no-interactive", false, "disable interactive mode and use flag-based commands")
+	rootCmd.PersistentFlags().BoolP("interactive", "i", false, "force interactive mode (overrides agent detection and flag-based mode)")
 
 	// Register commands
 	rootCmd.AddCommand(NewVersionCmd())

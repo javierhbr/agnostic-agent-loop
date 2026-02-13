@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/javierbenavides/agentic-agent/internal/project"
 	"github.com/javierbenavides/agentic-agent/internal/tasks"
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 	"gopkg.in/yaml.v3"
@@ -70,6 +71,19 @@ func (m *Manager) Init(name, fromFile string) (*Change, error) {
 
 	if err := os.MkdirAll(changeDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create change directory: %w", err)
+	}
+
+	// Ensure .agentic/context/ directory and tech-stack.md template exist
+	contextDir := ".agentic/context"
+	if err := os.MkdirAll(contextDir, 0755); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not create context directory: %v\n", err)
+	} else {
+		techStackPath := filepath.Join(contextDir, "tech-stack.md")
+		if _, err := os.Stat(techStackPath); os.IsNotExist(err) {
+			if writeErr := project.WriteTemplate("init/context/tech-stack.md", techStackPath); writeErr != nil {
+				fmt.Fprintf(os.Stderr, "Warning: could not create tech-stack.md template: %v\n", writeErr)
+			}
+		}
 	}
 
 	// Read source requirements file
