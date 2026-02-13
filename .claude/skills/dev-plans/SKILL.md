@@ -1,5 +1,5 @@
 ---
-name: dev-plans
+name: creating-development-plans
 description: Creates structured development plans with phased task breakdowns, requirements, and QA checklists. Use when the user explicitly asks to create a dev plan, development plan, or document development requirements.
 ---
 
@@ -51,6 +51,18 @@ Organise development into phases:
 - Each phase MUST end with:
   - A self-review checkpoint
   - A "STOP and wait for human review" checkpoint
+
+#### Task granularity
+
+Each task must be **atomic** — one focused unit of work that can be completed and tested independently.
+
+- **One concern per task**: "Add user model" not "Add user model and auth endpoints"
+- **Single layer**: Prefer "Add API routes" + "Add UI components" over "Add full feature"
+- **Testable in isolation**: Each task has its own verifiable acceptance criteria (3-5 per task)
+- **Split aggressively**: A task touching both frontend and backend should be two tasks. Infrastructure setup and business logic should be separate tasks.
+- **Target 10-20 tasks** for a medium-sized feature (3 screens + API + storage)
+
+Do NOT bundle multiple features, layers, or components into one task to reduce the count.
 
 ### Step 4: Quality Assurance Planning
 
@@ -184,8 +196,6 @@ Adjust based on project risk tolerance:
 4. Present the plan to the user
 5. **STOP** and wait for user review
 
-**Sub-step override:** If this skill was invoked as a sub-step of another skill (e.g., openspec), steps 4 and 5 do NOT apply. The calling skill controls review checkpoints — return control to it immediately after writing the plan. Do NOT stop, do NOT present the plan independently, do NOT wait for user review. The calling skill will handle that.
-
 ## Remember
 
 - This is a **planning document**, not implementation
@@ -193,4 +203,3 @@ Adjust based on project risk tolerance:
 - Another AI agent (or you, in a future session) will execute this plan
 - Clarity and completeness are paramount but keep it concise
 - When in doubt about requirements, ask the user for clarification
-- **When called from another skill**: your output is intermediate — the calling skill decides what happens next

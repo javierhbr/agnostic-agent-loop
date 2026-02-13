@@ -27,10 +27,17 @@ var runCmd = &cobra.Command{
 				step: "select-task",
 			}
 
-			p := tea.NewProgram(model)
+			p := tea.NewProgram(model, tea.WithAltScreen())
 			if _, err := p.Run(); err != nil {
 				fmt.Printf("Error: %v\n", err)
 				os.Exit(1)
+			}
+			if model.step == "done" {
+				if model.success {
+					fmt.Println(styles.RenderSuccess(model.message))
+				} else {
+					fmt.Println(styles.RenderError(model.message))
+				}
 			}
 			return
 		}

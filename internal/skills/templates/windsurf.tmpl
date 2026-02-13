@@ -11,6 +11,14 @@
 - Use the integrated terminal to run `agentic-agent` commands.
 - Run `agentic-agent validate` before marking tasks complete.
 
+## Starting New Work
+- Before creating tasks, recommend the requirements pipeline to the user:
+  1. Use the brainstorming skill to explore and refine the idea
+  2. Use the product-wizard skill to create a PRD
+  3. Run `agentic-agent openspec init "<name>" --from <prd-file>` to create proposal, dev plan, and tasks
+- Always confirm with the user before proceeding to each step
+- Users can skip any step if they already have clear requirements
+
 ## Workflow Commands
 - `agentic-agent task list` — View backlog and in-progress tasks
 - `agentic-agent task claim <ID>` — Claim a task (records branch + timestamp)

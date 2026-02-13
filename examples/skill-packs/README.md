@@ -42,12 +42,16 @@ Output:
 ```text
 Available Skill Packs
 
+  • atdd                   Acceptance Test-Driven Development from openspec task criteria (1 file)
   • tdd                    Test-Driven Development with red-green-refactor workflow (3 files)
   • api-docs               Generate comprehensive API documentation from code (1 file)
   • code-simplification    Review and refactor code for simplicity and maintainability (1 file)
   • dev-plans              Create structured development plans with phased task breakdowns (1 file)
   • diataxis               Write documentation using the Diataxis framework (3 files)
   • extract-wisdom         Extract insights and actionable takeaways from text sources (1 file)
+  • openspec               Spec-driven development from requirements files (1 file)
+  • product-wizard         Generate robust, production-grade PRDs (5 files)
+  • run-with-ralph         Execute openspec tasks using Ralph Wiggum iterative loops (1 file)
 ```
 
 Each pack contains skill files that teach the AI agent a specific workflow or capability.
@@ -84,6 +88,8 @@ The files land in the tool's skill directory:
 | windsurf    | `.windsurf/skills/`  |
 | antigravity | `.agent/skills/`     |
 | codex       | `.codex/skills/`     |
+| copilot     | `.github/skills/`    |
+| opencode    | `.opencode/skills/`  |
 
 ---
 

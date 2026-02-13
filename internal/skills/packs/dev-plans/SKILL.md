@@ -52,6 +52,18 @@ Organise development into phases:
   - A self-review checkpoint
   - A "STOP and wait for human review" checkpoint
 
+#### Task granularity
+
+Each task must be **atomic** — one focused unit of work that can be completed and tested independently.
+
+- **One concern per task**: "Add user model" not "Add user model and auth endpoints"
+- **Single layer**: Prefer "Add API routes" + "Add UI components" over "Add full feature"
+- **Testable in isolation**: Each task has its own verifiable acceptance criteria (3-5 per task)
+- **Split aggressively**: A task touching both frontend and backend should be two tasks. Infrastructure setup and business logic should be separate tasks.
+- **Target 10-20 tasks** for a medium-sized feature (3 screens + API + storage)
+
+Do NOT bundle multiple features, layers, or components into one task to reduce the count.
+
 ### Step 4: Quality Assurance Planning
 
 Build a concise QA checklist that includes (if applicable):

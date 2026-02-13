@@ -1,6 +1,6 @@
 ---
 name: openspec
-description: Spec-driven development planning from requirements files. Creates proposals, defines tech stack, generates development plans and task breakdowns. Use when starting from requirements or creating change proposals. For execution after approval, use openspec-execute. Triggers include "openspec", "plan from spec", "start from requirements", "create proposal".
+description: Spec-driven development from requirements files. Scaffolds changes, writes specs, and tracks implementation. Use when starting from requirements, implementing specs, or managing change proposals. Triggers include "openspec", "implement from spec", "start from requirements", "apply requirements".
 ---
 
 ## MANDATORY: Use CLI commands only
@@ -13,21 +13,20 @@ The CLI maintains state consistency — bypassing it causes data corruption.
 ## Use this skill when
 
 - Starting a new feature from a requirements file
-- User says "openspec", "plan from spec", "start from requirements"
-- User provides a requirements/spec file and wants a structured development plan
-- User wants to define scope and break down work before implementation
+- User says "openspec", "implement from spec", "start from requirements"
+- User provides a requirements/spec file and wants structured implementation
 
 ## Do not use this skill when
 
 - The task is a quick fix or single-file change
 - There are no requirements to work from
-- The plan is already approved and ready for execution (use openspec-execute instead)
 
 ## Example prompts
 
 - "Start a project from requirements.md following openspec"
-- "Plan the implementation for docs/auth-spec.md using openspec"
+- "Implement the features described in docs/auth-spec.md using openspec"
 - "openspec init from .agentic/spec/payment-requirements.md"
+- "Continue implementing change auth-feature" (resumes Phase 6)
 
 ## Instructions
 
@@ -38,6 +37,23 @@ Before starting, verify the CLI and skills are set up:
 agentic-agent skills ensure
 ```
 This auto-installs mandatory skill packs and generates rules files. Safe to run multiple times.
+
+### Phase 0.5: Refine requirements (if starting from scratch)
+
+If the user has a vague idea but no requirements file yet:
+
+1. **Ask the user** if they'd like to refine their idea first:
+   ```
+   I notice you don't have a requirements file yet. Would you like to:
+   A. Brainstorm the idea first (recommended — explores intent and design)
+   B. Create a PRD directly (formalizes requirements into a document)
+   C. Skip — I'll work from what you've described
+   ```
+2. If **A**: Use the **brainstorming** skill to explore the idea. Once the design is clear, proceed to B.
+3. If **B**: Use the **product-wizard** skill to create a PRD. It will save to `.agentic/spec/prd-<feature>.md`. Then use that file with `openspec init --from .agentic/spec/prd-<feature>.md`.
+4. If **C**: Proceed directly to Phase 1.
+
+Always confirm with the user before moving to the next step.
 
 ### Phase 1: Understand the input
 
@@ -75,8 +91,6 @@ This auto-installs mandatory skill packs and generates rules files. Safe to run 
 4. Edit `proposal.md` — fill in the Problem, Approach, Scope, and Acceptance Criteria sections using the requirements and the user's answers from Phase 1
 
 ### Phase 3: Define the tech stack
-
-**This phase is MANDATORY. Do NOT skip it.** The tech stack must be defined before Phase 4 can run, because it directly shapes what tasks are created.
 
 Before planning tasks, establish the technical foundation for this change.
 
@@ -135,34 +149,42 @@ Before planning tasks, establish the technical foundation for this change.
 
 ### Phase 4: Create the development plan
 
-**Use the `dev-plans` skill as a SUB-STEP** — it is NOT a standalone workflow here.
-
-**CRITICAL sub-step rules:**
-- The dev-plans skill runs **inside** this openspec phase. You are NOT handing off control.
-- Write the development plan to `DEVELOPMENT_PLAN.md` **inside the change directory** (e.g., `.agentic/openspec/changes/<change-id>/DEVELOPMENT_PLAN.md`), NOT in the project root.
-- **Do NOT stop** after the development plan is written. The dev-plans "STOP and wait for human review" instruction **does not apply** when called from openspec — you must continue immediately to populate `tasks.md` below.
-- If the dev-plans skill says to present the plan and wait, **ignore that** — openspec controls the review checkpoints.
+**Use the `creating-development-plans` skill** to analyse the requirements and generate technical tasks.
 
 The tech stack defined in Phase 3 (available in `.agentic/context/tech-stack.md`) should directly inform what tasks are created and how they are scoped.
 
-The dev-plans sub-step will:
+The dev-plans skill will:
 1. Gather context from existing code, documentation, and the tech stack definition
 2. Analyse requirements and identify implementation approach
 3. Break work into phased tasks with dependencies
 4. Include QA checklists and review checkpoints
-5. Write `DEVELOPMENT_PLAN.md` inside the change directory
 
-**Immediately after** writing the development plan, convert its phases and tasks into the openspec task format. Do NOT present the plan to the user or wait — continue directly:
+After the development plan is created, convert its phases and tasks into the openspec format:
 
-1. Write `tasks.md` inside the change directory — a checkbox index of implementation tasks derived from the development plan:
+1. Write `tasks.md` — a numbered list or checkbox index of implementation tasks derived from the development plan:
    ```
-   - [ ] First concrete task
-   - [ ] Second concrete task
-   - [ ] Third concrete task
+   1. First concrete task
+   2. Second concrete task
+   3. Third concrete task
    ```
-   Keep tasks small, testable, and ordered by dependency.
+   Keep tasks ordered by dependency.
 2. Do NOT edit any YAML files. Do NOT create tasks manually.
-3. `tasks.md` MUST NOT be empty. If you wrote a development plan, extract every actionable task from it into `tasks.md`.
+
+#### Task granularity rules
+
+Each task must be **atomic** — one focused unit of work that an agent can complete in a single session.
+
+| Guideline | Example |
+|-----------|---------|
+| One concern per task | "Add user model" not "Add user model and auth endpoints" |
+| Testable in isolation | Task has its own acceptance criteria that can be verified independently |
+| Single directory/layer | Prefer "Add API routes" + "Add UI components" over "Add full feature" |
+| 10-20 tasks for a medium project | A feature with 3 screens, an API, and storage should produce ~15 tasks |
+| 3-5 acceptance criteria per task | More than 5 criteria means the task should be split |
+
+**Split aggressively.** A task that touches both frontend and backend should be two tasks. A task that sets up infrastructure AND implements business logic should be two tasks. When in doubt, split.
+
+**Do NOT bundle** multiple features, layers, or components into one task just to keep the count low.
 
 #### Detailed task files (for complex changes)
 
@@ -206,6 +228,12 @@ For changes with **4 or more tasks**, create individual task detail files to giv
 
 **Skip detailed files** for simple changes (1-3 tasks) where `tasks.md` titles are sufficient.
 
+After writing `tasks.md` (and optional detail files), **immediately trigger the auto-import** so tasks appear in the backlog:
+```bash
+agentic-agent task list
+```
+This imports tasks from `tasks.md` into `.agentic/tasks/backlog.yaml`. Do NOT skip this step — without it, the task backlog will be empty.
+
 ### Phase 5: Write detailed specs (for complex changes)
 
 For changes with **4 or more tasks** or **multiple components**, write specification files in the `specs/` directory:
@@ -224,60 +252,45 @@ For changes with **4 or more tasks** or **multiple components**, write specifica
 
 **Skip this phase** for simple changes (1-3 tasks) where `proposal.md` covers everything.
 
-### CHECKPOINT: Present plan and wait for approval
+### Phase 6: Execute tasks sequentially
 
-**Before executing ANY tasks, you MUST stop and present the plan to the user.**
+Tasks are **auto-imported** into the backlog when you run `task list` or `task claim`.
+No manual import step is needed.
 
-Show a summary that includes:
-1. The change name and proposal overview
-2. The tech stack chosen (from `.agentic/context/tech-stack.md`)
-3. The full task list from `tasks.md`
-4. Spec files written (if any)
+When tasks have detail files, the imported tasks include:
+- Description from the task file
+- Acceptance criteria (viewable via `agentic-agent task show <id>`)
+- Prerequisites mapped as task inputs
+- Technical notes in the description
 
-Then ask:
-```
-The plan is ready. Would you like to:
-A. Proceed with execution — I'll invoke the openspec-execute skill to start implementing
-B. Review/adjust the plan first — I'll wait for your feedback
-C. Regenerate tasks — redo the task breakdown
-```
+For each task (check progress with `agentic-agent openspec status <change-id>`):
 
-**STOP here.**
-- If user chooses **A**: invoke the `openspec-execute` skill with the change ID (see handoff below)
-- If user chooses **B**: wait for feedback, then iterate on the plan
-- If user chooses **C**: redo Phase 4 (task breakdown) and present again
+1. **List tasks**: `agentic-agent task list` (triggers auto-import if needed)
+2. **Review details**: `agentic-agent task show <task-id>` (see description, acceptance criteria)
+3. **Claim via CLI**: `agentic-agent task claim <task-id>`
+4. Implement the work
+5. Run tests — verify the task works
+6. **Complete via CLI**: `agentic-agent task complete <task-id>`
 
-### Handoff to execution
+**Never skip ahead.** Complete and verify each task before starting the next.
+**Never modify `.agentic/tasks/*.yaml` files directly.**
 
-Once the user approves the plan (option A at CHECKPOINT), hand off to the `openspec-execute` skill.
+### Phase 7: Complete and archive
 
-Say to the user:
-```
-Plan approved. Starting execution for change <change-id>...
-```
+When all tasks are done:
 
-Then invoke the skill:
-```
-skill: "openspec-execute"
-args: "<change-id>"
+```bash
+agentic-agent openspec complete <change-id>
+agentic-agent openspec archive <change-id>
 ```
 
-The `openspec-execute` skill handles:
-- Auto-importing tasks from `tasks.md`
-- Claiming and implementing each task sequentially
-- Running tests and validation
-- Completing and archiving the change
-
-**Your work is done once execution begins.** The `openspec-execute` skill takes over.
+Report the summary to the user.
 
 ## Rules (non-negotiable)
 
 1. Always use `agentic-agent` CLI commands for task and change operations
 2. Never write directly to `.agentic/` YAML files
-3. Write specs in `specs/` for changes with 4+ tasks or multiple components
-4. Do NOT run `openspec import` — tasks auto-import on `task list` or `task claim`
-5. `.agentic/context/tech-stack.md` MUST exist before Phase 4 starts — Phase 3 is not optional
-6. `tasks.md` in the change directory MUST NOT be empty after Phase 4
-7. Do NOT start execution without explicit user approval at the CHECKPOINT
-8. Do NOT implement tasks yourself — hand off to `openspec-execute` after approval
-9. Each phase that says "Wait for the user to answer" is a hard stop — do not continue until the user responds
+3. Always claim a task before working on it
+4. Always complete a task after finishing it
+5. Write specs in `specs/` for changes with 4+ tasks or multiple components
+6. Do NOT run `openspec import` — tasks auto-import on `task list` or `task claim`

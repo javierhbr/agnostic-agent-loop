@@ -122,6 +122,11 @@ func NewStartWizardModel() StartWizardModel {
 			"run",
 		),
 		components.NewSelectOption(
+			"💡 prompts - Example prompts",
+			"Browse agent prompts, CLI examples, and workflow recipes",
+			"prompts",
+		),
+		components.NewSelectOption(
 			"ℹ️  version - Version info",
 			"Display version information",
 			"version",

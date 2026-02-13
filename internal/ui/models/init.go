@@ -517,7 +517,13 @@ func (m InitWizardModel) renderComplete() string {
 
 	b.WriteString(styles.RenderSuccess("Project initialized successfully!") + "\n\n")
 
-	b.WriteString(styles.SubtitleStyle.Render("Next steps:") + "\n\n")
+	b.WriteString(styles.SubtitleStyle.Render("Recommended workflow (confirm each step with your AI agent):") + "\n\n")
+	b.WriteString("  1. " + styles.BoldStyle.Render("Brainstorm") + "       — Explore and refine your idea\n")
+	b.WriteString("  2. " + styles.BoldStyle.Render("Product PRD") + "      — Formalize into a requirements doc (product-wizard)\n")
+	b.WriteString("  3. " + styles.BoldStyle.Render("OpenSpec") + "         — " + styles.BoldStyle.Render("agentic-agent openspec init \"feature\" --from <prd>") + "\n")
+	b.WriteString("                       Creates proposal, dev plan, and tasks automatically\n\n")
+
+	b.WriteString(styles.SubtitleStyle.Render("Or start working directly:") + "\n\n")
 
 	// Format each step on its own line with consistent spacing
 	step1 := "1. Create your first task:\n   " + styles.BoldStyle.Render("agentic-agent task create")

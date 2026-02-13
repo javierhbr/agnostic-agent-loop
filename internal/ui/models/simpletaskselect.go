@@ -387,3 +387,16 @@ func (m SimpleTaskSelectModel) renderConfirm() string {
 
 	return styles.ContainerStyle.Render(b.String())
 }
+
+// Done returns whether the model has finished.
+func (m SimpleTaskSelectModel) Done() bool {
+	return m.done
+}
+
+// ResultMessage returns the formatted result message for display after alt screen exit.
+func (m SimpleTaskSelectModel) ResultMessage() string {
+	if m.success {
+		return styles.RenderSuccess(m.message)
+	}
+	return styles.RenderError(m.error)
+}

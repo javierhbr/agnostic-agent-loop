@@ -59,13 +59,19 @@ Flag Mode (with flags):
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Println("\nRecommended workflow (confirm each step with your AI agent):")
+		fmt.Println("  1. Brainstorm       — Explore and refine your idea")
+		fmt.Println("  2. Product PRD      — Formalize into a requirements doc (product-wizard)")
+		fmt.Println("  3. OpenSpec         — agentic-agent openspec init \"feature\" --from <prd>")
+		fmt.Println("                        Creates proposal, dev plan, and tasks automatically")
 	},
 }
 
 // runInteractiveInit runs the interactive init wizard
 func runInteractiveInit() {
 	model := uimodels.NewInitWizardModel()
-	p := tea.NewProgram(model)
+	p := tea.NewProgram(model, tea.WithAltScreen())
 
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running init wizard: %v\n", err)

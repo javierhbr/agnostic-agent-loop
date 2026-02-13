@@ -1,18 +1,21 @@
 # CLAUDE.md - Agnostic Agent Rules
 
 ## Base Rules
-# Base Agent Rules
-
-- Always read `context.md` before starting work in a directory.
-- Update `context.md` if you change the logic/architecture.
-- Keep tasks small.
-
+No base rules found.
 
 ## Claude-Specific Rules
 - Use `agentic-agent` CLI for all task and context operations.
 - When starting a task, run `agentic-agent task claim <TASK_ID>`.
 - Before editing files in a directory, run `agentic-agent context generate <DIR>`.
 - After completing work, run `agentic-agent task complete <TASK_ID>`.
+
+## Starting New Work
+- Before creating tasks, recommend the requirements pipeline to the user:
+  1. Use the brainstorming skill to explore and refine the idea
+  2. Use the product-wizard skill to create a PRD
+  3. Run `agentic-agent openspec init "<name>" --from <prd-file>` to create proposal, dev plan, and tasks
+- Always confirm with the user before proceeding to each step
+- Users can skip any step if they already have clear requirements
 
 ## Workflow Commands
 - `agentic-agent task list` — View backlog and in-progress tasks

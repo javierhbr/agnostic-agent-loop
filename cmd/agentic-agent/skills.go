@@ -132,10 +132,17 @@ var skillsGenerateCmd = &cobra.Command{
 				gen:      gen,
 			}
 
-			p := tea.NewProgram(model)
+			p := tea.NewProgram(model, tea.WithAltScreen())
 			if _, err := p.Run(); err != nil {
 				fmt.Printf("Error: %v\n", err)
 				os.Exit(1)
+			}
+			if model.done {
+				if model.success {
+					fmt.Println(styles.RenderSuccess(model.message))
+				} else {
+					fmt.Println(styles.RenderError(model.message))
+				}
 			}
 			return
 		}
@@ -495,10 +502,25 @@ List available packs:
 				installer: installer,
 			}
 
-			p := tea.NewProgram(model)
+			p := tea.NewProgram(model, tea.WithAltScreen())
 			if _, err := p.Run(); err != nil {
 				fmt.Printf("Error: %v\n", err)
 				os.Exit(1)
+			}
+			if model.done {
+				if model.success {
+					var b strings.Builder
+					b.WriteString(styles.TitleStyle.Render("Skill Pack Installed") + "\n\n")
+					for _, r := range model.results {
+						b.WriteString(styles.SuccessStyle.Render(fmt.Sprintf("%s %s", styles.IconCheckmark, r.Tool)) + "\n")
+						for _, f := range r.FilesWritten {
+							b.WriteString(styles.MutedStyle.Render(fmt.Sprintf("  %s %s", styles.IconBullet, f)) + "\n")
+						}
+					}
+					fmt.Println(styles.ContainerStyle.Render(b.String()))
+				} else {
+					fmt.Println(styles.RenderError(model.message))
+				}
 			}
 			return
 		}
@@ -635,10 +657,17 @@ Usage:
 
 				selector := components.NewMultiSelect("Select agent tools to ensure", options)
 				model := &skillsEnsureModel{selector: selector, cfg: cfg}
-				p := tea.NewProgram(model)
+				p := tea.NewProgram(model, tea.WithAltScreen())
 				if _, err := p.Run(); err != nil {
 					fmt.Printf("Error: %v\n", err)
 					os.Exit(1)
+				}
+				if model.done && model.message != "" {
+					if model.success {
+						fmt.Println(styles.RenderSuccess(model.message))
+					} else {
+						fmt.Println(styles.RenderError(model.message))
+					}
 				}
 				return
 			}
@@ -688,6 +717,10 @@ func (m *skillsEnsureModel) Init() tea.Cmd {
 
 func (m *skillsEnsureModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		// Reserve lines for title (2), help text (1), container padding (4)
+		m.selector.SetMaxVisible(msg.Height - 7)
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q", "esc":

@@ -9,6 +9,10 @@ import (
 //go:embed packs/*
 var packsFS embed.FS
 
+// CanonicalSkillDir is the single source of truth for all skill files.
+// Agent tool directories contain symlinks pointing here.
+const CanonicalSkillDir = ".agentic/skills"
+
 // ToolSkillDir maps agent tool names to their project-level skill directory.
 var ToolSkillDir = map[string]string{
 	"claude-code": ".claude/skills",
@@ -59,9 +63,13 @@ type SkillPack struct {
 // MandatoryPacks lists skill packs that must be installed for every agent.
 // These are auto-installed during `skills ensure` and validated on startup.
 var MandatoryPacks = []string{
+	"atdd",
 	"code-simplification",
+	"context-manager",
 	"dev-plans",
 	"openspec",
+	"product-wizard",
+	"run-with-ralph",
 }
 
 // PackRegistry maintains a map of available skill packs.
@@ -74,6 +82,14 @@ func NewPackRegistry() *PackRegistry {
 	r := &PackRegistry{
 		packs: make(map[string]SkillPack),
 	}
+
+	r.Register(SkillPack{
+		Name:        "atdd",
+		Description: "Acceptance Test-Driven Development from openspec task criteria",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/atdd/SKILL.md", DstPath: "atdd/SKILL.md"},
+		},
+	})
 
 	r.Register(SkillPack{
 		Name:        "tdd",
@@ -98,6 +114,14 @@ func NewPackRegistry() *PackRegistry {
 		Description: "Review and refactor code for simplicity and maintainability",
 		Files: []SkillPackFile{
 			{SrcPath: "packs/code-simplification/SKILL.md", DstPath: "code-simplification/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "context-manager",
+		Description: "Enforce reading context.md before edits and generating context.md for new directories",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/context-manager/SKILL.md", DstPath: "context-manager/SKILL.md"},
 		},
 	})
 
@@ -132,6 +156,26 @@ func NewPackRegistry() *PackRegistry {
 		Description: "Spec-driven development from requirements files using the openspec change lifecycle",
 		Files: []SkillPackFile{
 			{SrcPath: "packs/openspec/SKILL.md", DstPath: "openspec/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "product-wizard",
+		Description: "Generate robust, production-grade Product Requirements Documents (PRDs)",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/product-wizard/SKILL.md", DstPath: "product-wizard/SKILL.md"},
+			{SrcPath: "packs/product-wizard/references/prd_template.md", DstPath: "product-wizard/references/prd_template.md"},
+			{SrcPath: "packs/product-wizard/references/user_story_examples.md", DstPath: "product-wizard/references/user_story_examples.md"},
+			{SrcPath: "packs/product-wizard/references/metrics_frameworks.md", DstPath: "product-wizard/references/metrics_frameworks.md"},
+			{SrcPath: "packs/product-wizard/scripts/validate_prd.sh", DstPath: "product-wizard/scripts/validate_prd.sh"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "run-with-ralph",
+		Description: "Execute openspec tasks using Ralph Wiggum iterative loops",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/run-with-ralph/SKILL.md", DstPath: "run-with-ralph/SKILL.md"},
 		},
 	})
 
