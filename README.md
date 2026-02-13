@@ -100,8 +100,7 @@ go install github.com/javierbenavides/agentic-agent/cmd/agentic-agent@latest
 # Option 2: Build from source
 git clone https://github.com/javierbenavides/agentic-agent.git
 cd agentic-agent
-make build
-sudo mv build/agentic-agent /usr/local/bin/
+make setup    # install + build + copy to /usr/local/bin
 
 # Option 3: Development (no install)
 go run ./cmd/agentic-agent version
@@ -381,6 +380,9 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 |---------|-------------|
 | `init --name "Name"` | Initialize project structure |
 | `start` | Interactive setup wizard |
+| `prompts` | Browse example prompts and workflow recipes |
+| `prompts list [--category <cat>]` | List prompts (agent-prompt, cli-example, workflow-recipe) |
+| `prompts show <slug>` | Show full content of a prompt |
 | `version` | Print version |
 
 ### Tracks

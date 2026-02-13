@@ -7,7 +7,7 @@ COMMIT       := $(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 BUILD_DATE   := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS      := -ldflags "-X main.Version=$(VERSION) -X main.Commit=$(COMMIT) -X main.BuildDate=$(BUILD_DATE)"
 
-.PHONY: help build build-all install run run-example clean \
+.PHONY: help setup build build-all install run run-example clean \
         test test-verbose test-functional test-integration test-bdd test-bdd-verbose test-all \
         test-coverage coverage-html coverage-func coverage-summary coverage-all clean-coverage \
         lint vet fmt check \
@@ -20,6 +20,7 @@ help:
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Build:"
+	@echo "  setup              Install deps, build, and copy binary to /usr/local/bin"
 	@echo "  build              Build the binary to $(BUILD_DIR)/$(BINARY_NAME)"
 	@echo "  build-all          Cross-compile for darwin/linux (amd64 + arm64)"
 	@echo "  install            Install to GOPATH/bin"
@@ -62,6 +63,11 @@ help:
 	@echo ""
 
 # ── Build ─────────────────────────────────────────────────────────
+
+setup: install build
+	@echo "Installing $(BINARY_NAME) to /usr/local/bin..."
+	@sudo mv $(BUILD_DIR)/$(BINARY_NAME) /usr/local/bin/$(BINARY_NAME)
+	@echo "$(BINARY_NAME) $(VERSION) installed to /usr/local/bin/"
 
 build:
 	@echo "Building $(BINARY_NAME) $(VERSION)..."
