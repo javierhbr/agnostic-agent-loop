@@ -38,6 +38,23 @@ agentic-agent skills ensure
 ```
 This auto-installs mandatory skill packs and generates rules files. Safe to run multiple times.
 
+### Phase 0.5: Refine requirements (if starting from scratch)
+
+If the user has a vague idea but no requirements file yet:
+
+1. **Ask the user** if they'd like to refine their idea first:
+   ```
+   I notice you don't have a requirements file yet. Would you like to:
+   A. Brainstorm the idea first (recommended — explores intent and design)
+   B. Create a PRD directly (formalizes requirements into a document)
+   C. Skip — I'll work from what you've described
+   ```
+2. If **A**: Use the **brainstorming** skill to explore the idea. Once the design is clear, proceed to B.
+3. If **B**: Use the **product-wizard** skill to create a PRD. Save it (e.g., `docs/prd-<feature>.md`). Then use that file with `openspec init --from`.
+4. If **C**: Proceed directly to Phase 1.
+
+Always confirm with the user before moving to the next step.
+
 ### Phase 1: Understand the input
 
 1. Read the requirements file the user provided

@@ -59,6 +59,12 @@ Flag Mode (with flags):
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Println("\nRecommended workflow (confirm each step with your AI agent):")
+		fmt.Println("  1. Brainstorm       — Explore and refine your idea")
+		fmt.Println("  2. Product PRD      — Formalize into a requirements doc (product-wizard)")
+		fmt.Println("  3. OpenSpec         — agentic-agent openspec init \"feature\" --from <prd>")
+		fmt.Println("                        Creates proposal, dev plan, and tasks automatically")
 	},
 }
 
