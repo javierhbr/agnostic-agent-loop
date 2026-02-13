@@ -10,7 +10,7 @@ import (
 
 var (
 	// Version information (set via ldflags at build time)
-	Version   = "0.2.15"
+	Version   = "0.2.16"
 	Commit    = "none"
 	BuildDate = "unknown"
 
@@ -109,4 +109,5 @@ func init() {
 	rootCmd.AddCommand(planCmd)
 	rootCmd.AddCommand(simplifyCmd)
 	rootCmd.AddCommand(openspecCmd)
+	rootCmd.AddCommand(promptsCmd)
 }

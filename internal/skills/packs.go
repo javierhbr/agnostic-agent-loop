@@ -65,6 +65,7 @@ type SkillPack struct {
 var MandatoryPacks = []string{
 	"atdd",
 	"code-simplification",
+	"context-manager",
 	"dev-plans",
 	"openspec",
 	"product-wizard",
@@ -113,6 +114,14 @@ func NewPackRegistry() *PackRegistry {
 		Description: "Review and refactor code for simplicity and maintainability",
 		Files: []SkillPackFile{
 			{SrcPath: "packs/code-simplification/SKILL.md", DstPath: "code-simplification/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "context-manager",
+		Description: "Enforce reading context.md before edits and generating context.md for new directories",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/context-manager/SKILL.md", DstPath: "context-manager/SKILL.md"},
 		},
 	})
 

@@ -63,6 +63,9 @@ Perfect for first-time users or quick project initialization.`,
 			case "run":
 				runCmd.Run(nil, []string{})
 
+			case "prompts":
+				runPromptsInteractive()
+
 			case "version":
 				fmt.Printf("agentic-agent %s\n", Version)
 				fmt.Printf("  Commit:     %s\n", Commit)

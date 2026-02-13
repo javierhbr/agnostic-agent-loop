@@ -76,6 +76,7 @@ func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
 		{"tdd", 3},
 		{"api-docs", 1},
 		{"code-simplification", 1},
+		{"context-manager", 1},
 		{"dev-plans", 1},
 		{"diataxis", 3},
 		{"extract-wisdom", 1},

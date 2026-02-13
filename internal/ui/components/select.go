@@ -106,6 +106,8 @@ type SimpleSelect struct {
 	Label       string
 	Options     []SelectOption
 	SelectedIdx int
+	MaxVisible  int // max items to show at once; 0 = show all
+	offset      int // first visible item index
 }
 
 // NewSimpleSelect creates a simple select component
@@ -117,6 +119,26 @@ func NewSimpleSelect(label string, options []SelectOption) SimpleSelect {
 	}
 }
 
+// SetMaxVisible sets the maximum number of visible items based on available height.
+// Each item uses 2 lines (title + description). Pass the total available lines.
+func (ss *SimpleSelect) SetMaxVisible(availableLines int) {
+	if availableLines > 0 {
+		ss.MaxVisible = max((availableLines-2)/2, 1) // subtract label + blank line
+	}
+}
+
+func (ss *SimpleSelect) ensureCursorVisible() {
+	if ss.MaxVisible <= 0 || ss.MaxVisible >= len(ss.Options) {
+		return
+	}
+	if ss.SelectedIdx < ss.offset {
+		ss.offset = ss.SelectedIdx
+	}
+	if ss.SelectedIdx >= ss.offset+ss.MaxVisible {
+		ss.offset = ss.SelectedIdx - ss.MaxVisible + 1
+	}
+}
+
 // Update handles key presses for simple select
 func (ss *SimpleSelect) Update(msg tea.Msg) SimpleSelect {
 	switch msg := msg.(type) {
@@ -125,10 +147,12 @@ func (ss *SimpleSelect) Update(msg tea.Msg) SimpleSelect {
 		case "up", "k":
 			if ss.SelectedIdx > 0 {
 				ss.SelectedIdx--
+				ss.ensureCursorVisible()
 			}
 		case "down", "j":
 			if ss.SelectedIdx < len(ss.Options)-1 {
 				ss.SelectedIdx++
+				ss.ensureCursorVisible()
 			}
 		}
 	}
@@ -141,7 +165,17 @@ func (ss SimpleSelect) View() string {
 
 	b.WriteString(styles.BoldStyle.Render(ss.Label) + "\n\n")
 
-	for i, opt := range ss.Options {
+	start := ss.offset
+	end := len(ss.Options)
+	if ss.MaxVisible > 0 && ss.MaxVisible < len(ss.Options) {
+		end = min(start+ss.MaxVisible, len(ss.Options))
+		if start > 0 {
+			b.WriteString(styles.MutedStyle.Render("  ↑ more") + "\n")
+		}
+	}
+
+	for i := start; i < end; i++ {
+		opt := ss.Options[i]
 		cursor := "  "
 		optStyle := styles.ListItemStyle
 		if i == ss.SelectedIdx {
@@ -149,11 +183,15 @@ func (ss SimpleSelect) View() string {
 			optStyle = styles.SelectedItemStyle
 		}
 
-		b.WriteString(fmt.Sprintf("%s%s\n", cursor, optStyle.Render(opt.Title())))
+		fmt.Fprintf(&b, "%s%s\n", cursor, optStyle.Render(opt.Title()))
 		if opt.Description() != "" {
 			desc := styles.MutedStyle.Render("  " + opt.Description())
-			b.WriteString(fmt.Sprintf("   %s\n", desc))
+			fmt.Fprintf(&b, "   %s\n", desc)
 		}
+	}
+
+	if ss.MaxVisible > 0 && end < len(ss.Options) {
+		b.WriteString(styles.MutedStyle.Render("  ↓ more") + "\n")
 	}
 
 	return b.String()
