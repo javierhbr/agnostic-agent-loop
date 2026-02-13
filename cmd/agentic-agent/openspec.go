@@ -85,6 +85,18 @@ Examples:
 			os.Exit(1)
 		}
 
+		// Handle --tech-stack flag: overwrite template with user-provided content
+		techStackContent, _ := cmd.Flags().GetString("tech-stack")
+		if techStackContent != "" {
+			techStackPath := ".agentic/context/tech-stack.md"
+			if err := os.MkdirAll(".agentic/context", 0755); err == nil {
+				content := fmt.Sprintf("# Tech Stack\n\n%s\n", strings.TrimSpace(techStackContent))
+				if err := os.WriteFile(techStackPath, []byte(content), 0644); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: could not write tech-stack.md: %v\n", err)
+				}
+			}
+		}
+
 		changeDir := filepath.Join(cfg.Paths.OpenSpecDir, change.ID)
 		if helpers.ShouldUseInteractiveMode(cmd) {
 			fmt.Println(styles.RenderSuccess(fmt.Sprintf("Created change: %s", change.ID)))
@@ -92,7 +104,7 @@ Examples:
 			fmt.Printf("  %s Tasks:     %s/tasks.md\n", styles.IconArrow, changeDir)
 			fmt.Printf("  %s Status:    %s\n", styles.IconArrow, change.Status)
 			fmt.Printf("\n%s Fill in proposal.md, then write tasks in tasks.md.\n", styles.IconArrow)
-			fmt.Printf("%s Define the high-level tech stack in .agentic/context/tech-stack.md\n", styles.IconArrow)
+			fmt.Printf("%s Tech stack template: .agentic/context/tech-stack.md\n", styles.IconArrow)
 			fmt.Printf("%s For complex changes (4+ tasks), write specs in %s/specs/\n", styles.IconArrow, changeDir)
 			fmt.Printf("%s Tasks auto-import when you run: agentic-agent task list  or  task claim\n", styles.IconArrow)
 		} else {
@@ -360,6 +372,7 @@ func changeStatusStyle(s openspec.ChangeStatus) string {
 
 func init() {
 	openspecInitCmd.Flags().String("from", "", "Requirements file to seed the proposal (required)")
+	openspecInitCmd.Flags().String("tech-stack", "", "Pre-populate tech stack content (e.g. 'Go, React, PostgreSQL')")
 
 	openspecCmd.AddCommand(openspecInitCmd)
 	openspecCmd.AddCommand(openspecImportCmd)

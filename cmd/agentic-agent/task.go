@@ -507,6 +507,116 @@ var taskShowCmd = &cobra.Command{
 	},
 }
 
+var taskContinueCmd = &cobra.Command{
+	Use:   "continue [task-id]",
+	Short: "Continue working on an in-progress task",
+	Long: `Resume work on an in-progress task, displaying its full context.
+
+If the task is still in the backlog (pending), it will be auto-claimed first.
+If no task ID is provided, continues the first in-progress task found.
+
+This command is designed for AI agents resuming work across sessions.
+
+Examples:
+  agentic-agent task continue TASK-123-1
+  agentic-agent task continue`,
+	Args: cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		// Auto-import tasks from draft openspec changes
+		syncOpenSpecChanges(getConfig())
+
+		tm := tasks.NewTaskManager(".agentic/tasks")
+
+		var taskID string
+		if len(args) == 1 {
+			taskID = args[0]
+		} else {
+			// No ID provided — find the first in-progress task
+			inProgress, err := tm.LoadTasks("in-progress")
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error loading in-progress tasks: %v\n", err)
+				os.Exit(1)
+			}
+			if len(inProgress.Tasks) == 0 {
+				fmt.Println("No in-progress tasks found.")
+				fmt.Println("Claim a task first: agentic-agent task claim <task-id>")
+				os.Exit(1)
+			}
+			taskID = inProgress.Tasks[0].ID
+		}
+
+		task, source, err := tm.FindTask(taskID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error finding task: %v\n", err)
+			os.Exit(1)
+		}
+		if task == nil {
+			fmt.Fprintf(os.Stderr, "Task %s not found\n", taskID)
+			os.Exit(1)
+		}
+
+		// If task is still pending, auto-claim it
+		if source == "backlog" {
+			user := os.Getenv("USER")
+			if user == "" {
+				user = "unknown-agent"
+			}
+			if err := tm.ClaimTaskWithConfig(taskID, user, getConfig()); err != nil {
+				fmt.Fprintf(os.Stderr, "Error claiming task: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("Auto-claimed task %s\n", taskID)
+			// Re-read after claim
+			task, source, _ = tm.FindTask(taskID)
+		}
+
+		if source == "done" {
+			fmt.Printf("Task %s is already completed.\n", taskID)
+			os.Exit(0)
+		}
+
+		// Output full task context for the agent
+		fmt.Printf("Continuing task %s\n", taskID)
+		fmt.Printf("ID: %s\n", task.ID)
+		fmt.Printf("Title: %s\n", task.Title)
+		fmt.Printf("Status: %s\n", task.Status)
+
+		if task.AssignedTo != "" {
+			fmt.Printf("Assigned To: %s\n", task.AssignedTo)
+		}
+		if task.ChangeID != "" {
+			fmt.Printf("Change: %s\n", task.ChangeID)
+		}
+		if task.Description != "" {
+			fmt.Printf("Description: %s\n", task.Description)
+		}
+		if len(task.SpecRefs) > 0 {
+			fmt.Printf("Spec Refs:\n")
+			for _, ref := range task.SpecRefs {
+				fmt.Printf("  - %s\n", ref)
+			}
+		}
+		if len(task.Inputs) > 0 {
+			fmt.Printf("Prerequisites:\n")
+			for _, input := range task.Inputs {
+				fmt.Printf("  - %s\n", input)
+			}
+		}
+		if len(task.Acceptance) > 0 {
+			fmt.Printf("Acceptance Criteria:\n")
+			for _, criterion := range task.Acceptance {
+				fmt.Printf("  - %s\n", criterion)
+			}
+		}
+		if len(task.SkillRefs) > 0 {
+			fmt.Printf("Skills:\n")
+			for _, skill := range task.SkillRefs {
+				fmt.Printf("  - %s\n", skill)
+			}
+		}
+	},
+}
+
 // shouldUseInteractiveTaskCreate checks if task create should run in interactive mode
 func shouldUseInteractiveTaskCreate(cmd *cobra.Command) bool {
 	return helpers.ShouldUseInteractiveMode(cmd)
@@ -810,6 +920,7 @@ func init() {
 	taskCmd.AddCommand(taskListCmd)
 	taskCmd.AddCommand(taskShowCmd)
 	taskCmd.AddCommand(taskClaimCmd)
+	taskCmd.AddCommand(taskContinueCmd)
 	taskCmd.AddCommand(taskCompleteCmd)
 	taskCmd.AddCommand(taskDecomposeCmd)
 }
