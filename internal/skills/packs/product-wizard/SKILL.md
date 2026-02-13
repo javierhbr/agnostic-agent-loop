@@ -1,6 +1,6 @@
 ---
 name: product-wizard
-description: 'Generate robust, production-grade Product Requirements Documents (PRDs) for software products and AI-powered features. Use when asked to "write a PRD", "create product requirements", "document a feature", "plan a feature", "spec out a product", or when structuring product specifications. Supports full PRDs, lean PRDs, one-pagers, technical PRDs, and AI feature PRDs with executive summaries, user stories, success metrics, and risk analysis.'
+description: 'Generate robust, production-grade Product Requirements Documents (PRDs) for software products and AI-powered features. Use when asked to "write a PRD", "create product requirements", "document a feature", "document an intent", "plan a feature", "spec out a product", "intent definition", "prd definition", "prd", or when structuring product specifications. Supports full PRDs, lean PRDs, one-pagers, technical PRDs, and AI feature PRDs with executive summaries, user stories, success metrics, and risk analysis.'
 ---
 
 # Product Wizard
@@ -13,7 +13,7 @@ Create comprehensive, actionable Product Requirements Documents that bridge busi
 - Translating a vague idea into a concrete specification
 - Defining requirements for AI-powered features (evals, prompts, guardrails)
 - Stakeholders need a unified "source of truth" for project scope
-- User asks to "write a PRD", "document requirements", "plan a feature", or "spec out"
+- User asks to "write a PRD", "document requirements", "plan a feature", "spec out a product", "define an intent", or "define a PRD"
 - Adapting PRD depth: full PRD, lean PRD, one-pager, technical PRD, or AI feature PRD
 
 ## Prerequisites

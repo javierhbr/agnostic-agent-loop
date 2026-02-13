@@ -66,6 +66,7 @@ var MandatoryPacks = []string{
 	"code-simplification",
 	"dev-plans",
 	"openspec",
+	"product-wizard",
 }
 
 // PackRegistry maintains a map of available skill packs.
@@ -136,6 +137,18 @@ func NewPackRegistry() *PackRegistry {
 		Description: "Spec-driven development from requirements files using the openspec change lifecycle",
 		Files: []SkillPackFile{
 			{SrcPath: "packs/openspec/SKILL.md", DstPath: "openspec/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "product-wizard",
+		Description: "Generate robust, production-grade Product Requirements Documents (PRDs)",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/product-wizard/SKILL.md", DstPath: "product-wizard/SKILL.md"},
+			{SrcPath: "packs/product-wizard/prd_template.md", DstPath: "product-wizard/prd_template.md"},
+			{SrcPath: "packs/product-wizard/user_story_examples.md", DstPath: "product-wizard/user_story_examples.md"},
+			{SrcPath: "packs/product-wizard/metrics_frameworks.md", DstPath: "product-wizard/metrics_frameworks.md"},
+			{SrcPath: "packs/product-wizard/validate_prd.sh", DstPath: "product-wizard/validate_prd.sh"},
 		},
 	})
 
