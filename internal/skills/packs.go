@@ -9,6 +9,10 @@ import (
 //go:embed packs/*
 var packsFS embed.FS
 
+// CanonicalSkillDir is the single source of truth for all skill files.
+// Agent tool directories contain symlinks pointing here.
+const CanonicalSkillDir = ".agentic/skills"
+
 // ToolSkillDir maps agent tool names to their project-level skill directory.
 var ToolSkillDir = map[string]string{
 	"claude-code": ".claude/skills",
