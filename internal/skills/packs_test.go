@@ -72,6 +72,7 @@ func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
 		name      string
 		fileCount int
 	}{
+		{"atdd", 1},
 		{"tdd", 3},
 		{"api-docs", 1},
 		{"code-simplification", 1},
@@ -79,6 +80,8 @@ func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
 		{"diataxis", 3},
 		{"extract-wisdom", 1},
 		{"openspec", 1},
+		{"product-wizard", 5},
+		{"run-with-ralph", 1},
 	}
 
 	packs := r.GetAll()

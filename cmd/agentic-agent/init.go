@@ -71,7 +71,7 @@ Flag Mode (with flags):
 // runInteractiveInit runs the interactive init wizard
 func runInteractiveInit() {
 	model := uimodels.NewInitWizardModel()
-	p := tea.NewProgram(model)
+	p := tea.NewProgram(model, tea.WithAltScreen())
 
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running init wizard: %v\n", err)

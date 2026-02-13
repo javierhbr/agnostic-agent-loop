@@ -22,6 +22,23 @@ Create comprehensive, actionable Product Requirements Documents that bridge busi
 - Access to user context: who the users are, what pain exists
 - Knowledge of constraints (tech stack, timeline, budget) — or willingness to mark TBD
 
+## Output Location
+
+Save PRD files to the `.agentic/spec/` directory — this is where the agentic-agent CLI resolves spec files.
+
+```
+.agentic/spec/prd-<feature-name>.md
+```
+
+Create the directory if it doesn't exist: `mkdir -p .agentic/spec`
+
+The generated PRD can then be used directly with the openspec workflow:
+```bash
+agentic-agent openspec init "<feature-name>" --from .agentic/spec/prd-<feature-name>.md
+```
+
+**Do NOT save PRDs to `docs/`, project root, or other locations.** The `.agentic/spec/` path ensures the file is discoverable by the CLI and other skills.
+
 ## Step-by-Step Workflow
 
 ### Phase 1: Discovery (The Interview)
@@ -66,7 +83,9 @@ Synthesize input before drafting:
 
 ### Phase 3: Drafting
 
-Generate the document using the PRD template from `references/prd_template.md`. Follow the schema for the selected format. Present a draft and ask for feedback on specific sections.
+Generate the document using the PRD template from `references/prd_template.md`. Follow the schema for the selected format.
+
+Save the PRD to `.agentic/spec/prd-<feature-name>.md`. Present a draft and ask for feedback on specific sections.
 
 ### Phase 4: Validation
 

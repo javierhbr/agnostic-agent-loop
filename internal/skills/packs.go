@@ -63,10 +63,12 @@ type SkillPack struct {
 // MandatoryPacks lists skill packs that must be installed for every agent.
 // These are auto-installed during `skills ensure` and validated on startup.
 var MandatoryPacks = []string{
+	"atdd",
 	"code-simplification",
 	"dev-plans",
 	"openspec",
 	"product-wizard",
+	"run-with-ralph",
 }
 
 // PackRegistry maintains a map of available skill packs.
@@ -79,6 +81,14 @@ func NewPackRegistry() *PackRegistry {
 	r := &PackRegistry{
 		packs: make(map[string]SkillPack),
 	}
+
+	r.Register(SkillPack{
+		Name:        "atdd",
+		Description: "Acceptance Test-Driven Development from openspec task criteria",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/atdd/SKILL.md", DstPath: "atdd/SKILL.md"},
+		},
+	})
 
 	r.Register(SkillPack{
 		Name:        "tdd",
@@ -145,10 +155,18 @@ func NewPackRegistry() *PackRegistry {
 		Description: "Generate robust, production-grade Product Requirements Documents (PRDs)",
 		Files: []SkillPackFile{
 			{SrcPath: "packs/product-wizard/SKILL.md", DstPath: "product-wizard/SKILL.md"},
-			{SrcPath: "packs/product-wizard/prd_template.md", DstPath: "product-wizard/prd_template.md"},
-			{SrcPath: "packs/product-wizard/user_story_examples.md", DstPath: "product-wizard/user_story_examples.md"},
-			{SrcPath: "packs/product-wizard/metrics_frameworks.md", DstPath: "product-wizard/metrics_frameworks.md"},
-			{SrcPath: "packs/product-wizard/validate_prd.sh", DstPath: "product-wizard/validate_prd.sh"},
+			{SrcPath: "packs/product-wizard/references/prd_template.md", DstPath: "product-wizard/references/prd_template.md"},
+			{SrcPath: "packs/product-wizard/references/user_story_examples.md", DstPath: "product-wizard/references/user_story_examples.md"},
+			{SrcPath: "packs/product-wizard/references/metrics_frameworks.md", DstPath: "product-wizard/references/metrics_frameworks.md"},
+			{SrcPath: "packs/product-wizard/scripts/validate_prd.sh", DstPath: "product-wizard/scripts/validate_prd.sh"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "run-with-ralph",
+		Description: "Execute openspec tasks using Ralph Wiggum iterative loops",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/run-with-ralph/SKILL.md", DstPath: "run-with-ralph/SKILL.md"},
 		},
 	})
 

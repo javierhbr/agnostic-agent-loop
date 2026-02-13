@@ -110,7 +110,7 @@ func runTaskSubmenu() {
 		selector: selector,
 	}
 
-	p := tea.NewProgram(model)
+	p := tea.NewProgram(model, tea.WithAltScreen())
 	finalModel, err := p.Run()
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -126,21 +126,25 @@ func runTaskSubmenu() {
 		case "list":
 			runInteractiveTaskList()
 		case "claim":
-			model := models.NewSimpleTaskSelectModel(models.ActionClaim, "backlog")
-			p := tea.NewProgram(model)
-			if _, err := p.Run(); err != nil {
+			claimModel := models.NewSimpleTaskSelectModel(models.ActionClaim, "backlog")
+			cp := tea.NewProgram(claimModel, tea.WithAltScreen())
+			if fm, err := cp.Run(); err != nil {
 				fmt.Printf("Error: %v\n", err)
+			} else if m, ok := fm.(models.SimpleTaskSelectModel); ok && m.Done() {
+				fmt.Println(m.ResultMessage())
 			}
 		case "complete":
-			model := models.NewSimpleTaskSelectModel(models.ActionComplete, "in-progress")
-			p := tea.NewProgram(model)
-			if _, err := p.Run(); err != nil {
+			completeModel := models.NewSimpleTaskSelectModel(models.ActionComplete, "in-progress")
+			cp := tea.NewProgram(completeModel, tea.WithAltScreen())
+			if fm, err := cp.Run(); err != nil {
 				fmt.Printf("Error: %v\n", err)
+			} else if m, ok := fm.(models.SimpleTaskSelectModel); ok && m.Done() {
+				fmt.Println(m.ResultMessage())
 			}
 		case "show":
-			model := models.NewTaskSelectModel()
-			p := tea.NewProgram(model)
-			if _, err := p.Run(); err != nil {
+			showModel := models.NewTaskSelectModel()
+			sp := tea.NewProgram(showModel, tea.WithAltScreen())
+			if _, err := sp.Run(); err != nil {
 				fmt.Printf("Error: %v\n", err)
 			}
 		case "decompose":
@@ -188,7 +192,7 @@ func runContextSubmenu() {
 		selector: selector,
 	}
 
-	p := tea.NewProgram(model)
+	p := tea.NewProgram(model, tea.WithAltScreen())
 	finalModel, err := p.Run()
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -251,7 +255,7 @@ func runSkillsSubmenu() {
 		selector: selector,
 	}
 
-	p := tea.NewProgram(model)
+	p := tea.NewProgram(model, tea.WithAltScreen())
 	finalModel, err := p.Run()
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)

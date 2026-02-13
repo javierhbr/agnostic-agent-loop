@@ -50,7 +50,7 @@ If the user has a vague idea but no requirements file yet:
    C. Skip — I'll work from what you've described
    ```
 2. If **A**: Use the **brainstorming** skill to explore the idea. Once the design is clear, proceed to B.
-3. If **B**: Use the **product-wizard** skill to create a PRD. Save it (e.g., `docs/prd-<feature>.md`). Then use that file with `openspec init --from`.
+3. If **B**: Use the **product-wizard** skill to create a PRD. It will save to `.agentic/spec/prd-<feature>.md`. Then use that file with `openspec init --from .agentic/spec/prd-<feature>.md`.
 4. If **C**: Proceed directly to Phase 1.
 
 Always confirm with the user before moving to the next step.
@@ -167,8 +167,24 @@ After the development plan is created, convert its phases and tasks into the ope
    2. Second concrete task
    3. Third concrete task
    ```
-   Keep tasks small, testable, and ordered by dependency.
+   Keep tasks ordered by dependency.
 2. Do NOT edit any YAML files. Do NOT create tasks manually.
+
+#### Task granularity rules
+
+Each task must be **atomic** — one focused unit of work that an agent can complete in a single session.
+
+| Guideline | Example |
+|-----------|---------|
+| One concern per task | "Add user model" not "Add user model and auth endpoints" |
+| Testable in isolation | Task has its own acceptance criteria that can be verified independently |
+| Single directory/layer | Prefer "Add API routes" + "Add UI components" over "Add full feature" |
+| 10-20 tasks for a medium project | A feature with 3 screens, an API, and storage should produce ~15 tasks |
+| 3-5 acceptance criteria per task | More than 5 criteria means the task should be split |
+
+**Split aggressively.** A task that touches both frontend and backend should be two tasks. A task that sets up infrastructure AND implements business logic should be two tasks. When in doubt, split.
+
+**Do NOT bundle** multiple features, layers, or components into one task just to keep the count low.
 
 #### Detailed task files (for complex changes)
 
@@ -211,6 +227,12 @@ For changes with **4 or more tasks**, create individual task detail files to giv
    ```
 
 **Skip detailed files** for simple changes (1-3 tasks) where `tasks.md` titles are sufficient.
+
+After writing `tasks.md` (and optional detail files), **immediately trigger the auto-import** so tasks appear in the backlog:
+```bash
+agentic-agent task list
+```
+This imports tasks from `tasks.md` into `.agentic/tasks/backlog.yaml`. Do NOT skip this step — without it, the task backlog will be empty.
 
 ### Phase 5: Write detailed specs (for complex changes)
 

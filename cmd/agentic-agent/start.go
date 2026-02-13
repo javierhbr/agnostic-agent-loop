@@ -24,7 +24,7 @@ Perfect for first-time users or quick project initialization.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Create and run the start wizard
 		model := models.NewStartWizardModel()
-		p := tea.NewProgram(model)
+		p := tea.NewProgram(model, tea.WithAltScreen())
 
 		finalModel, err := p.Run()
 		if err != nil {

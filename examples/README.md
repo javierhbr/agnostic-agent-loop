@@ -52,6 +52,30 @@ Demonstrates: `skills ensure`, `--agent` flag, `AGENTIC_AGENT` env var, `.agenti
 
 See [README.md](agent-aware-skills/README.md).
 
+### `product-wizard/` - PRD Generation
+
+Generate production-grade Product Requirements Documents from vague ideas. Supports full PRDs, lean PRDs, one-pagers, technical PRDs, and AI feature PRDs. Walk through discovery → analysis → drafting → validation, then feed PRDs into the openspec pipeline.
+
+Demonstrates: product-wizard skill, PRD formats, `validate_prd.sh`, PRD → openspec handoff.
+
+See [README.md](product-wizard/README.md).
+
+### `atdd/` - Acceptance Test-Driven Development
+
+Write acceptance tests from openspec task criteria before implementation. Every acceptance criterion becomes a failing test; implementation makes them pass. Combines with TDD for full coverage and with Ralph for automated convergence.
+
+Demonstrates: ATDD cycle (RED → GREEN → REFACTOR), `task show` criteria extraction, combining ATDD + TDD, ATDD + Ralph.
+
+See [README.md](atdd/README.md).
+
+### `run-with-ralph/` - Ralph Wiggum + OpenSpec Tasks
+
+Execute openspec tasks using Ralph Wiggum iterative loops. One task per loop, acceptance criteria as the completion signal. Covers the full lifecycle: claim → show → build prompt → ralph-loop → complete.
+
+Demonstrates: Ralph prompt template, `--max-iterations`, `<promise>` convergence tags, combining with ATDD.
+
+See [README.md](run-with-ralph/README.md).
+
 ---
 
 ## Running Any Example
@@ -168,6 +192,9 @@ agentic-agent status --format json  # Machine-readable output
 - **[multi-agent-workflow](multi-agent-workflow/MULTI_AGENT_USE_CASE.md)** — 4 tools, 6 phases, cross-tool bug fix
 - **[spec-driven-workflow](spec-driven-workflow/README.md)** — Spec Kit, OpenSpec CLI, autopilot mode
 - **[agent-aware-skills](agent-aware-skills/README.md)** — Agent detection, per-agent rules, `skills ensure`, `skill_refs`, `simplify`
+- **[product-wizard](product-wizard/README.md)** — PRD generation, validation, openspec handoff
+- **[atdd](atdd/README.md)** — Acceptance Test-Driven Development from openspec criteria
+- **[run-with-ralph](run-with-ralph/README.md)** — Ralph Wiggum iterative loops with openspec tasks
 
 ---
 

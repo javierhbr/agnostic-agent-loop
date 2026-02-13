@@ -185,10 +185,14 @@ var taskClaimCmd = &cobra.Command{
 		// Interactive mode if no args
 		if helpers.ShouldUseInteractiveMode(cmd) && len(args) == 0 {
 			model := uimodels.NewSimpleTaskSelectModel(uimodels.ActionClaim, "backlog")
-			p := tea.NewProgram(model)
-			if _, err := p.Run(); err != nil {
+			p := tea.NewProgram(model, tea.WithAltScreen())
+			finalModel, err := p.Run()
+			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				os.Exit(1)
+			}
+			if m, ok := finalModel.(uimodels.SimpleTaskSelectModel); ok && m.Done() {
+				fmt.Println(m.ResultMessage())
 			}
 			return
 		}
@@ -224,10 +228,14 @@ var taskCompleteCmd = &cobra.Command{
 		// Interactive mode if no args
 		if helpers.ShouldUseInteractiveMode(cmd) && len(args) == 0 {
 			model := uimodels.NewSimpleTaskSelectModel(uimodels.ActionComplete, "in-progress")
-			p := tea.NewProgram(model)
-			if _, err := p.Run(); err != nil {
+			p := tea.NewProgram(model, tea.WithAltScreen())
+			finalModel, err := p.Run()
+			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				os.Exit(1)
+			}
+			if m, ok := finalModel.(uimodels.SimpleTaskSelectModel); ok && m.Done() {
+				fmt.Println(m.ResultMessage())
 			}
 			return
 		}
@@ -263,10 +271,17 @@ var taskDecomposeCmd = &cobra.Command{
 				step: "select-task",
 			}
 
-			p := tea.NewProgram(model)
+			p := tea.NewProgram(model, tea.WithAltScreen())
 			if _, err := p.Run(); err != nil {
 				fmt.Printf("Error: %v\n", err)
 				os.Exit(1)
+			}
+			if model.step == "done" {
+				if model.success {
+					fmt.Println(styles.RenderSuccess(model.message))
+				} else {
+					fmt.Println(styles.RenderError(model.message))
+				}
 			}
 			return
 		}
@@ -411,7 +426,7 @@ var taskShowCmd = &cobra.Command{
 		if helpers.ShouldUseInteractiveMode(cmd) && len(args) == 0 {
 			// Use the full task list interface which already has details view
 			model := uimodels.NewTaskSelectModel()
-			p := tea.NewProgram(model)
+			p := tea.NewProgram(model, tea.WithAltScreen())
 			if _, err := p.Run(); err != nil {
 				fmt.Printf("Error: %v\n", err)
 				os.Exit(1)
@@ -625,7 +640,7 @@ func shouldUseInteractiveTaskCreate(cmd *cobra.Command) bool {
 // runInteractiveTaskCreate runs the interactive task creation wizard
 func runInteractiveTaskCreate() {
 	model := uimodels.NewTaskCreateModel()
-	p := tea.NewProgram(model)
+	p := tea.NewProgram(model, tea.WithAltScreen())
 
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running task creation wizard: %v\n", err)
