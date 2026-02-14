@@ -1,330 +1,242 @@
-# Examples
+# Requirements Refinement Examples
 
-Step-by-step demonstrations of the Agentic Agent framework.
+## Welcome
 
-## Available Examples
+This guide shows product managers, business analysts, and stakeholders how to transform ideas into detailed, AI-ready specifications using a systematic requirements pipeline.
 
-### Spec Validation
+**No technical background needed** - these examples use plain language and demonstrate realistic conversations with AI.
 
-**[examples/spec-validation/](spec-validation/)** — Complete guide to spec validation workflow with auto-generation, interactive prompts, and agent guidance. Shows how the system ensures tasks have proper specification files while maintaining flexibility.
+## Quick Links
 
-Key features:
+- 📘 **New to the skills?** Start with [Skills Guide](SKILLS-GUIDE.md) - Learn how to use the four skills without technical jargon
+- 📇 **Need a quick reminder?** Use the [Quick Reference Card](QUICK-REFERENCE.md) - Essential prompts and patterns
+- 📋 **Ready to dive in?** Browse scenarios below for complete examples with realistic outputs
 
-- Auto-detect missing specs during task create and claim
-- Smart context detection (PRD → Interactive → Metadata)
-- Agent-guiding CLI output with recommendations
-- Multiple generation modes and skip options
+## The Requirements Pipeline
 
-### `test-sandbox/` - End-to-End Walkthrough
+```
+Vague Idea → Discovery → PRD → Development Plan → Tasks → Acceptance Tests
+     ↓           ↓        ↓           ↓            ↓            ↓
+  "Better    Questions  Structured  Phased    Specific   Executable
+   notify"   & Answers  Document    Breakdown  Work Items  Validation
+```
 
-Build a project from scratch: idea elaboration, project init, PRD generation, task decomposition, claim-to-complete workflow, and tool switching.
+### Four Key Skills
 
-**Start here** if you're new. See [SAMPLE.README.md](test-sandbox/SAMPLE.README.md).
+1. **product-wizard** - Transforms ideas into Product Requirements Documents (PRDs)
+2. **dev-plans** - Breaks PRDs into phased development tasks
+3. **atdd** - Converts acceptance criteria into executable tests
+4. **code-simplification** - Reviews code for clarity (supporting skill)
 
-### `track-workflow/` - Tracks: Idea to Implementation
+## Choose Your Scenario
 
-Walk through the full track lifecycle: brainstorm with an AI agent, refine the spec, activate to generate a plan and tasks, work through tasks, and complete the track.
+Each scenario demonstrates the complete workflow from different starting points:
 
-Demonstrates: `track init`, `track refine`, `track activate --decompose`, `plan show`, `plan next`, `plan mark`, `status`.
+### [Scenario 1: From a Vague Idea](01-vague-idea/scenario.md)
 
-See [README.md](track-workflow/README.md).
+**Start here if you have:** A fuzzy concept that needs definition
 
-### `skill-packs/` - Skill Pack Installation and Usage
+**Example:** "We need better notifications" → Complete PRD with metrics, user stories, and success criteria
 
-Install reusable skill bundles for any AI agent tool. Shows project-level and global installation, listing packs, and verifying drift.
+**You'll learn:**
+- How to articulate vague ideas
+- What questions AI will ask
+- How to define success metrics
+- Creating testable requirements
 
-Demonstrates: `skills install`, `skills list`, `skills check`, multi-tool support.
-
-See [README.md](skill-packs/README.md).
-
-### `tdd/` - Test-Driven Development Workflow
-
-Use `work --follow-tdd` to decompose a task into RED/GREEN/REFACTOR sub-tasks. The TDD skill pack provides phase-specific instructions to the AI agent.
-
-See [README.md](tdd/README.md).
-
-### `multi-agent-workflow/` - Multi-Agent Tool Switching
-
-Bounce between Claude Code CLI, Claude Code VSCode, GitHub Copilot, and Antigravity IDE with Gemini on the same project. Demonstrates non-linear back-and-forth switching, shared state, and cross-tool bug discovery.
-
-See [MULTI_AGENT_USE_CASE.md](multi-agent-workflow/MULTI_AGENT_USE_CASE.md).
-
-### `spec-driven-workflow/` - Spec Kit, OpenSpec CLI, and Autopilot
-
-Multi-directory spec resolution with Spec Kit, OpenSpec, and native specs. Includes the full OpenSpec CLI lifecycle (init → import → execute → complete → archive) and autopilot mode for sequential task processing.
-
-See [README.md](spec-driven-workflow/README.md).
-
-### `agent-aware-skills/` - Agent Detection, Setup, and Per-Agent Rules
-
-Automatically detect which AI agent is running (Claude Code, Cursor, Gemini, etc.), ensure its skills and rules are installed, and tailor instructions per tool. Covers per-agent config overrides, custom rules files, scoped drift checks, auto-ensure in init/run/autopilot, task-level `skill_refs`, and the `simplify` command.
-
-Demonstrates: `skills ensure`, `--agent` flag, `AGENTIC_AGENT` env var, `.agentic/agent-rules/`, per-agent `skill_packs` and `extra_rules`, task-level `skill_refs`, `simplify`.
-
-See [README.md](agent-aware-skills/README.md).
-
-### `product-wizard/` - PRD Generation
-
-Generate production-grade Product Requirements Documents from vague ideas. Supports full PRDs, lean PRDs, one-pagers, technical PRDs, and AI feature PRDs. Walk through discovery → analysis → drafting → validation, then feed PRDs into the openspec pipeline.
-
-Demonstrates: product-wizard skill, PRD formats, `validate_prd.sh`, PRD → openspec handoff.
-
-See [README.md](product-wizard/README.md).
-
-### `atdd/` - Acceptance Test-Driven Development
-
-Write acceptance tests from openspec task criteria before implementation. Every acceptance criterion becomes a failing test; implementation makes them pass. Combines with TDD for full coverage and with Ralph for automated convergence.
-
-Demonstrates: ATDD cycle (RED → GREEN → REFACTOR), `task show` criteria extraction, combining ATDD + TDD, ATDD + Ralph.
-
-See [README.md](atdd/README.md).
-
-### `run-with-ralph/` - Ralph Wiggum + OpenSpec Tasks
-
-Execute openspec tasks using Ralph Wiggum iterative loops. One task per loop, acceptance criteria as the completion signal. Covers the full lifecycle: claim → show → build prompt → ralph-loop → complete.
-
-Demonstrates: Ralph prompt template, `--max-iterations`, `<promise>` convergence tags, combining with ATDD.
-
-See [README.md](run-with-ralph/README.md).
+[View Scenario](01-vague-idea/scenario.md) | [Copy-Paste Prompts](01-vague-idea/prompts.md)
 
 ---
 
-## Running Any Example
+### [Scenario 2: From a Requirements List](02-requirements-list/scenario.md)
 
-### Initialize a project
+**Start here if you have:** Bullet points, notes, or scattered requirements
 
-```bash
-cd examples/<example-dir>
-agentic-agent init --name "My Project"
-```
+**Example:** 15 bullet points about expense approval → Structured PRD with priorities and resolved conflicts
 
-### Work with tracks
+**You'll learn:**
+- Organizing scattered requirements
+- Resolving conflicts
+- Prioritizing features
+- Transforming vague items into testable criteria
 
-```bash
-# Start a track with brainstorming scaffolding
-agentic-agent track init "My Feature" --type feature
-
-# Check spec completeness
-agentic-agent track refine my-feature
-
-# Activate: generate plan + decompose into tasks
-agentic-agent track activate my-feature --decompose
-```
-
-### Work with tasks
-
-```bash
-agentic-agent task list                 # List all tasks
-agentic-agent task claim TASK-001       # Claim with readiness checks
-agentic-agent task complete TASK-001    # Mark done
-```
-
-### Work with plans
-
-```bash
-agentic-agent plan show --track my-feature   # View plan progress
-agentic-agent plan next --track my-feature   # See next pending step
-agentic-agent plan mark plan.md 12 done      # Mark step done by line
-```
-
-### Generate context
-
-```bash
-agentic-agent context generate internal/auth   # Directory context
-agentic-agent context build --task TASK-001    # Full context bundle
-```
-
-### Work with specs
-
-```bash
-agentic-agent spec list                     # All specs across directories
-agentic-agent spec resolve auth-spec.md     # Resolve and print
-agentic-agent spec generate TASK-001 --auto # Auto-generate missing specs
-agentic-agent spec validate                 # Check all tasks for missing specs
-```
-
-### Work with OpenSpec changes
-
-```bash
-agentic-agent openspec init "Auth Feature" --from .agentic/spec/auth-requirements.md
-# Fill in proposal.md and tasks.md...
-agentic-agent openspec import auth-feature
-agentic-agent openspec status auth-feature
-agentic-agent openspec complete auth-feature
-agentic-agent openspec archive auth-feature
-```
-
-### Install skill packs
-
-```bash
-agentic-agent skills list                             # Available packs
-agentic-agent skills install tdd --tool claude-code   # Install for a tool
-agentic-agent skills check                            # Detect drift
-```
-
-### Ensure agent skills
-
-```bash
-agentic-agent skills ensure                           # Auto-detect agent
-agentic-agent skills ensure --agent claude-code       # Explicit agent
-agentic-agent skills ensure --all                     # All detected agents
-agentic-agent skills check --agent cursor             # Scoped drift check
-```
-
-### Run code simplification review
-
-```bash
-agentic-agent simplify internal/auth              # Review specific directories
-agentic-agent simplify --task TASK-001            # Review task scope directories
-agentic-agent simplify . --format json            # JSON output
-agentic-agent simplify . --output review.yaml     # Write to file
-```
-
-### Run autopilot
-
-```bash
-agentic-agent autopilot start --dry-run          # Preview
-agentic-agent autopilot start --max-iterations 5  # Process tasks
-```
-
-### Check project status
-
-```bash
-agentic-agent status                # Dashboard with progress bar
-agentic-agent status --format json  # Machine-readable output
-```
+[View Scenario](02-requirements-list/scenario.md) | [Copy-Paste Prompts](02-requirements-list/prompts.md)
 
 ---
 
-## Example Use Cases
+### [Scenario 3: From Existing Logic](03-existing-logic/scenario.md)
 
-- **[spec-validation](spec-validation/README.md)** — Spec validation, auto-generation, agent guidance
-- **[test-sandbox](test-sandbox/SAMPLE.README.md)** — Full workflow, tool switching, parallel agents
-- **[track-workflow](track-workflow/README.md)** — Brainstorming, spec refinement, plan generation
-- **[skill-packs](skill-packs/README.md)** — Multi-tool skill installation, drift detection
-- **[tdd](tdd/README.md)** — RED/GREEN/REFACTOR decomposition
-- **[multi-agent-workflow](multi-agent-workflow/MULTI_AGENT_USE_CASE.md)** — 4 tools, 6 phases, cross-tool bug fix
-- **[spec-driven-workflow](spec-driven-workflow/README.md)** — Spec Kit, OpenSpec CLI, autopilot mode
-- **[agent-aware-skills](agent-aware-skills/README.md)** — Agent detection, per-agent rules, `skills ensure`, `skill_refs`, `simplify`
-- **[product-wizard](product-wizard/README.md)** — PRD generation, validation, openspec handoff
-- **[atdd](atdd/README.md)** — Acceptance Test-Driven Development from openspec criteria
-- **[run-with-ralph](run-with-ralph/README.md)** — Ralph Wiggum iterative loops with openspec tasks
+**Start here if you have:** A manual process or workflow you want to automate
 
----
+**Example:** Spreadsheet-based support ticket routing → Automated workflow with preserved business rules
 
-## Configuration Reference
+**You'll learn:**
+- Documenting existing processes
+- Preserving business logic
+- Identifying automation opportunities
+- Managing migration risks
 
-`agentic-agent init` generates `agnostic-agent.yaml` in the project root. Here is a fully annotated sample:
-
-```yaml
-# ── Project metadata ────────────────────────────────────────────────
-project:
-  name: "my-project"           # Project name shown in status dashboard
-  version: 0.1.0               # Semantic version (informational)
-  roots:                        # Source roots to scan for context
-    - .
-
-# ── Agent defaults ──────────────────────────────────────────────────
-agents:
-  defaults:
-    max_tokens: 4000            # Token budget for context bundles
-    model: claude-3-5-sonnet-20241022
-  overrides:                    # Per-tool overrides (optional)
-    - name: cursor
-      max_tokens: 8000
-    - name: claude-code
-      max_tokens: 8000
-      skill_packs:              # Packs auto-installed by `skills ensure`
-        - tdd
-      extra_rules:              # Additional lines injected into rules file
-        - "Run tests before completing tasks"
-      auto_setup: true          # Generate rules during `init`
-
-# ── Paths ───────────────────────────────────────────────────────────
-# All paths are relative to the project root.
-paths:
-  # Spec resolution: searched in order, first match wins.
-  specDirs:
-    - .specify/specs            # Spec Kit (if using Spec Kit)
-    - openspec/specs            # OpenSpec (if using OpenSpec)
-    - .agentic/spec             # Native agentic specs (default)
-
-  contextDirs:
-    - .agentic/context          # Global context files
-
-  trackDir: .agentic/tracks     # Track work units (spec + plan + tasks)
-  openSpecDir: .agentic/openspec/changes  # OpenSpec change lifecycle
-  prdOutputPath: .agentic/tasks/       # Where PRD converter writes tasks (task YAML supports skill_refs)
-  progressTextPath: .agentic/progress.txt
-  progressYAMLPath: .agentic/progress.yaml
-  archiveDir: .agentic/archive/        # Archived tracks and tasks
-
-# ── Workflow ────────────────────────────────────────────────────────
-workflow:
-  validators:                   # Validation rules run by `agentic-agent validate`
-    - context-check             # Verify context.md exists in scope dirs
-    - task-scope                # Enforce max 5 files / 2 dirs per task
-    - browser-verification      # (optional) Browser-based checks
-```
-
-### Minimal config
-
-If you only need the basics, most fields have sensible defaults:
-
-```yaml
-project:
-  name: "my-project"
-
-paths:
-  specDirs:
-    - .agentic/spec
-
-workflow:
-  validators:
-    - context-check
-    - task-scope
-```
-
-Omitted fields use these defaults:
-
-| Field              | Default                       |
-|--------------------|-------------------------------|
-| `project.version`  | `0.1.0`                       |
-| `project.roots`    | `[.]`                         |
-| `agents.defaults`  | 4000 tokens, Sonnet           |
-| `paths.specDirs`   | `[.agentic/spec]`             |
-| `paths.contextDirs`| `[.agentic/context]`          |
-| `paths.trackDir`   | `.agentic/tracks`             |
-| `paths.openSpecDir`| `.agentic/openspec/changes`   |
-| `paths.archiveDir` | `.agentic/archive/`           |
+[View Scenario](03-existing-logic/scenario.md) | [Copy-Paste Prompts](03-existing-logic/prompts.md)
 
 ---
 
-## Creating Your Own Example
+### [Scenario 4: From Codebase Documentation](04-codebase-documentation/scenario.md)
+
+**Start here if you have:** Existing code that needs changes or refactoring
+
+**Example:** Legacy payment system → Refactoring requirements with backward compatibility
+
+**You'll learn:**
+- Documenting what must be preserved
+- Separating refactoring from features
+- Risk management for legacy systems
+- Testing strategies for existing behavior
+
+[View Scenario](04-codebase-documentation/scenario.md) | [Copy-Paste Prompts](04-codebase-documentation/prompts.md)
+
+---
+
+## Quick Start Tools
+
+### [Business Brief Template](templates/business-brief-template.md)
+
+Fill out this template before starting - it gives AI the context needed for better results.
+
+### [Requirements Checklist](templates/requirements-checklist.md)
+
+Self-assessment tool to ensure you've covered the basics before creating a PRD.
+
+### [Prompt Library](templates/prompt-library.md)
+
+Master collection of 15-20 copy-paste prompts organized by workflow stage.
+
+---
+
+## How to Use These Examples
+
+### 1. Choose Your Scenario
+
+Pick the scenario that matches your starting point (vague idea, requirements list, existing logic, or codebase).
+
+### 2. Read the Scenario
+
+Understand the business context and stakeholders - this shows you what information to prepare.
+
+### 3. Review the Prompts
+
+Open the `prompts.md` file to see what you'll actually type to the AI. These are copy-paste ready.
+
+### 4. Follow the Conversation
+
+See how a real dialogue unfolds - questions, answers, and iterations.
+
+### 5. Study the Outputs
+
+Look at the PRD, development plan, and acceptance tests that result from the conversation.
+
+### 6. Learn the Lessons
+
+Read `learnings.md` for key takeaways you can apply to your own work.
+
+---
+
+## Integration with Agnostic Agent
+
+After creating a PRD using the product-wizard skill, you can feed it into the agnostic agent workflow:
 
 ```bash
-mkdir examples/my-example && cd examples/my-example
-agentic-agent init --name "My Example"
+# Create an openspec proposal and tasks from your PRD
+agentic-agent openspec init "<feature-name>" --from .agentic/spec/prd-<feature>.md
+
+# This generates:
+# - Proposal document
+# - Development plan
+# - Breakdown into individual tasks
+# - Acceptance criteria for each task
 ```
 
-Structure:
+The workflow becomes:
+1. **Brainstorm** (optional) - Refine your idea
+2. **product-wizard** → Create PRD
+3. **agentic-agent openspec init** → Generate tasks
+4. **dev-plans** → Break down into phases
+5. **atdd** → Create acceptance tests for each task
 
-```text
-examples/my-example/
-|-- README.md                    # Walkthrough
-|-- agnostic-agent.yaml          # Configuration
-|-- .agentic/
-|   |-- tasks/                   # backlog, in-progress, done
-|   |-- spec/                    # Specification files
-|   |-- context/                 # global-context, rolling-summary
-|   |-- tracks/                  # Track work units
-|   +-- agent-rules/             # base.md
-+-- src/                         # Your code
-```
+---
 
-## Related Documentation
+## Tips for Success
 
-- [Main README](../README.md) - Project overview and CLI reference
-- [Spec-Driven Development Guide](../docs/SPEC_DRIVEN_DEVELOPMENT.md) - Spec Kit and OpenSpec workflows
-- [CLI Tutorial](../docs/guide/CLI_TUTORIAL.md) - Command-line usage
-- [BDD Guide](../docs/bdd/BDD_GUIDE.md) - Testing with Gherkin
+### Be Specific About Context
+
+**Bad:** "We need a dashboard"
+**Good:** "We need a customer support dashboard showing ticket volume, average response time, and agent performance for our 12-person CS team"
+
+### Define Success Upfront
+
+**Bad:** "It should be fast"
+**Good:** "Search results should load in under 200ms for our 10,000 customer database"
+
+### Clarify Constraints
+
+Always mention:
+- Budget limitations
+- Timeline requirements
+- Technology constraints (e.g., "must integrate with Salesforce")
+- Compliance requirements (e.g., GDPR, HIPAA)
+
+### Ask Questions
+
+If the AI's questions seem off-track, explain why. The dialogue is collaborative.
+
+---
+
+## What Makes a Good Requirement?
+
+| Quality | Bad Example | Good Example |
+|---------|-------------|--------------|
+| **Specific** | "Easy to use" | "Users can complete expense submission in 3 clicks or fewer" |
+| **Measurable** | "Fast performance" | "API responses under 200ms for 95th percentile" |
+| **Testable** | "Works well" | "All user actions have confirmation feedback within 100ms" |
+| **Scoped** | "Everything should sync" | "Customer data syncs to Salesforce every 15 minutes" |
+
+---
+
+## Common Questions
+
+**Q: Do I need to know how to code?**
+A: No. These examples show business-focused conversations. The AI handles technical translation.
+
+**Q: How long does this process take?**
+A: For most features: 30-60 minutes to create a PRD, 15-30 minutes for a development plan.
+
+**Q: What if I don't know all the answers?**
+A: That's expected. The AI will help surface what's missing through questions.
+
+**Q: Can I skip the PRD and go straight to tasks?**
+A: You can, but you'll likely waste time on rework. The PRD is your "source of truth" that prevents misunderstandings.
+
+**Q: What if requirements change?**
+A: Update the PRD, then regenerate the development plan. The PRD is a living document.
+
+---
+
+## Next Steps
+
+1. **Choose your scenario** from the list above
+2. **Open the prompts.md file** and copy the initial prompt
+3. **Start a conversation** with your AI tool
+4. **Reference the example conversation** if you get stuck
+5. **Use the templates** for your next project
+
+---
+
+## Additional Resources
+
+- [CLAUDE.md](../CLAUDE.md) - Project-specific workflow guidance
+- [Product Wizard Skill](../internal/skills/packs/product-wizard/SKILL.md) - Full PRD skill documentation
+- [Dev Plans Skill](../internal/skills/packs/dev-plans/SKILL.md) - Development planning skill
+- [ATDD Skill](../internal/skills/packs/atdd/SKILL.md) - Acceptance test-driven development
+
+---
+
+**Ready to start?** Pick a scenario above and dive in. Remember: the best PRD is one that helps your team build the right thing, not a perfect document that never gets used.

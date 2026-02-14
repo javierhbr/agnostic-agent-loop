@@ -333,11 +333,11 @@ It delivers its output, the orchestrator validates it, and the primary context r
 
 ## 12. Per-Directory Context (context.md) — A Critical Element
 
-The `context.md` file placed in each directory is an essential practice for maintainability. It functions as **living documentation** that communicates the _intent_ of the folder, the architectural rules that govern it, and the reasoning behind the code it contains.
+The `AGENTS.md` file placed in each directory is an essential practice for maintainability. It functions as **living documentation** that communicates the _intent_ of the folder, the architectural rules that govern it, and the reasoning behind the code it contains.
 
 ### 12.1 Mandatory Structure
 
-Every significant directory must contain its own `context.md` file. This applies across the entire source tree:
+Every significant directory must contain its own `AGENTS.md` file. This applies across the entire source tree:
 
 ```
 src/
@@ -357,11 +357,11 @@ src/
   └─ ...
 ```
 
-Every directory containing logic gets a `context.md`. No exceptions.
+Every directory containing logic gets a `AGENTS.md`. No exceptions.
 
 ### 12.2 Hexagonal Architecture: Context Files by Layer
 
-The following definitions ensure that developers (and agents) understand the hexagonal boundaries within the codebase. Each layer has its own `context.md` with specific rules about what it does, what it depends on, and what it is forbidden from touching.
+The following definitions ensure that developers (and agents) understand the hexagonal boundaries within the codebase. Each layer has its own `AGENTS.md` with specific rules about what it does, what it depends on, and what it is forbidden from touching.
 
 #### 12.2.1 `src/core/domain/context.md` — Pure Business Logic
 
@@ -438,7 +438,7 @@ Authentication and authorization logic.
 - .agentic/spec/05-domain-model.md
 ```
 
-### 12.4 Reusable Template for `context.md`
+### 12.4 Reusable Template for `AGENTS.md`
 
 Use this template for every directory to maintain consistency across the entire project:
 
@@ -463,9 +463,9 @@ endpoint, ensure the DTO is mapped to a Domain Model before calling the service"
 
 ### 12.5 Enforcement
 
-**Enforced rule:** If any agent modifies a directory without first reading its `context.md`, that constitutes a system-level bug.
+**Enforced rule:** If any agent modifies a directory without first reading its `AGENTS.md`, that constitutes a system-level bug.
 
-**Automated generation:** When the validator detects a directory containing logic files but no `context.md`, the CLI can generate one automatically using the **Context Generation Skill** (see Section 25.3, Section I). Agents execute this skill by analyzing the actual source files in the directory — reading exports, imports, types, and patterns — and producing a context file that reflects the code as it is. Run `aa context scan --fix` to detect and generate all missing context files across the project, or `aa context generate <directory>` for a specific directory.
+**Automated generation:** When the validator detects a directory containing logic files but no `AGENTS.md`, the CLI can generate one automatically using the **Context Generation Skill** (see Section 25.3, Section I). Agents execute this skill by analyzing the actual source files in the directory — reading exports, imports, types, and patterns — and producing a context file that reflects the code as it is. Run `aa context scan --fix` to detect and generate all missing context files across the project, or `aa context generate <directory>` for a specific directory.
 
 ---
 
@@ -543,11 +543,11 @@ No subtask may require knowledge of another subtask's internal state.
 
 ## 15. Context is Code: The New Fundamental Rule
 
-The `context.md` file is a first-class part of the system, not secondary documentation. Modifying logic without updating the corresponding context produces a corrupted state.
+The `AGENTS.md` file is a first-class part of the system, not secondary documentation. Modifying logic without updating the corresponding context produces a corrupted state.
 
 ### 15.1 Mandatory Update Rule (Enforced)
 
-Whenever an agent alters the logic, responsibilities, or patterns within a directory, it must update that directory's `context.md` within the same iteration.
+Whenever an agent alters the logic, responsibilities, or patterns within a directory, it must update that directory's `AGENTS.md` within the same iteration.
 
 This applies to:
 
@@ -620,7 +620,7 @@ Every relevant change must follow this mini-protocol:
 
 1. Modify the code
 2. Evaluate: did the logic or responsibilities change?
-3. If yes, execute the **Context Generation Skill** (Section 25.3, Section I) to update `context.md`
+3. If yes, execute the **Context Generation Skill** (Section 25.3, Section I) to update `AGENTS.md`
 4. Commit both files together
 
 The agent must read the directory's source files to determine what changed — not rely on its memory of what it thinks changed. The Context Generation Skill procedure ensures the update is factual and derived from code, not from the agent's internal state.
@@ -722,7 +722,7 @@ Historical information belongs in Git commit history and session summaries, not 
 
 ## 20. Sub-Agents Are Also Bound by Context Rules
 
-Sub-agents must update `context.md` whenever they change logic, even though they:
+Sub-agents must update `AGENTS.md` whenever they change logic, even though they:
 
 - Work in isolation
 - Receive minimal context
@@ -767,7 +767,7 @@ If you are an AI agent or a human contributor, you must follow the rules below.
 ### 22.2 Core Principles
 
 1. **Agents are disposable** — No agent memory is trusted. Sessions can terminate at any moment.
-2. **Context is Code** — `context.md` files are system components. Modifying logic without updating context is invalid.
+2. **Context is Code** — `AGENTS.md` files are system components. Modifying logic without updating context is invalid.
 3. **Specifications govern everything** — Priority order: Specs > Contexts > Tasks > Code. Code alone never defines intent.
 4. **Tasks must be atomic** — Oversized tasks must be decomposed. Execution occurs through sub-tasks and sub-agents.
 
@@ -793,7 +793,7 @@ This file defines project goals, non-negotiable rules, and system invariants.
 
 ### 22.5 Directory Context (context.md)
 
-Every directory that contains logic must have a `context.md`.
+Every directory that contains logic must have a `AGENTS.md`.
 
 **What context.md is:**
 - A local contract
@@ -805,7 +805,7 @@ Every directory that contains logic must have a `context.md`.
 - Not a changelog
 - Not a design document
 
-**Binding rule:** If you alter the logic, responsibilities, or patterns of a directory, you must update its `context.md` in the same iteration. Failure to do so invalidates the task.
+**Binding rule:** If you alter the logic, responsibilities, or patterns of a directory, you must update its `AGENTS.md` in the same iteration. Failure to do so invalidates the task.
 
 ### 22.6 Tasks and Subtasks
 
@@ -821,7 +821,7 @@ All work flows through tasks defined in `.agentic/tasks`.
 - Sub-agents execute implementation
 - Orchestrator agents only coordinate
 - Sub-agents receive minimal context
-- Sub-agents are also obligated to update `context.md` when logic changes
+- Sub-agents are also obligated to update `AGENTS.md` when logic changes
 
 ### 22.7 Agent Rules (Agent-Agnostic)
 
@@ -849,7 +849,7 @@ Context windows are finite and actively enforced:
 
 1. Generate a factual session summary
 2. Update `rolling-summary.md`
-3. Explicitly list all updated `context.md` files
+3. Explicitly list all updated `AGENTS.md` files
 4. Terminate the session
 
 New sessions resume exclusively from persisted files.
@@ -857,7 +857,7 @@ New sessions resume exclusively from persisted files.
 ### 22.9 Prohibited Actions
 
 - ❌ Operating from conversation memory
-- ❌ Modifying code without consulting `context.md`
+- ❌ Modifying code without consulting `AGENTS.md`
 - ❌ Expanding scope beyond the assigned task
 - ❌ Allowing a single agent to implement large features end-to-end
 - ❌ Maintaining undocumented logic in code
@@ -868,7 +868,7 @@ A task is complete only when:
 
 - Acceptance criteria are satisfied
 - Code changes are minimal and properly scoped
-- Relevant `context.md` files are updated
+- Relevant `AGENTS.md` files are updated
 - The rolling context reflects the new state
 
 ### 22.11 Mental Model

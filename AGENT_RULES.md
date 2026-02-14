@@ -12,13 +12,13 @@
 
 Before modifying ANY file in a directory, you **must**:
 
-1. Check if `context.md` exists in that directory
+1. Check if `AGENTS.md` exists in that directory
 2. If it exists, **read it** - identify `Allowed` and `Forbidden` dependencies, architectural role, and constraints
 3. If it does NOT exist and the directory contains source files, generate context documentation
 4. Only after reading context may you edit files
 
 After completing changes that alter architecture, exports, or dependencies:
-5. Update the `context.md` to reflect changes
+5. Update the `AGENTS.md` to reflect changes
 
 ### New Directory Workflow
 
@@ -39,9 +39,9 @@ Enforce these dependency rules when working in specific layers:
 | **Infrastructure/Adapters** | Domain, Application | Other adapters directly |
 | **Infrastructure/Config** | All layers (DI glue) | — |
 
-If a `context.md` specifies dependency rules, those override the defaults above.
+If a `AGENTS.md` specifies dependency rules, those override the defaults above.
 
-### context.md Template
+### AGENTS.md Template
 
 ```markdown
 # Context: [Directory Name]
@@ -60,13 +60,13 @@ If a `context.md` specifies dependency rules, those override the defaults above.
 
 ### Red Flags — STOP and Fix
 
-- ❌ Editing a file without reading that directory's `context.md` first
-- ❌ Creating a directory without generating `context.md`
-- ❌ Importing a package listed as Forbidden in `context.md`
+- ❌ Editing a file without reading that directory's `AGENTS.md` first
+- ❌ Creating a directory without generating `AGENTS.md`
+- ❌ Importing a package listed as Forbidden in `AGENTS.md`
 - ❌ "The task is too small to need context" — no task is too small
-- ❌ "I already understand the code" — code shows structure, context.md shows rules
+- ❌ "I already understand the code" — code shows structure, AGENTS.md shows rules
 - ❌ "The user told me where to put it" — user instructions do not override architectural constraints
-- ❌ "I'll update context.md later" — later means never; update immediately
+- ❌ "I'll update AGENTS.md later" — later means never; update immediately
 
 ---
 
@@ -83,7 +83,7 @@ If a `context.md` specifies dependency rules, those override the defaults above.
 
 ### Never
 
-- ❌ Skip reading context.md
+- ❌ Skip reading AGENTS.md
 - ❌ Violate architectural boundaries
 - ❌ Mix concerns in a single file
 - ❌ Leave TODO comments without tracking
@@ -97,14 +97,14 @@ If a `context.md` specifies dependency rules, those override the defaults above.
 ### Before Starting Work
 
 1. Understand the task description and acceptance criteria
-2. Read relevant context.md files
+2. Read relevant AGENTS.md files
 3. Identify files that need changes
 4. Plan the approach
 
 ### During Work
 
 1. Make incremental, testable changes
-2. Update context.md if architecture changes
+2. Update AGENTS.md if architecture changes
 3. Run tests frequently
 4. Keep track of what's done vs. what remains
 
@@ -114,7 +114,7 @@ If a `context.md` specifies dependency rules, those override the defaults above.
 2. Verify all acceptance criteria are met
 3. Update documentation
 4. Review your changes for quality
-5. Ensure context.md is current
+5. Ensure AGENTS.md is current
 
 ---
 
@@ -138,8 +138,8 @@ If a `context.md` specifies dependency rules, those override the defaults above.
 
 | Type | Location |
 |------|----------|
-| Architectural rules | `context.md` in each directory |
-| Project overview | `.agentic/context/global-context.md` |
+| Architectural rules | `AGENTS.md` in each directory |
+| Project overview | `.agentic/context/global-AGENTS.md` |
 | Architecture decisions | `docs/architecture/decisions/` |
 | Feature specs | `.agentic/openspec/changes/` |
 | API documentation | inline code comments |

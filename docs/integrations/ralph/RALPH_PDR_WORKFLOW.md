@@ -66,7 +66,7 @@ agentic-agent task claim TASK-123
 ```
 
 **Key Practices:**
-1. **Context First**: Read `context.md` before editing any directory
+1. **Context First**: Read `AGENTS.md` before editing any directory
 2. **Scope Awareness**: Only modify files in task.Scope
 3. **Acceptance Criteria**: Complete ALL criteria before marking done
 4. **Browser Verification**: For UI changes, verify visually (not just typecheck)
@@ -389,4 +389,4 @@ The Ralph PDR integration provides:
 - ✅ Orchestrator with stop conditions
 - ✅ Branch-based archiving
 
-Combined with the existing `context.md` pattern, this creates a complete knowledge management system for agent-driven development.
+Combined with the existing `AGENTS.md` pattern, this creates a complete knowledge management system for agent-driven development.

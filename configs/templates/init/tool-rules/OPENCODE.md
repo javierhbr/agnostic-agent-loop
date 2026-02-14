@@ -11,8 +11,8 @@
 ⚠️ **Read [AGENT_RULES.md](./AGENT_RULES.md) for complete context management, architectural boundaries, and quality rules.**
 
 Essential reminders:
-- Always read `context.md` before editing files in a directory
-- Update `context.md` when you change architecture or dependencies
+- Always read `AGENTS.md` before editing files in a directory
+- Update `AGENTS.md` when you change architecture or dependencies
 - Never violate architectural boundaries defined in context files
 - Keep tasks small and focused
 
@@ -103,7 +103,7 @@ Users can skip any step if they already have clear requirements.
 | `.agentic/tasks/in-progress.yaml` | Current work |
 | `.agentic/context/global-context.md` | Project overview |
 | `agnostic-agent.yaml` | Project configuration |
-| `context.md` (per directory) | Architectural rules and constraints |
+| `AGENTS.md` (per directory) | Architectural rules and constraints |
 
 ---
 

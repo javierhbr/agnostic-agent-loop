@@ -779,7 +779,7 @@ TOON's advantage is not merely fewer tokens. The format is structurally clearer 
 TOON is not a universal replacement. The framework explicitly preserves Markdown for:
 
 - **Specification documents** — free-form prose with headings, paragraphs, lists. TOON cannot represent narrative content.
-- **Context files** — `context.md` contains rules, constraints, and reasoning in natural language.
+- **Context files** — `AGENTS.md` contains rules, constraints, and reasoning in natural language.
 - **Summaries** — `rolling-summary.md` and session summaries are narrative descriptions of project state.
 - **Skill files** — `CLAUDE.md`, `.cursorrules`, etc. are natural language behavioral instructions.
 - **Deeply nested, non-uniform data** — if a data structure has irregular nesting or mixed-type fields, TOON may not offer savings over compact JSON.

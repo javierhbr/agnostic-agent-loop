@@ -127,7 +127,7 @@ agentic-agent context generate src/auth
 
 This creates `src/auth/context.md`. Claude Code reads this file before touching any code in that directory, following the rule from `.agentic/agent-rules/base.md`:
 
-> Always read `context.md` before starting work in a directory.
+> Always read `AGENTS.md` before starting work in a directory.
 
 ### 5. Implement the JWT token service (Subtask 1)
 

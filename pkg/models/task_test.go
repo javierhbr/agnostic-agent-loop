@@ -86,7 +86,7 @@ subtasks:
 	assert.Equal(t, "user2", task.AssignedTo)
 	assert.Equal(t, []string{"src/auth", "src/core"}, task.Scope)
 	assert.Equal(t, []string{"spec/architecture.md"}, task.SpecRefs)
-	assert.Equal(t, []string{"context.md"}, task.Inputs)
+	assert.Equal(t, []string{"AGENTS.md"}, task.Inputs)
 	assert.Equal(t, []string{"module.go", "module_test.go"}, task.Outputs)
 	assert.Equal(t, []string{"Feature works", "Tests pass"}, task.Acceptance)
 	assert.Len(t, task.SubTasks, 1)

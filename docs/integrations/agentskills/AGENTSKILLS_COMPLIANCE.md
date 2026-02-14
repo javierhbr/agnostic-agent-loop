@@ -202,12 +202,12 @@ compatible_with:
 
 # Context Management Skill
 
-You are responsible for maintaining the "living documentation" through `context.md` files.
+You are responsible for maintaining the "living documentation" through `AGENTS.md` files.
 
 ## 🚦 Mandatory Workflow: Read-Before-Write
 
 Before modifying any file:
-1. Check if `context.md` exists in that directory
+1. Check if `AGENTS.md` exists in that directory
 2. If exists, read it for `MUST DO` and `YOU CANNOT DO` constraints
 3. If missing and directory contains logic, trigger Generation Workflow
 
@@ -220,7 +220,7 @@ Before modifying any file:
 
 ## 🔄 Generation Workflow
 
-If `context.md` is missing:
+If `AGENTS.md` is missing:
 1. Analyze exports and imports of existing files
 2. Determine layer (Domain, Application, Adapter, Config)
 3. Generate using template:

@@ -45,7 +45,7 @@ func (r *DirectoryContextRule) Validate(ctx *validator.ValidationContext) (*vali
 
 			if hasSource {
 				// Check for context.md
-				if _, err := os.Stat(filepath.Join(path, "context.md")); os.IsNotExist(err) {
+				if _, err := os.Stat(filepath.Join(path, "AGENTS.md")); os.IsNotExist(err) {
 					failures = append(failures, fmt.Sprintf("Missing context.md in %s", path))
 				}
 			}

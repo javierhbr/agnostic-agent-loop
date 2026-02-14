@@ -187,7 +187,7 @@ func (s *CommonSteps) createFileWithContent(ctx context.Context, filePath, conte
 func (s *CommonSteps) runContextGeneration(ctx context.Context, dir string) error {
 	// For now, just create a simple context file
 	// In a full implementation, this would call the context generator
-	contextPath := filepath.Join(s.suite.ProjectDir, dir, "context.md")
+	contextPath := filepath.Join(s.suite.ProjectDir, dir, "AGENTS.md")
 	content := "# Context\n\nGenerated context for " + dir
 
 	err := os.WriteFile(contextPath, []byte(content), 0644)

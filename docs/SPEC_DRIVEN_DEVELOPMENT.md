@@ -62,7 +62,7 @@ This means specs are always up-to-date. If Spec Kit or OpenSpec updates a spec, 
 
 ### Three Mechanisms
 
-**1. Agent Rules** — `.agentic/agent-rules/base.md` instructs agents to read `context.md` before working in any directory. Created by `agentic-agent init`.
+**1. Agent Rules** — `.agentic/agent-rules/base.md` instructs agents to read `AGENTS.md` before working in any directory. Created by `agentic-agent init`.
 
 **2. Context Bundles** — `agentic-agent context build --task TASK-001` aggregates everything the agent needs:
 
@@ -75,7 +75,7 @@ Context Bundle:
 └── Directory Contexts (context.md from task scope)
 ```
 
-**3. Validation** — `agentic-agent validate` checks that `context.md` exists in each source directory and flags when files change without a context update.
+**3. Validation** — `agentic-agent validate` checks that `AGENTS.md` exists in each source directory and flags when files change without a context update.
 
 ### Bundle Formats
 
