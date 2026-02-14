@@ -4,6 +4,17 @@ Step-by-step demonstrations of the Agentic Agent framework.
 
 ## Available Examples
 
+### Spec Validation
+
+**[examples/spec-validation/](spec-validation/)** — Complete guide to spec validation workflow with auto-generation, interactive prompts, and agent guidance. Shows how the system ensures tasks have proper specification files while maintaining flexibility.
+
+Key features:
+
+- Auto-detect missing specs during task create and claim
+- Smart context detection (PRD → Interactive → Metadata)
+- Agent-guiding CLI output with recommendations
+- Multiple generation modes and skip options
+
 ### `test-sandbox/` - End-to-End Walkthrough
 
 Build a project from scratch: idea elaboration, project init, PRD generation, task decomposition, claim-to-complete workflow, and tool switching.
@@ -128,6 +139,8 @@ agentic-agent context build --task TASK-001    # Full context bundle
 ```bash
 agentic-agent spec list                     # All specs across directories
 agentic-agent spec resolve auth-spec.md     # Resolve and print
+agentic-agent spec generate TASK-001 --auto # Auto-generate missing specs
+agentic-agent spec validate                 # Check all tasks for missing specs
 ```
 
 ### Work with OpenSpec changes
@@ -185,6 +198,7 @@ agentic-agent status --format json  # Machine-readable output
 
 ## Example Use Cases
 
+- **[spec-validation](spec-validation/README.md)** — Spec validation, auto-generation, agent guidance
 - **[test-sandbox](test-sandbox/SAMPLE.README.md)** — Full workflow, tool switching, parallel agents
 - **[track-workflow](track-workflow/README.md)** — Brainstorming, spec refinement, plan generation
 - **[skill-packs](skill-packs/README.md)** — Multi-tool skill installation, drift detection

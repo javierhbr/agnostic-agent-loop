@@ -1,0 +1,83 @@
+# Example: Configurable Checkpoint Thresholds
+#
+# This example demonstrates how to customize checkpoint behavior
+# for long-running tasks in autopilot mode.
+
+# Default checkpoint configuration
+checkpoint:
+  # Checkpoint every N iterations (default: 5)
+  # Lower values = more frequent checkpoints = less progress lost on interruption
+  # Higher values = fewer checkpoints = less overhead
+  iteration_interval: 5
+
+  # Checkpoint at these token usage percentages (default: [0.5, 0.75, 0.9])
+  # Values are decimal percentages (0.5 = 50%, 0.75 = 75%, 0.9 = 90%)
+  # These create safety checkpoints as you approach token limits
+  token_thresholds: [0.5, 0.75, 0.9]
+
+# -------------------------------------------------------------------
+# Example Configurations for Different Scenarios
+# -------------------------------------------------------------------
+
+# Scenario 1: Aggressive Checkpointing (Critical Work)
+# Use when: Working on complex tasks where losing progress is costly
+# checkpoint:
+#   iteration_interval: 2
+#   token_thresholds: [0.1, 0.25, 0.5, 0.75, 0.9]
+
+# Scenario 2: Minimal Checkpointing (Fast Execution)
+# Use when: Working on simple tasks where restarts are cheap
+# checkpoint:
+#   iteration_interval: 10
+#   token_thresholds: [0.9]
+
+# Scenario 3: High Token Limit Agent (e.g., Gemini Pro)
+# Use when: Using agents with >500K token limits
+# checkpoint:
+#   iteration_interval: 5
+#   token_thresholds: [0.8, 0.95]
+
+# Scenario 4: Low Token Limit Agent (e.g., Copilot)
+# Use when: Using agents with <50K token limits
+# checkpoint:
+#   iteration_interval: 3
+#   token_thresholds: [0.3, 0.5, 0.7, 0.85, 0.95]
+
+# -------------------------------------------------------------------
+# How Checkpoints Work
+# -------------------------------------------------------------------
+#
+# Checkpoints are created when EITHER condition is met:
+#   1. iteration % iteration_interval == 0
+#   2. token_usage >= (token_limit * threshold) for any threshold
+#
+# Example with defaults (200K token limit):
+#   Iteration 5  → Checkpoint (5 % 5 == 0)
+#   Iteration 10 → Checkpoint (10 % 5 == 0)
+#   100K tokens  → Checkpoint (100K >= 200K * 0.5)
+#   150K tokens  → Checkpoint (150K >= 200K * 0.75)
+#   180K tokens  → Checkpoint (180K >= 200K * 0.9)
+#
+# Storage: .agentic/checkpoints/
+#   TASK-001-001.json  (Iteration 1)
+#   TASK-001-005.json  (Iteration 5)
+#   TASK-001-010.json  (Iteration 10)
+#   TASK-001-latest.json (Latest checkpoint - symlink/copy)
+#
+# Automatic Resume:
+#   When autopilot starts and finds an existing checkpoint,
+#   it automatically resumes from the last saved state.
+#
+# Cleanup:
+#   Checkpoints are automatically deleted when a task completes
+#   successfully to save disk space.
+
+# Active agent configuration (example)
+active_agent: claude-code
+
+agents:
+  claude-code:
+    auto_setup: true
+    skill_packs:
+      - ralph-loop
+      - atdd
