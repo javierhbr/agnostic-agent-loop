@@ -1,11 +1,12 @@
 package models
 
 type Config struct {
-	Project     ProjectConfig  `yaml:"project"`
-	Agents      AgentsConfig   `yaml:"agents"`
-	Workflow    WorkflowConfig `yaml:"workflow"`
-	Paths       PathsConfig    `yaml:"paths"`
-	ActiveAgent string         `yaml:"-"` // Runtime-only: detected agent name
+	Project     ProjectConfig     `yaml:"project"`
+	Agents      AgentsConfig      `yaml:"agents"`
+	Workflow    WorkflowConfig    `yaml:"workflow"`
+	Paths       PathsConfig       `yaml:"paths"`
+	Checkpoint  CheckpointConfig  `yaml:"checkpoint,omitempty"`
+	ActiveAgent string            `yaml:"-"` // Runtime-only: detected agent name
 }
 
 type ProjectConfig struct {
@@ -35,6 +36,11 @@ type AgentConfig struct {
 
 type WorkflowConfig struct {
 	Validators []string `yaml:"validators"`
+}
+
+type CheckpointConfig struct {
+	IterationInterval int       `yaml:"iteration_interval,omitempty"` // Checkpoint every N iterations (default: 5)
+	TokenThresholds   []float64 `yaml:"token_thresholds,omitempty"`   // Checkpoint at these percentages (default: [0.5, 0.75, 0.9])
 }
 
 type PathsConfig struct {

@@ -185,9 +185,47 @@ $ agentic-agent task claim TASK-001
 
 Task TASK-001: READY
   [+] spec-resolvable: "auth-requirements.md" resolved at .agentic/spec/auth-requirements.md
+  [+] spec-completeness: all 2 specs found
   [+] inputs-exist: all input files present
   [!] scope-dir: "internal/auth" does not exist (warning)
 Claimed task TASK-001
+```
+
+If specs are missing, the CLI provides agent-guiding recommendations:
+
+```
+$ agentic-agent task claim TASK-123
+
+Task TASK-123: READY (with warnings)
+  [+] input-exists: input file "None" valid (no inputs required)
+  [-] spec-completeness: 2 specs missing: todo-app/proposal.md, todo-app/tasks/01-setup.md
+
+⚠️  MISSING SPECS DETECTED
+
+The following spec files are referenced but don't exist:
+  - todo-app/proposal.md
+  - todo-app/tasks/01-setup.md
+
+📋 RECOMMENDED ACTIONS FOR AGENTS:
+
+  Option 1: Auto-generate specs (recommended)
+  → agentic-agent spec generate TASK-123 --auto
+
+  Option 2: Generate with user interaction
+  → agentic-agent spec generate TASK-123 --interactive
+
+  Option 3: Create specs manually
+  → agentic-agent spec create todo-app/proposal.md
+  → agentic-agent spec create todo-app/tasks/01-setup.md
+
+  Option 4: Skip validation and proceed
+  → agentic-agent task claim TASK-123 --skip-validation
+
+💡 CONTEXT: This task was likely created outside the recommended workflow.
+   For best results, follow: brainstorming → product-wizard → openspec init
+
+🤖 AGENT TIP: Read the user's intent. If they want to proceed quickly,
+   use --skip-validation. If quality matters, use --auto generation.
 ```
 
 ### Agent-agnostic — works with everything
@@ -318,6 +356,40 @@ agentic-agent spec list
 agentic-agent spec resolve "auth/spec.md"
 ```
 
+### Spec Validation & Auto-Generation
+
+The system validates spec completeness and can auto-generate missing specs from context:
+
+```bash
+# Generate missing specs for a task (smart context detection)
+agentic-agent spec generate TASK-123 --auto
+
+# Generate interactively (prompts for requirements)
+agentic-agent spec generate TASK-123 --interactive
+
+# Generate from specific PRD
+agentic-agent spec generate TASK-123 --from-prd path/to/prd.md
+
+# Create spec manually with template
+agentic-agent spec create todo-app/proposal.md
+
+# Validate all tasks have complete specs
+agentic-agent spec validate
+```
+
+**Smart Context Detection:** The generator automatically chooses the best source:
+1. **PRD-based** — If a PRD file exists for the feature
+2. **Interactive** — If running in a terminal (prompts for input)
+3. **Metadata** — Fallback using task description and acceptance criteria
+
+**Configuration:**
+```yaml
+# agnostic-agent.yaml
+workflow:
+  validate_specs_on_claim: true  # Validate before claiming tasks
+  spec_validation_mode: "warn"   # "warn" | "block" | "silent"
+```
+
 See [docs/SPEC_DRIVEN_DEVELOPMENT.md](docs/SPEC_DRIVEN_DEVELOPMENT.md) for Spec Kit, OpenSpec, and native spec workflows.
 
 ### OpenSpec CLI
@@ -408,6 +480,7 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 | `task list` | List all tasks by status |
 | `task show <id>` | Show task details |
 | `task claim <id>` | Claim task with readiness checks |
+| `task claim <id> --skip-validation` | Claim task without spec validation |
 | `task complete <id>` | Mark task as done |
 | `task decompose <id> ...` | Break into subtasks |
 | `task from-template` | Create from template (wizard) |
@@ -429,6 +502,10 @@ Autopilot stops when all tasks are processed, `--max-iterations` is reached, or 
 |---------|-------------|
 | `spec list` | List all specs across configured directories |
 | `spec resolve <ref>` | Resolve a spec ref and print content |
+| `spec generate <task-id>` | Generate missing specs for a task |
+| `spec generate --all` | Generate specs for all tasks with missing specs |
+| `spec create <ref>` | Create a new spec file with template |
+| `spec validate [task-id]` | Validate spec completeness for tasks |
 
 ### OpenSpec
 
@@ -512,6 +589,8 @@ workflow:
     - context-check
     - task-scope
     - browser-verification
+  validate_specs_on_claim: true  # Validate specs before claiming tasks
+  spec_validation_mode: "warn"   # "warn" | "block" | "silent"
 ```
 
 ---

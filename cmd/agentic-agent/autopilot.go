@@ -27,20 +27,24 @@ The autopilot will:
 3. Claim the task
 4. Generate context for scope directories
 5. Build a context bundle with resolved specs
-6. Report the task as ready for agent execution
+6. Execute AI agent (if --execute-agent enabled)
+7. Auto-complete task if agent succeeds
 
 Flags:
   --max-iterations  Maximum number of tasks to process (default 10)
+  --execute-agent   Execute AI agent for each task (default false)
   --stop-signal     Custom stop signal string
   --dry-run         Show what would be processed without making changes`,
 	Run: func(cmd *cobra.Command, args []string) {
 		maxIterations, _ := cmd.Flags().GetInt("max-iterations")
 		stopSignal, _ := cmd.Flags().GetString("stop-signal")
 		dryRun, _ := cmd.Flags().GetBool("dry-run")
+		executeAgent, _ := cmd.Flags().GetBool("execute-agent")
 
 		cfg := getConfig()
 
-		loop := orchestrator.NewAutopilotLoop(cfg, maxIterations, stopSignal, dryRun)
+		loop := orchestrator.NewAutopilotLoop(cfg, maxIterations, stopSignal, dryRun).
+			WithAgentExecution(executeAgent)
 
 		// Set up context with Ctrl+C cancellation
 		ctx, cancel := context.WithCancel(context.Background())
@@ -63,6 +67,7 @@ Flags:
 
 func init() {
 	autopilotStartCmd.Flags().Int("max-iterations", 10, "Maximum number of tasks to process")
+	autopilotStartCmd.Flags().Bool("execute-agent", false, "Execute AI agent for each task")
 	autopilotStartCmd.Flags().String("stop-signal", "", "Custom stop signal string")
 	autopilotStartCmd.Flags().Bool("dry-run", false, "Show what would be processed without making changes")
 
