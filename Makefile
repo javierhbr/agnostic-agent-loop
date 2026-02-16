@@ -65,6 +65,9 @@ help:
 # ── Build ─────────────────────────────────────────────────────────
 
 setup: install build
+	@echo "Removing old versions..."
+	@sudo rm -f /opt/homebrew/opt/go/libexec/bin/$(BINARY_NAME) 2>/dev/null || true
+	@sudo rm -f $$(go env GOPATH)/bin/$(BINARY_NAME) 2>/dev/null || true
 	@echo "Installing $(BINARY_NAME) to /usr/local/bin..."
 	@sudo mv $(BUILD_DIR)/$(BINARY_NAME) /usr/local/bin/$(BINARY_NAME)
 	@echo "$(BINARY_NAME) $(VERSION) installed to /usr/local/bin/"
