@@ -56,7 +56,7 @@ func TestDirectoryContextRule_SourceFilesWithContext(t *testing.T) {
 	err = os.WriteFile(filepath.Join(srcDir, "main.go"), []byte("package main"), 0644)
 	require.NoError(t, err)
 
-	err = os.WriteFile(filepath.Join(srcDir, "context.md"), []byte("# Context\nPurpose: Main entry"), 0644)
+	err = os.WriteFile(filepath.Join(srcDir, "AGENTS.md"), []byte("# Context\nPurpose: Main entry"), 0644)
 	require.NoError(t, err)
 
 	rule := &DirectoryContextRule{}
@@ -105,7 +105,7 @@ func TestDirectoryContextRule_MultipleDirectories(t *testing.T) {
 	// auth has context.md
 	err = os.WriteFile(filepath.Join(authDir, "auth.go"), []byte("package auth"), 0644)
 	require.NoError(t, err)
-	err = os.WriteFile(filepath.Join(authDir, "context.md"), []byte("# Auth"), 0644)
+	err = os.WriteFile(filepath.Join(authDir, "AGENTS.md"), []byte("# Auth"), 0644)
 	require.NoError(t, err)
 
 	// core does NOT have context.md
@@ -147,9 +147,9 @@ func TestDirectoryContextRule_DifferentFileTypes(t *testing.T) {
 	tmpDir := setupTestProject(t)
 
 	testCases := []struct {
-		name           string
-		filename       string
-		shouldRequire  bool
+		name          string
+		filename      string
+		shouldRequire bool
 	}{
 		{"Go file", "main.go", true},
 		{"TypeScript", "app.ts", true},

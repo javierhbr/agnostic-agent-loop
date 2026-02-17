@@ -146,7 +146,7 @@ Templates are customizable — override the defaults by placing your own in `.ag
 
 ### Context isolation — agents stay focused
 
-Each directory gets a `context.md` file describing its purpose, dependencies, and constraints. The CLI bundles only the relevant context for each task, so agents don't drown in irrelevant information.
+Each directory gets a `AGENTS.md` file describing its purpose, dependencies, and constraints. The CLI bundles only the relevant context for each task, so agents don't drown in irrelevant information.
 
 ```bash
 agentic-agent context generate internal/auth   # Generate context.md
@@ -625,7 +625,7 @@ workflow:
 agnostic-agent.yaml      # Project configuration
 ```
 
-Source directories each have a `context.md`:
+Source directories each have a `AGENTS.md`:
 
 ```
 internal/auth/

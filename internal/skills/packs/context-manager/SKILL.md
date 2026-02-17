@@ -17,15 +17,15 @@ description: System rules for context management and architectural boundaries. T
 
 Before modifying ANY file in a directory:
 
-1. Check if `context.md` exists in that directory
+1. Check if `AGENTS.md` exists in that directory
 2. If it exists, **read it** - identify dependencies, architectural role, constraints
 3. If it does NOT exist and the directory has source files, generate context
 4. Only after reading context may you edit files
-5. Update `context.md` after architectural changes
+5. Update `AGENTS.md` after architectural changes
 
 ### Red Flags — STOP and Fix
 
-- ❌ Editing without reading `context.md` first
+- ❌ Editing without reading `AGENTS.md` first
 - ❌ Creating directories without generating context
 - ❌ Importing forbidden dependencies
 - ❌ "Too small to need context" — no task is too small

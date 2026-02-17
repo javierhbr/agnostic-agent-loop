@@ -18,7 +18,7 @@ func NewDirectoryContextManager(rootDir string) *DirectoryContextManager {
 }
 
 func (dcm *DirectoryContextManager) LoadContext(dir string) (*models.DirectoryContext, error) {
-	path := filepath.Join(dir, "context.md")
+	path := filepath.Join(dir, "AGENTS.md")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (dcm *DirectoryContextManager) SaveContext(dir string, ctx *models.Director
 	content := fmt.Sprintf("# Context for %s\n\n## Purpose\n%s\n\n## Responsibilities\n%s\n\n## Dependencies\n%s\n",
 		ctx.Path, ctx.Purpose, strings.Join(ctx.Responsibilities, "\n- "), strings.Join(ctx.Dependencies, "\n- "))
 
-	path := filepath.Join(dir, "context.md")
+	path := filepath.Join(dir, "AGENTS.md")
 	return os.WriteFile(path, []byte(content), 0644)
 }
 

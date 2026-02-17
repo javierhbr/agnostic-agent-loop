@@ -8,7 +8,7 @@ The validator transforms rules into enforceable law. Without it, the framework i
 The validator must produce a definitive yes/no answer for each of these questions:
 
 1. Does the change respect the task's defined scope?
-2. Was `context.md` updated when a logical change occurred?
+2. Was `AGENTS.md` updated when a logical change occurred?
 3. Is the task sufficiently small?
 4. Were directories modified that lack a context file?
 5. Was the session close protocol followed correctly?
@@ -33,7 +33,7 @@ Pure rule logic only; no agent-specific code.
 
 #### Rule 1: Directory Context Required
 
-If a directory contains logic (files with `.ts`, `.js`, `.py`, `.go` extensions) and `context.md` does not exist, the validation fails.
+If a directory contains logic (files with `.ts`, `.js`, `.py`, `.go` extensions) and `AGENTS.md` does not exist, the validation fails.
 
 ```
 IF directory contains .ts|.js|.py|.go
@@ -168,7 +168,7 @@ Splits the task into atomic subtasks and persists them.
 
 #### ASSIGN_SUBTASK
 
-Selects an available agent. Constructs a minimal context bundle: task definition, relevant `context.md` files, and referenced specification files.
+Selects an available agent. Constructs a minimal context bundle: task definition, relevant `AGENTS.md` files, and referenced specification files.
 
 #### EXECUTE_SUBAGENT
 
@@ -180,7 +180,7 @@ Executes the automated validator and checks acceptance criteria. On failure: ret
 
 #### UPDATE_CONTEXT
 
-Updates `context.md` files (where applicable) and `rolling-summary.md`.
+Updates `AGENTS.md` files (where applicable) and `rolling-summary.md`.
 
 #### CHECK_LIMITS
 
@@ -201,7 +201,7 @@ Follows the mandatory protocol:
 
 1. Generate session summary
 2. Update rolling summary
-3. List modified `context.md` files
+3. List modified `AGENTS.md` files
 4. Terminate execution
 
 The next session begins at INIT.
@@ -298,7 +298,7 @@ Before performing ANY work, execute these steps in order:
 1. Read `.agentic/context/global-context.md` — understand project goals and invariants
 2. Read `.agentic/context/rolling-summary.md` — understand current project state
 3. Read `.agentic/tasks/in-progress.yaml` — identify assigned or claimable tasks
-4. For each directory you will touch, read its `context.md` BEFORE making changes
+4. For each directory you will touch, read its `AGENTS.md` BEFORE making changes
 5. Read the spec files referenced by your assigned task
 
 Do NOT skip any step. Do NOT begin implementation before completing this sequence.
@@ -311,11 +311,11 @@ Do NOT skip any step. Do NOT begin implementation before completing this sequenc
 
 - Follow specifications strictly — specs define intent, not code
 - Work only on your assigned subtask — never expand scope
-- Read `context.md` before modifying any directory — no exceptions
+- Read `AGENTS.md` before modifying any directory — no exceptions
 - Do not retain memory beyond your file outputs
 - Do not invent intent — if it is not in the spec, do not assume it
 - Update `rolling-summary.md` when instructed
-- Update `context.md` if you change logic, responsibilities, or patterns in a directory
+- Update `AGENTS.md` if you change logic, responsibilities, or patterns in a directory
 - Commit code changes and context.md updates together — never separately
 - If something feels ambiguous, stop and reduce scope
 ```
@@ -348,7 +348,7 @@ To begin work:
 When your session ends or you are being replaced:
 
 1. Persist all partial outputs to disk — nothing stays in memory
-2. Update `context.md` for every directory where you changed logic
+2. Update `AGENTS.md` for every directory where you changed logic
 3. Generate a factual session summary:
    - Current task and progress percentage
    - Completed subtasks
@@ -359,7 +359,7 @@ When your session ends or you are being replaced:
 4. Write summary to `.agentic/context/session-summary-<timestamp>.md`
 5. Update `.agentic/context/rolling-summary.md`
 6. Update task status in `.agentic/tasks/in-progress.yaml`
-7. List all modified `context.md` files in the session summary
+7. List all modified `AGENTS.md` files in the session summary
 
 The next agent (or the same agent in a new session) will resume from these
 files alone. No conversation history is passed. No chat context is shared.
@@ -416,7 +416,7 @@ Your task is complete ONLY when ALL of these are true:
 
 #### Section I: Context Generation Skill (context.md Lifecycle)
 
-This is the skill that operationalizes the framework's most critical rule: **Context is Code.** Every agent must be capable of analyzing the actual source files in a directory and producing or updating its `context.md` — not from memory, not from conversation history, but from reading the code itself.
+This is the skill that operationalizes the framework's most critical rule: **Context is Code.** Every agent must be capable of analyzing the actual source files in a directory and producing or updating its `AGENTS.md` — not from memory, not from conversation history, but from reading the code itself.
 
 ```markdown
 ## Context Generation Skill

@@ -201,7 +201,7 @@ None
 - Direct database access
 - HTTP calls
 `
-	err = os.WriteFile(filepath.Join(srcDir, "context.md"), []byte(contextContent), 0644)
+	err = os.WriteFile(filepath.Join(srcDir, "AGENTS.md"), []byte(contextContent), 0644)
 	require.NoError(t, err)
 
 	// Run validation again - should pass

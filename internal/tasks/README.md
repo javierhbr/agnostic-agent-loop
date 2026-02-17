@@ -112,7 +112,7 @@ The task system enforces several quality rules:
    - Ensures focused work
 
 3. **Context Requirements**:
-   - Each directory touched must have a `context.md`
+   - Each directory touched must have a `AGENTS.md`
    - Ensures adequate context for AI agents
 
 ## Usage Examples

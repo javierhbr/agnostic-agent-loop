@@ -1,8 +1,47 @@
 # OPENCODE.md - OpenCode-Specific Instructions
 
 > **📋 For comprehensive agent-agnostic rules, see [AGENT_RULES.md](./AGENT_RULES.md)**
-> 
+>
 > This file contains OpenCode-specific commands and workflow integration.
+
+---
+
+## ⚠️ Mandatory Rules (Non-Negotiable)
+
+> Rules in this file are loaded into every conversation. They are non-negotiable.
+> For detailed formats and procedures, see [AGENT_RULES.md](./AGENT_RULES.md).
+
+---
+
+### Mandatory: Read-Before-Write Protocol
+
+Before modifying ANY file in a directory, you MUST:
+
+1. **Check** if `AGENTS.md` exists in that directory
+2. **Read it** if it exists — understand purpose, dependencies, constraints, architectural layer
+3. **Create it** if it does not exist and the directory has source files — follow the format in `AGENT_RULES.md` Section 2, or run `agentic-agent context generate <DIR>`
+4. **Only then** may you edit files in that directory
+5. **Update `AGENTS.md`** in the same commit after any architectural change (new deps, changed purpose, added/removed modules)
+
+No exceptions. No "too small to need context." No "I'll update it later."
+
+### Mandatory: Architectural Boundaries
+
+This project uses **hexagonal (port/adapter) architecture** across Go, Python, and TypeScript.
+
+#### Layer Dependency Matrix
+
+| Layer | Can Depend On | Cannot Depend On |
+|-------|--------------|-------------------|
+| **Core/Domain** | Nothing | Application, Infrastructure, Config |
+| **Core/Application** | Domain only | Infrastructure, Config |
+| **Infrastructure/Adapters** | Domain, Application | Other adapters directly |
+| **Infrastructure/Config** | All layers | — |
+
+#### Red Flags — STOP Immediately
+
+- Editing files without reading `AGENTS.md` first
+- Importing from a forbidden layer (domain importing infrastructure)
 
 ---
 
@@ -11,8 +50,8 @@
 ⚠️ **Read [AGENT_RULES.md](./AGENT_RULES.md) for complete context management, architectural boundaries, and quality rules.**
 
 Essential reminders:
-- Always read `context.md` before editing files in a directory
-- Update `context.md` when you change architecture or dependencies
+- Always read `AGENTS.md` before editing files in a directory
+- Update `AGENTS.md` when you change architecture or dependencies
 - Never violate architectural boundaries defined in context files
 - Keep tasks small and focused
 
@@ -103,7 +142,7 @@ Users can skip any step if they already have clear requirements.
 | `.agentic/tasks/in-progress.yaml` | Current work |
 | `.agentic/context/global-context.md` | Project overview |
 | `agnostic-agent.yaml` | Project configuration |
-| `context.md` (per directory) | Architectural rules and constraints |
+| `AGENTS.md` (per directory) | Architectural rules and constraints |
 
 ---
 

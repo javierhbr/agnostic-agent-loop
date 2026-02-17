@@ -30,13 +30,13 @@ func (r *ContextUpdateRule) Validate(ctx *validator.ValidationContext) (*validat
 				}
 			}
 
-			contextPath := filepath.Join(path, "context.md")
+			contextPath := filepath.Join(path, "AGENTS.md")
 			contextInfo, err := os.Stat(contextPath)
 			if err == nil {
 				// Check source files vs context mod time
 				entries, _ := os.ReadDir(path)
 				for _, e := range entries {
-					if !e.IsDir() && e.Name() != "context.md" {
+					if !e.IsDir() && e.Name() != "AGENTS.md" {
 						ext := filepath.Ext(e.Name())
 						if ext == ".go" || ext == ".ts" || ext == ".js" {
 							fileInfo, _ := e.Info()

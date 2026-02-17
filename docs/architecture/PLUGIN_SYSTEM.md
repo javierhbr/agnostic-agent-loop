@@ -503,7 +503,7 @@ func (v *contextValidator) Validate(ctx *plugin.Context) (*plugin.ValidatorResul
     entries, _ := os.ReadDir(filepath.Join(ctx.Project.Root, "internal"))
     for _, entry := range entries {
         if entry.IsDir() {
-            ctxPath := filepath.Join(ctx.Project.Root, "internal", entry.Name(), "context.md")
+            ctxPath := filepath.Join(ctx.Project.Root, "internal", entry.Name(), "AGENTS.md")
             if _, err := os.Stat(ctxPath); os.IsNotExist(err) {
                 missing = append(missing, "internal/"+entry.Name())
             }
