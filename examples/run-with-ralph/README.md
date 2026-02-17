@@ -1,12 +1,12 @@
 # Run with Ralph: Iterative Task Implementation
 
-Execute tasks using the Ralph Wiggum iterative loop methodology. Works in **any AI chat tool** (Claude Code, Cursor, Copilot, Windsurf) — just type `/ralph-loop`.
+Execute tasks using the Ralph Wiggum iterative loop methodology. Works in **any AI chat tool** (Claude Code, Cursor, Copilot, Windsurf) — just type `/run-with-ralph`.
 
 ---
 
 ## What You'll Learn
 
-- Use the `/ralph-loop` skill in AI chat for iterative task completion
+- Use the `/run-with-ralph` skill in AI chat for iterative task completion
 - Configure checkpoint/resume for long-running tasks
 - Alternative: Use autopilot mode for batch processing in terminal
 - Process tasks with automatic git tracking and convergence detection
@@ -19,7 +19,7 @@ Execute tasks using the Ralph Wiggum iterative loop methodology. Works in **any 
 - Agentic Agent CLI installed and configured
 - Tasks in `.agentic/tasks/backlog.yaml` (can be from openspec or manual)
 - AI chat tool with skill support (Claude Code, Cursor, etc.)
-- **Optional:** Ralph Wiggum plugin (provides advanced `/ralph-loop` features)
+- **Optional:** Ralph Wiggum plugin (provides advanced `/run-with-ralph` features)
 
 ---
 
@@ -112,7 +112,7 @@ You are implementing TASK-936281-2: Configure TypeScript and ESLint.
 Just type in your AI chat:
 
 ```
-/ralph-loop
+/run-with-ralph
 ```
 
 The skill will automatically:
@@ -125,7 +125,7 @@ The skill will automatically:
 **Example in Claude Code:**
 
 ```
-You: /ralph-loop
+You: /run-with-ralph
 
 AI: I'm using the ralph-loop skill to iteratively complete this task.
 
@@ -184,7 +184,7 @@ $ agentic-agent task complete TASK-936281-2 --learnings "Configured TypeScript s
 If you need more control:
 
 ```
-You: I need to implement TASK-936281-2. Use /ralph-loop but make sure to:
+You: I need to implement TASK-936281-2. Use /run-with-ralph but make sure to:
 - Enable strict null checks in tsconfig
 - Use Airbnb ESLint config
 - Add prettier integration
@@ -308,7 +308,7 @@ Change: todo-pwa
 agentic-agent task claim TASK-936281-3
 agentic-agent task show TASK-936281-3 --no-interactive
 # Build ralph prompt from output...
-/ralph-loop "..." --max-iterations 10 --completion-promise "TASK COMPLETE"
+/run-with-ralph "..." --max-iterations 10 --completion-promise "TASK COMPLETE"
 agentic-agent task complete TASK-936281-3
 ```
 
@@ -322,7 +322,7 @@ agentic-agent task list
 For each task:
     ├── task claim TASK-ID
     ├── task show TASK-ID → extract criteria + spec refs
-    ├── /ralph-loop "prompt" --max-iterations 10
+    ├── /run-with-ralph "prompt" --max-iterations 10
     ├── task complete TASK-ID
     └── openspec status CHANGE-ID
     ↓
@@ -334,7 +334,7 @@ agentic-agent openspec archive CHANGE-ID
 
 ## 8. Autopilot vs Ralph Loop: When to Use What
 
-### Use `/ralph-loop` in AI Chat When:
+### Use `/run-with-ralph` in AI Chat When:
 - ✅ Working interactively in your IDE
 - ✅ Want to see iteration progress in real-time
 - ✅ Task requires judgment or clarification
@@ -343,7 +343,7 @@ agentic-agent openspec archive CHANGE-ID
 
 **Example:**
 ```
-You: /ralph-loop
+You: /run-with-ralph
 
 AI: [Shows each iteration with visible progress]
   ─── Iteration 1 ───
@@ -392,7 +392,7 @@ If you paste an autopilot CLI command in your AI chat:
 ```
 You: agentic-agent --agent claude autopilot start --execute-agent --max-iterations 1
 
-AI: I see you've pasted an autopilot CLI command. In AI chat, we use the /ralph-loop
+AI: I see you've pasted an autopilot CLI command. In AI chat, we use the /run-with-ralph
 skill instead, which provides the same iterative behavior with better visibility.
 
 Let me run the ralph-loop for you:
@@ -497,7 +497,7 @@ Tests: 0 passed, 3 failed
 #### Step 3: Use Ralph-Loop to Make Tests Pass (GREEN Phase)
 
 ```
-You: /ralph-loop
+You: /run-with-ralph
 
 AI: I'm using the ralph-loop skill to iteratively complete this task.
 
@@ -679,7 +679,7 @@ $ npm test
 Tests: 0 passed, 12 failed ✓ (RED phase complete)
 
 # 3. Ralph loop to make tests pass
-You: /ralph-loop
+You: /run-with-ralph
 
 AI: [Iterates until all 12 tests pass]
 
@@ -738,7 +738,7 @@ You: Before implementing password strength validator, write unit tests for:
 - No common passwords (from list)
 - Edge cases: empty string, null, special chars
 
-Then /ralph-loop to implement.
+Then /run-with-ralph to implement.
 
 AI: [Writes 10+ failing unit tests, then implements until all pass]
 ```
@@ -821,7 +821,7 @@ Status: Coverage criteria not met, continuing...
 | List tasks | `agentic-agent task list` |
 | Claim task | `agentic-agent task claim TASK-ID` |
 | Show details | `agentic-agent task show TASK-ID` |
-| **Start ralph-loop** | `/ralph-loop` (in AI chat) |
+| **Start ralph-loop** | `/run-with-ralph` (in AI chat) |
 | Cancel ralph | `/cancel-ralph` (if using Ralph Wiggum plugin) |
 | Complete task | `agentic-agent task complete TASK-ID` |
 | Check progress | `agentic-agent openspec status CHANGE-ID` |
@@ -851,7 +851,7 @@ Status: Coverage criteria not met, continuing...
 | Rule | Why |
 |------|-----|
 | Always claim before starting | Git tracking needs the claim timestamp |
-| Use `/ralph-loop` in AI chat | Automatic iteration with convergence detection |
+| Use `/run-with-ralph` in AI chat | Automatic iteration with convergence detection |
 | Configure checkpoints for long tasks | Prevents progress loss on interruption |
 | One task per ralph-loop | Multiple tasks = no convergence |
 | Run `task complete` after finishing | Captures commits, updates progress tracking |
@@ -876,7 +876,7 @@ $ agentic-agent task claim TASK-936281-2
 **Step 2: In your AI chat (Claude Code, Cursor, etc.)**
 
 ```
-You: /ralph-loop
+You: /run-with-ralph
 
 AI: I'm using the ralph-loop skill to iteratively complete this task.
 
@@ -958,7 +958,7 @@ Change: todo-pwa
 **Step 4: Continue to next task**
 
 ```
-You: /ralph-loop
+You: /run-with-ralph
 
 AI: [Automatically picks up TASK-936281-3 and starts iterating...]
 ```
@@ -989,7 +989,7 @@ agentic-agent --agent claude autopilot start \
 
 ```
 You: Before starting, write acceptance tests for TASK-001 based on the criteria.
-Then /ralph-loop to implement until tests pass.
+Then /run-with-ralph to implement until tests pass.
 
 AI: [Writes failing tests first, then uses ralph-loop to make them pass]
 ```
@@ -1021,7 +1021,7 @@ $ agentic-agent --agent claude autopilot start --execute-agent
 agentic-agent skills ensure
 
 # Or manually install
-cp -r .agentic/skill-packs/ralph-loop ~/.claude/skills/
+cp -r .agentic/skill-packs/run-with-ralph ~/.claude/skills/
 ```
 
 ### Problem: Task not claimed before ralph-loop
