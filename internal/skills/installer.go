@@ -17,18 +17,28 @@ type InstallResult struct {
 
 // Installer handles installing skill packs to tool-specific directories.
 type Installer struct {
-	Registry *PackRegistry
+	Registry     *PackRegistry
+	CanonicalDir string
 }
 
-// NewInstaller creates an installer with the default pack registry.
+// NewInstaller creates an installer with default pack registry and canonical dir.
 func NewInstaller() *Installer {
 	return &Installer{
-		Registry: NewPackRegistry(),
+		Registry:     NewPackRegistry(),
+		CanonicalDir: CanonicalSkillDir,
 	}
 }
 
-// Install copies a skill pack's files to the appropriate tool directory.
-// If global is true, installs to the user-level directory; otherwise project-level.
+// NewInstallerWithCanonicalDir creates an installer with a custom canonical directory.
+func NewInstallerWithCanonicalDir(dir string) *Installer {
+	return &Installer{
+		Registry:     NewPackRegistry(),
+		CanonicalDir: dir,
+	}
+}
+
+// Install writes a skill pack's files to the canonical directory and creates
+// symlinks in the tool's skill directory.
 func (inst *Installer) Install(packName, tool string, global bool) (*InstallResult, error) {
 	pack, err := inst.Registry.GetPack(packName)
 	if err != nil {
@@ -52,13 +62,25 @@ func (inst *Installer) Install(packName, tool string, global bool) (*InstallResu
 			return nil, fmt.Errorf("failed to read embedded file %s: %w", f.SrcPath, err)
 		}
 
-		destPath := filepath.Join(outputDir, f.DstPath)
-		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
-			return nil, fmt.Errorf("failed to create directory for %s: %w", destPath, err)
+		// Write canonical file
+		canonicalPath := filepath.Join(inst.CanonicalDir, f.DstPath)
+		if err := os.MkdirAll(filepath.Dir(canonicalPath), 0755); err != nil {
+			return nil, fmt.Errorf("failed to create canonical dir for %s: %w", canonicalPath, err)
+		}
+		if err := os.WriteFile(canonicalPath, content, 0644); err != nil {
+			return nil, fmt.Errorf("failed to write canonical %s: %w", canonicalPath, err)
 		}
 
-		if err := os.WriteFile(destPath, content, 0644); err != nil {
-			return nil, fmt.Errorf("failed to write %s: %w", destPath, err)
+		// Convert canonical path to absolute for symlink
+		absCan, err := filepath.Abs(canonicalPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve absolute path for %s: %w", canonicalPath, err)
+		}
+
+		// Create symlink in tool dir
+		destPath := filepath.Join(outputDir, f.DstPath)
+		if err := EnsureSymlink(absCan, destPath); err != nil {
+			return nil, fmt.Errorf("failed to symlink %s -> %s: %w", destPath, absCan, err)
 		}
 
 		result.FilesWritten = append(result.FilesWritten, destPath)
@@ -81,7 +103,7 @@ func (inst *Installer) InstallMulti(packName string, tools []string, global bool
 	return results, nil
 }
 
-// IsInstalled checks whether a pack's files exist at the tool's project-level skill dir.
+// IsInstalled checks whether a pack's files exist and match the embedded content.
 func (inst *Installer) IsInstalled(packName, tool string) bool {
 	dir, ok := ToolSkillDir[tool]
 	if !ok {
@@ -94,9 +116,24 @@ func (inst *Installer) IsInstalled(packName, tool string) bool {
 	}
 
 	for _, f := range pack.Files {
+		// Check tool dir path exists (could be symlink or real file)
 		path := filepath.Join(dir, f.DstPath)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return false
+		}
+
+		// Check canonical file content matches embedded
+		canonicalPath := filepath.Join(inst.CanonicalDir, f.DstPath)
+		actual, err := os.ReadFile(canonicalPath)
+		if err != nil {
+			return false
+		}
+		expected, err := packsFS.ReadFile(f.SrcPath)
+		if err != nil {
+			return false
+		}
+		if string(actual) != string(expected) {
+			return false // Content drift
 		}
 	}
 	return true
