@@ -151,17 +151,28 @@ func (g *Generator) GenerateToolSkills(agentName string) error {
 			return fmt.Errorf("failed to execute template: %w", err)
 		}
 
-		outputFile := filepath.Join(skillDir, skill.outputName)
-		if err := os.MkdirAll(filepath.Dir(outputFile), 0755); err != nil {
-			return fmt.Errorf("failed to create directory for %s: %w", outputFile, err)
+		// Write to canonical dir
+		canonicalPath := filepath.Join(CanonicalSkillDir, skill.outputName)
+		if err := os.MkdirAll(filepath.Dir(canonicalPath), 0755); err != nil {
+			return fmt.Errorf("failed to create canonical dir: %w", err)
+		}
+		if err := os.WriteFile(canonicalPath, buf.Bytes(), 0644); err != nil {
+			return fmt.Errorf("failed to write canonical %s: %w", canonicalPath, err)
 		}
 
-		if err := os.WriteFile(outputFile, buf.Bytes(), 0644); err != nil {
-			return fmt.Errorf("failed to write skill file %s: %w", outputFile, err)
+		// Symlink from tool dir to canonical
+		absCan, err := filepath.Abs(canonicalPath)
+		if err != nil {
+			return fmt.Errorf("failed to resolve absolute path: %w", err)
+		}
+
+		outputFile := filepath.Join(skillDir, skill.outputName)
+		if err := EnsureSymlink(absCan, outputFile); err != nil {
+			return fmt.Errorf("failed to symlink %s: %w", outputFile, err)
 		}
 	}
 
-	// Gemini also gets slash command TOML files
+	// Gemini also gets slash command TOML files (not symlinked — these are tool-specific)
 	if agentName == "gemini" {
 		if err := g.generateGeminiCommands(data); err != nil {
 			return err
