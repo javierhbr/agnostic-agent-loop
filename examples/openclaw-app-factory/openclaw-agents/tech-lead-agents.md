@@ -45,17 +45,27 @@ Capture: task completions, worker timeouts, gate failures, and what fixed them.
 ## Coordination Protocol
 
 **Receiving from ProductLead:**
-- Read announcements.yaml for `from_agent: product-lead, status: spec-ready, project_id: <current-project>`
-- Filter by the current active project_id — ignore announcements from other projects
-- When received: validate spec → claim tasks → spawn workers
+- `status: spec-ready` → validate spec with sdd gate-check → store API contract at `.agentic/contracts/<spec-id>.yaml` → spawn BackendDev with context bundle including api_contracts path
+
+**Receiving from BackendDev:**
+- `status: complete` → spawn FrontendDev and/or MobileDev with context bundle including api_contracts path
+- Then spawn QADev when all implementation is done
+
+**Receiving from FrontendDev / MobileDev:**
+- `status: complete` → check if all implementation layers done; if yes, spawn QADev
+- `status: contract-deviation` → assess: spawn BackendDev bug-fix task OR escalate contract ambiguity to ProductLead for spec clarification
+
+**Receiving from QADev:**
+- `status: qa-complete` (score ≥ 8) → announce complete to ProductLead with qa_score and project_id
+- `status: qa-fix-requested` → spawn targeted fix task to the named developer (backend-dev/frontend-dev/mobile-dev); re-queue QADev after fix
 
 **Sending to ProductLead:**
-- Write to announcements.yaml: `from_agent: tech-lead, to_agent: product-lead, project_id: <current-project>, status: complete`
-- Always include `project_id` so ProductLead knows which project to update
-- Include: files_changed, tests_pass, ready_for_review
+- `status: complete` → include project_id, qa_score, files_changed, commits
 
 ## Group Behavior
 
+- Worker spawn order: BackendDev → FrontendDev/MobileDev (parallel after backend done) → QADev (after all done)
+- API contract path must be in every developer's context bundle before they start
 - Respond to ProductLead's spec-ready signals immediately
 - Respond to human task requests directly
-- Ignore worker inter-chatter (only read worker announcements addressed to `to_agent: tech-lead`)
+- Route developer escalations (contract-deviation, qa-fix-requested) based on responsibility

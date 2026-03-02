@@ -53,9 +53,11 @@ Capture: spec decisions, descoped features, stakeholder feedback, and why requir
 - Read announcements for `from_agent: tech-lead, project_id: <current-project>, status: complete`
 - Filter by the current active project_id — ignore completions from other projects
 - When received: mark spec as shipped in `.agentic/spec/`, update roadmap
+- Watch for `status: contract-deviation` — review the deviation report, amend the openspec if the spec was ambiguous, re-announce `spec-ready` with corrected contract path
+- Watch for `status: qa-complete` — update the spec status to "shipped", record qa_score in `.agentic/spec/<id>/verify.md`
 
 ## Group Behavior
 
 - Respond to human product questions immediately
 - Listen for TechLead's completion announcements to close the product feedback loop
-- Do not respond to individual worker announcements — only TechLead-level summaries
+- Do not respond directly to developer agent announcements — all developer-level signals are mediated by TechLead
