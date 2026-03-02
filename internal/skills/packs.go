@@ -266,6 +266,27 @@ func NewPackRegistry() *PackRegistry {
 		},
 	})
 
+	r.Register(SkillPack{
+		Name:        "openclaw-coordinator",
+		Description: "OpenClaw TechLead and ProductLead agents for multi-project coordination with agnostic-agent CLI",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/openclaw-coordinator/SKILL.md", DstPath: "openclaw-coordinator/SKILL.md"},
+			{SrcPath: "packs/openclaw-coordinator/resources/MULTI-PROJECT-GUIDE.md", DstPath: "openclaw-coordinator/resources/MULTI-PROJECT-GUIDE.md"},
+			{SrcPath: "packs/openclaw-coordinator/resources/PROJECTS.md", DstPath: "openclaw-coordinator/resources/PROJECTS.md"},
+			{SrcPath: "packs/openclaw-coordinator/resources/OPENCLAW-README.md", DstPath: "openclaw-coordinator/resources/OPENCLAW-README.md"},
+			{SrcPath: "packs/openclaw-coordinator/resources/USER.md", DstPath: "openclaw-coordinator/resources/USER.md"},
+			{SrcPath: "packs/openclaw-coordinator/AGENT.md", DstPath: "openclaw-tech-lead.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/tech-lead-identity.md", DstPath: "openclaw-tech-lead.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/tech-lead-soul.md", DstPath: "openclaw-tech-lead-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/tech-lead-agents.md", DstPath: "openclaw-tech-lead-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/tech-lead-tools.md", DstPath: "openclaw-tech-lead-tools.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-identity.md", DstPath: "openclaw-product-lead.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-soul.md", DstPath: "openclaw-product-lead-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-agents.md", DstPath: "openclaw-product-lead-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-tools.md", DstPath: "openclaw-product-lead-tools.md", IsAgent: true},
+		},
+	})
+
 	return r
 }
 
