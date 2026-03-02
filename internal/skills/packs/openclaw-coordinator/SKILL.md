@@ -4,16 +4,24 @@ Activate TechLead and ProductLead agents to manage project work across multiple 
 
 ## Does exactly this
 
-Installs two Claude Code agents configured for autonomous project coordination:
+Installs six Claude Code agents configured for autonomous project coordination:
 
-- **TechLead** — Routes technical tasks, spawns builders, runs quality gates
+**Coordinator Agents:**
+- **TechLead** — Routes technical tasks, spawns developers, runs quality gates
 - **ProductLead** — Defines specs, creates requirements, coordinates with TechLead
 
-Both agents:
+**Developer Agents (spawned by TechLead):**
+- **BackendDev** — Implements APIs, databases, services, business logic
+- **FrontendDev** — Builds web UI components, visual design, accessibility
+- **MobileDev** — Implements Flutter apps, cross-platform mobile
+- **QADev** — Tests implementation, enforces 8/10 quality gate, scores all work
+
+All agents:
 - Manage work across multiple projects via `$COORDINATION_DIR` environment variable
 - Communicate through shared `announcements.yaml` file
 - Support project switching with automatic context loading
 - Filter announcements by `project_id` for multi-project awareness
+- Coordinate APIs via contract-driven development (ProductLead → TechLead → BackendDev → FrontendDev/MobileDev → QADev)
 
 ## When to use this
 
@@ -28,9 +36,13 @@ Both agents:
 agentic-agent skills install openclaw-coordinator --tool claude-code
 ```
 
-This installs:
-- TechLead agent to `.claude/agents/openclaw-tech-lead.md`
-- ProductLead agent to `.claude/agents/openclaw-product-lead.md`
+This installs six agents to `.claude/agents/`:
+- **TechLead** — `openclaw-tech-lead.md` (coordinator)
+- **ProductLead** — `openclaw-product-lead.md` (coordinator)
+- **BackendDev** — `openclaw-backend-dev.md` (worker)
+- **FrontendDev** — `openclaw-frontend-dev.md` (worker)
+- **MobileDev** — `openclaw-mobile-dev.md` (worker)
+- **QADev** — `openclaw-qa-dev.md` (quality gatekeeper)
 
 ## Setup
 
@@ -53,9 +65,9 @@ This installs:
 
 ## Key Files
 
-After installation, you'll have:
-- `.claude/agents/openclaw-tech-lead.md` — TechLead agent
-- `.claude/agents/openclaw-product-lead.md` — ProductLead agent
+After installation, you'll have six agents in `.claude/agents/`:
+- `openclaw-tech-lead.md`, `openclaw-product-lead.md` — Coordinators
+- `openclaw-backend-dev.md`, `openclaw-frontend-dev.md`, `openclaw-mobile-dev.md`, `openclaw-qa-dev.md` — Workers
 - `resources/` — Configuration templates and guides
 
 ## Configuration

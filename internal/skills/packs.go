@@ -284,6 +284,26 @@ func NewPackRegistry() *PackRegistry {
 			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-soul.md", DstPath: "openclaw-product-lead-soul.md", IsAgent: true},
 			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-agents.md", DstPath: "openclaw-product-lead-agents.md", IsAgent: true},
 			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-tools.md", DstPath: "openclaw-product-lead-tools.md", IsAgent: true},
+			// Backend Developer
+			{SrcPath: "packs/openclaw-coordinator/agents/backend-dev-identity.md", DstPath: "openclaw-backend-dev.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/backend-dev-soul.md", DstPath: "openclaw-backend-dev-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/backend-dev-agents.md", DstPath: "openclaw-backend-dev-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/backend-dev-tools.md", DstPath: "openclaw-backend-dev-tools.md", IsAgent: true},
+			// Frontend Developer
+			{SrcPath: "packs/openclaw-coordinator/agents/frontend-dev-identity.md", DstPath: "openclaw-frontend-dev.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/frontend-dev-soul.md", DstPath: "openclaw-frontend-dev-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/frontend-dev-agents.md", DstPath: "openclaw-frontend-dev-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/frontend-dev-tools.md", DstPath: "openclaw-frontend-dev-tools.md", IsAgent: true},
+			// Mobile Developer
+			{SrcPath: "packs/openclaw-coordinator/agents/mobile-dev-identity.md", DstPath: "openclaw-mobile-dev.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/mobile-dev-soul.md", DstPath: "openclaw-mobile-dev-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/mobile-dev-agents.md", DstPath: "openclaw-mobile-dev-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/mobile-dev-tools.md", DstPath: "openclaw-mobile-dev-tools.md", IsAgent: true},
+			// QA Developer
+			{SrcPath: "packs/openclaw-coordinator/agents/qa-dev-identity.md", DstPath: "openclaw-qa-dev.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/qa-dev-soul.md", DstPath: "openclaw-qa-dev-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/qa-dev-agents.md", DstPath: "openclaw-qa-dev-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/qa-dev-tools.md", DstPath: "openclaw-qa-dev-tools.md", IsAgent: true},
 		},
 	})
 
