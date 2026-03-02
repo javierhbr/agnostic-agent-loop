@@ -42,7 +42,10 @@ ProductLead (Product Coordinator)              TechLead (Dev Team Coordinator)
 2. **Validator** checks feasibility
 3. **Builder** codes the app (Swift + SwiftUI)
 4. **Reviewer** verifies code quality
-5. **QC Agent** runs automated checks (must score 8+/10)
+5. **QADev** runs automated checks with 10-point rubric (must score **≥8/10 to pass**)
+   - AC Coverage, Unit Tests, Integration, E2E/Visual, Edge Cases, Performance, Security, Accessibility, Regression, Documentation
+   - Score <8 → requests fixes back to Builder
+   - Score ≥8 → approves and passes to next stage
 6. **Packager** generates App Store listing
 7. **Onboarding Agent** creates user education screens
 8. **Promo Video Agent** generates demo video
@@ -888,6 +891,55 @@ done
 4. **Activate TechLead:** Have him build that spec, verify announcements include project_id
 5. **Add second project:** Repeat for another app, watch both agents coordinate
 6. **Scale to N projects:** Let both agents manage 3+ apps in parallel
+
+---
+
+## Developer Agents (from openclaw-coordinator skill pack)
+
+For full implementation workflows, the factory can use the complete developer agent ecosystem:
+
+### The 6-Agent System
+
+**Coordinators:**
+- **TechLead** — Orchestrates work, spawns developers by layer, enforces QA gates
+- **ProductLead** — Defines specs, owns API contracts
+
+**Developer Workers:**
+- **BackendDev** — API/database implementation
+- **FrontendDev** — Web UI with visual testing (agent-browser)
+- **MobileDev** — Flutter cross-platform (Dart/Flutter MCP server)
+- **QADev** — Quality gatekeeper with 10-point scoring rubric
+
+### Installation
+
+```bash
+# Install the complete openclaw-coordinator pack
+agentic-agent skills install openclaw-coordinator --tool claude-code
+
+# All 6 agents install to .claude/agents/
+# - openclaw-tech-lead.md, openclaw-product-lead.md (coordinators)
+# - openclaw-backend-dev.md, openclaw-frontend-dev.md, openclaw-mobile-dev.md, openclaw-qa-dev.md (workers)
+```
+
+### QA Scoring Rubric (used by QADev)
+
+All code must score ≥8/10 before shipping:
+
+| # | Criterion | What QADev checks |
+|----|-----------|------------------|
+| 1 | AC Coverage | All acceptance criteria have tests |
+| 2 | Unit Tests | ≥80% line coverage |
+| 3 | Integration | API contracts match spec, no deviations |
+| 4 | E2E/Visual | Happy-path E2E test with screenshots |
+| 5 | Edge Cases | ≥3 error conditions tested |
+| 6 | Performance | No regression in response time/bundle |
+| 7 | Security | Auth, validation, injection prevention |
+| 8 | Accessibility | ARIA labels, keyboard nav, contrast |
+| 9 | Regression | All existing tests still pass |
+| 10 | Documentation | Test intent clearly explained |
+
+**Score <8:** QADev requests fixes back to developer (builder, frontend, mobile)
+**Score ≥8:** QADev approves and TechLead announces complete to ProductLead
 
 ---
 
