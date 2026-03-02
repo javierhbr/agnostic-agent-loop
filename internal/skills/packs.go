@@ -37,6 +37,20 @@ var ToolGlobalSkillDir = map[string]string{
 	"opencode":    "~/.config/opencode/skills",
 }
 
+// ToolAgentDir maps agent tool names to their project-level agent directory.
+// Only Claude Code and OpenCode have native agent support (subagents / AGENTS.md).
+// Other tools will use the skill directory as fallback.
+var ToolAgentDir = map[string]string{
+	"claude-code": ".claude/agents",
+	"opencode":    ".agents",
+}
+
+// ToolGlobalAgentDir maps agent tool names to their global/user-level agent directory.
+var ToolGlobalAgentDir = map[string]string{
+	"claude-code": "~/.claude/agents",
+	"opencode":    "~/.agents",
+}
+
 // SupportedTools returns the list of supported tool names in sorted order.
 func SupportedTools() []string {
 	tools := make([]string, 0, len(ToolSkillDir))
@@ -51,6 +65,7 @@ func SupportedTools() []string {
 type SkillPackFile struct {
 	SrcPath string // path within embedded FS (e.g., "packs/tdd/SKILL.md")
 	DstPath string // relative to tool skill dir (e.g., "tdd/SKILL.md")
+	IsAgent bool   // if true, install to ToolAgentDir instead of ToolSkillDir (Claude Code agents only)
 }
 
 // SkillPack is a named bundle of related skill files, tool-agnostic.
@@ -63,6 +78,7 @@ type SkillPack struct {
 // MandatoryPacks lists skill packs that must be installed for every agent.
 // These are auto-installed during `skills ensure` and validated on startup.
 var MandatoryPacks = []string{
+	"agentic-helper",
 	"atdd",
 	"code-simplification",
 	"context-manager",
@@ -70,6 +86,7 @@ var MandatoryPacks = []string{
 	"openspec",
 	"product-wizard",
 	"run-with-ralph",
+	"tier-enforcer",
 }
 
 // PackRegistry maintains a map of available skill packs.
@@ -82,6 +99,15 @@ func NewPackRegistry() *PackRegistry {
 	r := &PackRegistry{
 		packs: make(map[string]SkillPack),
 	}
+
+	r.Register(SkillPack{
+		Name:        "agentic-helper",
+		Description: "Agentic Agent CLI guide and executor. Teaches workflows, runs commands, automates context generation",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/agentic-helper/AGENT.md", DstPath: "agentic-helper.md", IsAgent: true},
+			{SrcPath: "packs/agentic-helper/SKILL.md", DstPath: "agentic-helper/SKILL.md"},
+		},
+	})
 
 	r.Register(SkillPack{
 		Name:        "atdd",
@@ -176,6 +202,108 @@ func NewPackRegistry() *PackRegistry {
 		Description: "Execute openspec tasks using Ralph Wiggum iterative loops",
 		Files: []SkillPackFile{
 			{SrcPath: "packs/run-with-ralph/SKILL.md", DstPath: "run-with-ralph/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "superpowers-bridge",
+		Description: "Integration guide for using Superpowers plugin alongside CLI and SDD skills",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/superpowers-bridge/SKILL.md", DstPath: "superpowers-bridge/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "tier-enforcer",
+		Description: "Audit, create, or fix skill files for 3-tier layered context model compliance",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/tier-enforcer/SKILL.md", DstPath: "tier-enforcer/SKILL.md"},
+			{SrcPath: "packs/tier-enforcer/resources/tier-rules.md", DstPath: "tier-enforcer/resources/tier-rules.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "sdd",
+		Description: "Spec-Driven Development v3.0 with four roles, five gates, and complete workflow automation",
+		Files: []SkillPackFile{
+			// Original SDD skills
+			{SrcPath: "packs/sdd/platform-spec/SKILL.md", DstPath: "sdd/platform-spec/SKILL.md"},
+			{SrcPath: "packs/sdd/component-spec/SKILL.md", DstPath: "sdd/component-spec/SKILL.md"},
+			{SrcPath: "packs/sdd/gate-check/SKILL.md", DstPath: "sdd/gate-check/SKILL.md"},
+			{SrcPath: "packs/sdd/adr/SKILL.md", DstPath: "sdd/adr/SKILL.md"},
+			{SrcPath: "packs/sdd/hotfix/SKILL.md", DstPath: "sdd/hotfix/SKILL.md"},
+			// Four role-based skills
+			{SrcPath: "packs/sdd/analyst/SKILL.md", DstPath: "sdd/analyst/SKILL.md"},
+			{SrcPath: "packs/sdd/architect/SKILL.md", DstPath: "sdd/architect/SKILL.md"},
+			{SrcPath: "packs/sdd/developer/SKILL.md", DstPath: "sdd/developer/SKILL.md"},
+			{SrcPath: "packs/sdd/verifier/SKILL.md", DstPath: "sdd/verifier/SKILL.md"},
+			// Product/PM and platform skills
+			{SrcPath: "packs/sdd/workflow-router/SKILL.md", DstPath: "sdd/workflow-router/SKILL.md"},
+			{SrcPath: "packs/sdd/initiative-definition/SKILL.md", DstPath: "sdd/initiative-definition/SKILL.md"},
+			{SrcPath: "packs/sdd/risk-assessment/SKILL.md", DstPath: "sdd/risk-assessment/SKILL.md"},
+			{SrcPath: "packs/sdd/stakeholder-communication/SKILL.md", DstPath: "sdd/stakeholder-communication/SKILL.md"},
+			{SrcPath: "packs/sdd/platform-constitution/SKILL.md", DstPath: "sdd/platform-constitution/SKILL.md"},
+			// Complete workflow guide (new)
+			{SrcPath: "packs/sdd/process-guide/SKILL.md", DstPath: "sdd/process-guide/SKILL.md"},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "openclaw",
+		Description: "OpenClaw autonomous agent factory pattern — orchestrator, worker, researcher, reviewer roles with agnostic-agent CLI",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/openclaw/SKILL.md", DstPath: "openclaw/SKILL.md"},
+			{SrcPath: "packs/openclaw/resources/orchestrator.md", DstPath: "openclaw/resources/orchestrator.md"},
+			{SrcPath: "packs/openclaw/resources/worker.md", DstPath: "openclaw/resources/worker.md"},
+			{SrcPath: "packs/openclaw/resources/coordination.md", DstPath: "openclaw/resources/coordination.md"},
+			{SrcPath: "packs/openclaw/resources/researcher.md", DstPath: "openclaw/resources/researcher.md"},
+			{SrcPath: "packs/openclaw/resources/reviewer.md", DstPath: "openclaw/resources/reviewer.md"},
+			{SrcPath: "packs/openclaw/AGENT.md", DstPath: "openclaw-orchestrator.md", IsAgent: true},
+			{SrcPath: "packs/openclaw/agents/orchestrator.md", DstPath: "openclaw-orchestrator.md", IsAgent: true},
+			{SrcPath: "packs/openclaw/agents/worker.md", DstPath: "openclaw-worker.md", IsAgent: true},
+			{SrcPath: "packs/openclaw/agents/researcher.md", DstPath: "openclaw-researcher.md", IsAgent: true},
+			{SrcPath: "packs/openclaw/agents/reviewer.md", DstPath: "openclaw-reviewer.md", IsAgent: true},
+		},
+	})
+
+	r.Register(SkillPack{
+		Name:        "openclaw-coordinator",
+		Description: "OpenClaw TechLead and ProductLead agents for multi-project coordination with agnostic-agent CLI",
+		Files: []SkillPackFile{
+			{SrcPath: "packs/openclaw-coordinator/SKILL.md", DstPath: "openclaw-coordinator/SKILL.md"},
+			{SrcPath: "packs/openclaw-coordinator/resources/MULTI-PROJECT-GUIDE.md", DstPath: "openclaw-coordinator/resources/MULTI-PROJECT-GUIDE.md"},
+			{SrcPath: "packs/openclaw-coordinator/resources/PROJECTS.md", DstPath: "openclaw-coordinator/resources/PROJECTS.md"},
+			{SrcPath: "packs/openclaw-coordinator/resources/OPENCLAW-README.md", DstPath: "openclaw-coordinator/resources/OPENCLAW-README.md"},
+			{SrcPath: "packs/openclaw-coordinator/resources/USER.md", DstPath: "openclaw-coordinator/resources/USER.md"},
+			{SrcPath: "packs/openclaw-coordinator/AGENT.md", DstPath: "openclaw-tech-lead.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/tech-lead-identity.md", DstPath: "openclaw-tech-lead.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/tech-lead-soul.md", DstPath: "openclaw-tech-lead-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/tech-lead-agents.md", DstPath: "openclaw-tech-lead-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/tech-lead-tools.md", DstPath: "openclaw-tech-lead-tools.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-identity.md", DstPath: "openclaw-product-lead.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-soul.md", DstPath: "openclaw-product-lead-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-agents.md", DstPath: "openclaw-product-lead-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/product-lead-tools.md", DstPath: "openclaw-product-lead-tools.md", IsAgent: true},
+			// Backend Developer
+			{SrcPath: "packs/openclaw-coordinator/agents/backend-dev-identity.md", DstPath: "openclaw-backend-dev.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/backend-dev-soul.md", DstPath: "openclaw-backend-dev-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/backend-dev-agents.md", DstPath: "openclaw-backend-dev-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/backend-dev-tools.md", DstPath: "openclaw-backend-dev-tools.md", IsAgent: true},
+			// Frontend Developer
+			{SrcPath: "packs/openclaw-coordinator/agents/frontend-dev-identity.md", DstPath: "openclaw-frontend-dev.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/frontend-dev-soul.md", DstPath: "openclaw-frontend-dev-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/frontend-dev-agents.md", DstPath: "openclaw-frontend-dev-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/frontend-dev-tools.md", DstPath: "openclaw-frontend-dev-tools.md", IsAgent: true},
+			// Mobile Developer
+			{SrcPath: "packs/openclaw-coordinator/agents/mobile-dev-identity.md", DstPath: "openclaw-mobile-dev.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/mobile-dev-soul.md", DstPath: "openclaw-mobile-dev-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/mobile-dev-agents.md", DstPath: "openclaw-mobile-dev-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/mobile-dev-tools.md", DstPath: "openclaw-mobile-dev-tools.md", IsAgent: true},
+			// QA Developer
+			{SrcPath: "packs/openclaw-coordinator/agents/qa-dev-identity.md", DstPath: "openclaw-qa-dev.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/qa-dev-soul.md", DstPath: "openclaw-qa-dev-soul.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/qa-dev-agents.md", DstPath: "openclaw-qa-dev-agents.md", IsAgent: true},
+			{SrcPath: "packs/openclaw-coordinator/agents/qa-dev-tools.md", DstPath: "openclaw-qa-dev-tools.md", IsAgent: true},
 		},
 	})
 

@@ -6,6 +6,21 @@ import (
 	"testing"
 )
 
+func TestMain(m *testing.M) {
+	// Clean environment noise that can affect detection (e.g., CODEX_SANDBOX in CI)
+	os.Unsetenv("AGENTIC_AGENT")
+	os.Unsetenv("CLAUDE")
+	os.Unsetenv("CLAUDE_CODE")
+	os.Unsetenv("CURSOR_SESSION")
+	os.Unsetenv("GEMINI_CLI")
+	os.Unsetenv("WINDSURF_SESSION")
+	os.Unsetenv("CODEX_SANDBOX")
+	os.Unsetenv("GITHUB_COPILOT")
+	os.Unsetenv("OPENCODE")
+
+	os.Exit(m.Run())
+}
+
 // ---------------------------------------------------------------------------
 // DetectAgent — Flag detection
 // ---------------------------------------------------------------------------
@@ -354,8 +369,8 @@ func TestDetectAgent_Unknown(t *testing.T) {
 func TestDetectAgent_EmptyFlagAndNoEnvOrFS(t *testing.T) {
 	dir := t.TempDir()
 	// ensure no agent env vars are set
-	for envVar := range envMapping {
-		t.Setenv(envVar, "")
+	for _, entry := range envOrder {
+		t.Setenv(entry.Var, "")
 	}
 
 	agent := DetectAgent("", dir)

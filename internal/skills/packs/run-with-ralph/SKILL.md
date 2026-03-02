@@ -90,11 +90,26 @@ You are implementing TASK-ID: TASK TITLE.
 4. If ALL criteria pass, output <promise>TASK COMPLETE</promise>
 ```
 
-### 5. Launch ralph
+### 5. Launch ralph (with optional Superpowers)
 
+**Recommended**: Use **superpowers:executing-plans** with built-in checkpoints and code review:
+```
+/executing-plans
+```
+Then paste the task ID. Superpowers will handle iteration and verification automatically.
+
+**Fallback**: Use in-house Ralph Wiggum loop:
 ```
 /ralph-loop "YOUR PROMPT" --max-iterations 10 --completion-promise "TASK COMPLETE"
 ```
+
+**If debugging needed during iteration:**
+Use **superpowers:systematic-debugging** when Ralph encounters errors:
+- 4-phase protocol: identify → isolate → narrow → fix
+- Tests after fix
+- Documents insights
+
+Or use in-house debugging skill.
 
 ### 6. Complete the task
 

@@ -72,6 +72,7 @@ func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
 		name      string
 		fileCount int
 	}{
+		{"agentic-helper", 2},
 		{"atdd", 1},
 		{"tdd", 3},
 		{"api-docs", 1},
@@ -80,9 +81,13 @@ func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
 		{"dev-plans", 1},
 		{"diataxis", 3},
 		{"extract-wisdom", 1},
+		{"openclaw", 11},
 		{"openspec", 1},
 		{"product-wizard", 5},
 		{"run-with-ralph", 1},
+		{"sdd", 15},
+		{"superpowers-bridge", 1},
+		{"tier-enforcer", 2},
 	}
 
 	packs := r.GetAll()
@@ -131,5 +136,80 @@ func TestSupportedTools(t *testing.T) {
 	tools := SupportedTools()
 	if len(tools) != len(ToolSkillDir) {
 		t.Errorf("SupportedTools returned %d tools, expected %d", len(tools), len(ToolSkillDir))
+	}
+}
+
+func TestAgenticHelperPack_HasIsAgentFlag(t *testing.T) {
+	r := NewPackRegistry()
+	pack, err := r.GetPack("agentic-helper")
+	if err != nil {
+		t.Fatalf("expected agentic-helper pack to exist: %v", err)
+	}
+
+	// Find AGENT.md file entry and verify IsAgent flag
+	foundAgent := false
+	for _, f := range pack.Files {
+		if f.DstPath == "agentic-helper.md" {
+			foundAgent = true
+			if !f.IsAgent {
+				t.Errorf("expected IsAgent=true for agentic-helper.md, got false")
+			}
+		}
+	}
+	if !foundAgent {
+		t.Errorf("agentic-helper pack missing agentic-helper.md file")
+	}
+
+	// Find SKILL.md file entry and verify IsAgent is false
+	foundSkill := false
+	for _, f := range pack.Files {
+		if f.DstPath == "agentic-helper/SKILL.md" {
+			foundSkill = true
+			if f.IsAgent {
+				t.Errorf("expected IsAgent=false for SKILL.md, got true")
+			}
+		}
+	}
+	if !foundSkill {
+		t.Errorf("agentic-helper pack missing SKILL.md file")
+	}
+}
+
+func TestToolAgentDir_ClaudeCodePresent(t *testing.T) {
+	if _, ok := ToolAgentDir["claude-code"]; !ok {
+		t.Errorf("ToolAgentDir missing claude-code entry")
+	}
+
+	expected := ".claude/agents"
+	if got := ToolAgentDir["claude-code"]; got != expected {
+		t.Errorf("ToolAgentDir[claude-code] = %q, want %q", got, expected)
+	}
+
+	if _, ok := ToolGlobalAgentDir["claude-code"]; !ok {
+		t.Errorf("ToolGlobalAgentDir missing claude-code entry")
+	}
+
+	expectedGlobal := "~/.claude/agents"
+	if got := ToolGlobalAgentDir["claude-code"]; got != expectedGlobal {
+		t.Errorf("ToolGlobalAgentDir[claude-code] = %q, want %q", got, expectedGlobal)
+	}
+}
+
+func TestMandatoryPacks_IncludesAgenticHelper(t *testing.T) {
+	found := false
+	for _, packName := range MandatoryPacks {
+		if packName == "agentic-helper" {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		t.Errorf("agentic-helper not found in MandatoryPacks: %v", MandatoryPacks)
+	}
+
+	// Verify it's the first one (highest priority)
+	if len(MandatoryPacks) > 0 && MandatoryPacks[0] != "agentic-helper" {
+		t.Logf("Warning: agentic-helper is not the first mandatory pack. Current order: %v", MandatoryPacks)
 	}
 }

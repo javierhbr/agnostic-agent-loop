@@ -18,6 +18,12 @@ var skillsCmd = &cobra.Command{
 	Use:   "skills",
 	Short: "Manage agent skills",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Handle -i as shortcut for --interactive even if passed as argument
+		if len(args) > 0 && args[0] == "-i" {
+			cmd.Flags().Set("interactive", "true")
+			args = args[1:] // Remove -i from args
+		}
+
 		if helpers.ShouldUseInteractiveMode(cmd) {
 			runSkillsSubmenu()
 			return
@@ -455,6 +461,14 @@ Global install:
 List available packs:
   agentic-agent skills install --list`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Handle -i as shortcut for --interactive even if passed as argument
+		forceInteractive := false
+		if len(args) > 0 && args[0] == "-i" {
+			cmd.Flags().Set("interactive", "true")
+			forceInteractive = true
+			args = args[1:] // Remove -i from args
+		}
+
 		tool, _ := cmd.Flags().GetString("tool")
 		global, _ := cmd.Flags().GetBool("global")
 		listFlag, _ := cmd.Flags().GetBool("list")
@@ -464,7 +478,7 @@ List available packs:
 		// List mode
 		if listFlag {
 			packs := installer.ListPacks()
-			if helpers.ShouldUseInteractiveMode(cmd) {
+			if forceInteractive || helpers.ShouldUseInteractiveMode(cmd) {
 				var b strings.Builder
 				b.WriteString(styles.TitleStyle.Render("Available Skill Packs") + "\n\n")
 				for _, p := range packs {
@@ -485,7 +499,7 @@ List available packs:
 		}
 
 		// Interactive mode
-		if helpers.ShouldUseInteractiveMode(cmd) && len(args) == 0 && tool == "" {
+		if (forceInteractive || helpers.ShouldUseInteractiveMode(cmd)) && len(args) == 0 && tool == "" {
 			packs := installer.ListPacks()
 			options := []components.SelectOption{}
 			for _, p := range packs {
@@ -503,15 +517,24 @@ List available packs:
 			}
 
 			p := tea.NewProgram(model, tea.WithAltScreen())
-			if _, err := p.Run(); err != nil {
+			finalModel, err := p.Run()
+			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				os.Exit(1)
 			}
-			if model.done {
-				if model.success {
+
+			// Cast the returned model back to skillsInstallModel
+			installModel, ok := finalModel.(skillsInstallModel)
+			if !ok {
+				fmt.Println("Error: unexpected model type")
+				os.Exit(1)
+			}
+
+			if installModel.done {
+				if installModel.success {
 					var b strings.Builder
 					b.WriteString(styles.TitleStyle.Render("Skill Pack Installed") + "\n\n")
-					for _, r := range model.results {
+					for _, r := range installModel.results {
 						b.WriteString(styles.SuccessStyle.Render(fmt.Sprintf("%s %s", styles.IconCheckmark, r.Tool)) + "\n")
 						for _, f := range r.FilesWritten {
 							b.WriteString(styles.MutedStyle.Render(fmt.Sprintf("  %s %s", styles.IconBullet, f)) + "\n")
@@ -519,7 +542,7 @@ List available packs:
 					}
 					fmt.Println(styles.ContainerStyle.Render(b.String()))
 				} else {
-					fmt.Println(styles.RenderError(model.message))
+					fmt.Println(styles.RenderError(installModel.message))
 				}
 			}
 			return
