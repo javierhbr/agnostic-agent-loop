@@ -16,6 +16,13 @@ type TemplateData struct {
 	SourceFile   string
 	Requirements string
 	TaskTitle    string // used by task-detail.md.tmpl
+
+	Implements          string
+	ContextPack         string
+	ContractsReferenced string
+	BlockedBy           string
+	ChangeType          string
+	Status              string
 }
 
 // renderTemplate renders an embedded template by name.

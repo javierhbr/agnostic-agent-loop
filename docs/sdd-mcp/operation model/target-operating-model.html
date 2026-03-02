@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Target Operating Model — SDD + MCP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #f4f1ec;
+  --surface:    #faf8f4;
+  --surface2:   #edeae3;
+  --white:      #ffffff;
+  --border:     #d6d0c6;
+  --border2:    #c4bdb2;
+  --ink:        #1a1c2e;
+  --ink2:       #2e3150;
+  --ink3:       #4a4f6a;
+  --ink-faint:  #888ea8;
+  --ink-ghost:  #bbbfce;
+  --amber:      #c47d0e;
+  --amber-dim:  rgba(196,125,14,0.1);
+  --amber-glow: rgba(196,125,14,0.12);
+  --amber-subtle: rgba(196,125,14,0.06);
+  --teal:       #1a7a6d;
+  --teal-dim:   rgba(26,122,109,0.12);
+  --blue:       #2d5fcc;
+  --blue-dim:   rgba(45,95,204,0.1);
+  --red:        #b93030;
+  --red-dim:    rgba(185,48,48,0.08);
+  --green:      #2a7d4f;
+  --green-dim:  rgba(42,125,79,0.1);
+  /* keep rust as alias for amber for light mode */
+  --rust:       #c47d0e;
+  --rust-dim:   rgba(196,125,14,0.1);
+  --rust-mid:   rgba(196,125,14,0.16);
+  --navy:       #1e2d6b;
+  --navy-dim:   rgba(30,45,107,0.08);
+  --shadow-sm:  0 1px 4px rgba(26,28,46,0.08);
+  --shadow-md:  0 4px 18px rgba(26,28,46,0.1);
+  --mono:       'Space Mono', monospace;
+  --display:    'Syne', sans-serif;
+  --body:       'DM Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.5;
+}
+
+/* ── NAV ─────────────────────────────────────── */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  background: rgba(244,241,236,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2.5rem; height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+.nav-brand { font-family: var(--mono); font-size: 11px; color: var(--rust); letter-spacing: .14em; text-transform: uppercase; }
+.nav-links { display: flex; list-style: none; }
+.nav-links a {
+  font-family: var(--mono); font-size: 10px; color: var(--ink3);
+  text-decoration: none; letter-spacing: .1em; text-transform: uppercase;
+  padding: 0 .9rem; height: 52px; display: flex; align-items: center;
+  border-left: 1px solid var(--border); transition: color .2s, background .2s;
+}
+.nav-links a:hover { color: var(--rust); background: var(--rust-dim); }
+
+/* ── HERO ─────────────────────────────────────── */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; padding: 8rem 5rem 5rem;
+  position: relative; overflow: hidden;
+  background: var(--surface); border-bottom: 2px solid var(--border);
+}
+.hero-rule { position: absolute; top: 0; left:0; right:0; height: 4px; background: linear-gradient(90deg, var(--rust), var(--amber), var(--rust)); }
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px; opacity: .45;
+  mask-image: radial-gradient(ellipse 65% 80% at 65% 50%, black 20%, transparent 100%);
+}
+.hero-inner { position: relative; z-index: 1; max-width: 840px; }
+.hero-eyebrow {
+  font-family: var(--mono); font-size: 11px; color: var(--rust);
+  letter-spacing: .2em; text-transform: uppercase; margin-bottom: 1.75rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.hero-eyebrow::before { content:''; display:block; width:32px; height:2px; background: var(--rust); }
+h1 {
+  font-family: var(--display); font-size: clamp(2.8rem,5.5vw,5rem);
+  font-weight: 800; line-height: 1.06; letter-spacing: -.02em; margin-bottom: 1.5rem;
+}
+h1 em { font-style: italic; color: var(--rust); }
+.hero-sub { font-size: 16.5px; color: var(--ink3); max-width: 540px; margin-bottom: 2.75rem; line-height: 1.75; }
+.hero-quote {
+  display: inline-flex; align-items: flex-start; gap: 1rem;
+  background: var(--bg); border: 1px solid var(--border2); border-left: 3px solid var(--rust);
+  padding: 1.1rem 1.5rem; border-radius: 0 6px 6px 0; max-width: 640px; box-shadow: var(--shadow-sm);
+}
+.hero-quote p { font-family: var(--mono); font-size: 12.5px; color: var(--ink); line-height: 1.65; font-style: italic; }
+.hero-version { position: absolute; bottom: 2.5rem; right: 4rem; font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); text-align: right; line-height: 1.6; }
+
+/* ── MAIN ─────────────────────────────────────── */
+main { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 2.5rem 8rem; }
+
+/* ── SECTION ──────────────────────────────────── */
+.section { padding: 5rem 0; border-top: 1px solid var(--border); }
+.sec-hd { display: flex; align-items: baseline; gap: 1.25rem; margin-bottom: .6rem; }
+.sec-num { font-family: var(--mono); font-size: 11px; color: var(--rust); letter-spacing: .16em; flex-shrink: 0; }
+.sec-title { font-family: var(--display); font-size: clamp(1.6rem,2.6vw,2.3rem); font-weight: 700; letter-spacing: -.02em; }
+.sec-desc { color: var(--ink3); font-size: 15px; max-width: 620px; margin-bottom: 2.25rem; font-style: italic; }
+
+/* ── VS CARDS ─────────────────────────────────── */
+.vs-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1.5rem; align-items: center; margin-top: 2rem; }
+.vs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.75rem; box-shadow: var(--shadow-sm); }
+.vs-card.bad  { border-color: rgba(185,48,48,.2); background: #fdf8f8; }
+.vs-card.good { border-color: rgba(42,125,79,.25); background: #f6fbf8; }
+.vs-label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+.bad-lbl  { color: var(--red); }
+.good-lbl { color: var(--green); }
+.vs-items { list-style: none; }
+.vs-items li { font-size: 13.5px; color: var(--ink3); padding: .35rem 0; display: flex; align-items: flex-start; gap: .6rem; border-bottom: 1px solid var(--border); line-height: 1.5; }
+.vs-items li:last-child { border-bottom: none; }
+.vs-items li::before { content:'—'; color: var(--ink-ghost); flex-shrink: 0; }
+.vs-items.g li::before { content:'✓'; color: var(--green); font-weight: 700; }
+.vs-div { font-family: var(--display); font-size: 1.4rem; font-weight: 700; color: var(--rust); text-align: center; font-style: italic; }
+
+/* ── TOOLS ────────────────────────────────────── */
+.tools-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+.tool-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 2rem; box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+.tool-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.tool-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.tc-rust::before { background: var(--rust); }
+.tc-teal::before { background: var(--teal); }
+.tc-navy::before { background: var(--navy); }
+.badge {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  padding: .28rem .75rem; border-radius: 4px; margin-bottom: 1.2rem; border: 1px solid;
+}
+.b-rust { background: var(--rust-dim); color: var(--rust); border-color: rgba(192,68,42,.25); }
+.b-teal { background: var(--teal-dim); color: var(--teal); border-color: rgba(26,125,110,.25); }
+.b-navy { background: var(--navy-dim); color: var(--navy); border-color: rgba(30,45,107,.2); }
+.tool-card h3 { font-family: var(--display); font-size: 1.25rem; font-weight: 700; margin-bottom: .25rem; }
+.tool-layer { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-bottom: .9rem; letter-spacing: .04em; }
+.tool-desc { font-size: 13.5px; color: var(--ink3); margin-bottom: 1.2rem; line-height: 1.65; font-style: italic; }
+.tool-list { list-style: none; display: flex; flex-direction: column; gap: .45rem; }
+.tool-list li { font-size: 13px; color: var(--ink3); display: flex; align-items: flex-start; gap: .6rem; line-height: 1.5; }
+.dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+.d-rust { background: var(--rust); }
+.d-teal { background: var(--teal); }
+.d-navy { background: var(--navy); }
+
+/* ── LAYERS ───────────────────────────────────── */
+.layers { display: flex; flex-direction: column; gap: 3px; }
+.layer { display: grid; grid-template-columns: 190px 1fr; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: box-shadow .2s; }
+.layer:hover { box-shadow: var(--shadow-md); }
+.l-label { display: flex; flex-direction: column; justify-content: center; padding: 1.2rem 1.5rem; font-family: var(--mono); font-size: 11px; letter-spacing: .07em; }
+.l-label strong { font-size: 13px; margin-bottom: .2rem; display: block; }
+.l-label span { font-size: 10px; opacity: .6; }
+.l-body { padding: 1.1rem 1.5rem; display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; }
+.pill { font-family: var(--mono); font-size: 11px; padding: .22rem .72rem; border-radius: 4px; border: 1px solid; }
+.pk { background: rgba(192,68,42,.06); color: var(--rust); border-color: rgba(192,68,42,.2); }
+.ps { background: rgba(30,45,107,.06); color: var(--navy); border-color: rgba(30,45,107,.18); }
+.pc { background: rgba(26,125,110,.06); color: var(--teal); border-color: rgba(26,125,110,.18); }
+.po { background: rgba(42,125,79,.06); color: var(--green); border-color: rgba(42,125,79,.18); }
+.bg-k { background: #fff8f5; }
+.bg-s { background: #f5f7ff; }
+.bg-c { background: #f4fbf9; }
+.bg-o { background: #f5fbf7; }
+.l-arr { text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 11.5px; padding: .28rem 0; letter-spacing: .08em; }
+
+/* ── REPOS ────────────────────────────────────── */
+.repos-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+.repo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow .2s; }
+.repo-card:hover { box-shadow: var(--shadow-md); }
+.repo-hd { padding: 1.2rem 1.5rem 1rem; display: flex; align-items: center; gap: .75rem; border-bottom: 1px solid var(--border); background: var(--bg); }
+.repo-ico { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; border: 1px solid; }
+.ico-r { background: var(--rust-dim); border-color: rgba(192,68,42,.2); }
+.ico-t { background: var(--teal-dim); border-color: rgba(26,125,110,.2); }
+.ico-n { background: var(--navy-dim); border-color: rgba(30,45,107,.15); }
+.repo-title { font-family: var(--display); font-size: 14.5px; font-weight: 700; }
+.repo-sub { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: .06em; }
+.repo-tree { padding: 1.25rem 1.5rem; font-family: var(--mono); font-size: 11.5px; line-height: 1.9; color: var(--ink3); }
+.tc { color: var(--teal); }
+.ac { color: var(--rust); opacity: .7; font-style: italic; }
+
+/* ── LIFECYCLE ────────────────────────────────── */
+.flow { display: flex; flex-direction: column; }
+.flow-step { display: grid; grid-template-columns: 230px 36px 1fr; align-items: stretch; min-height: 100px; }
+.flow-role { display: flex; align-items: flex-start; justify-content: flex-end; padding: .9rem 1rem .9rem 0; }
+.role-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: .7rem .9rem; text-align: right;
+  box-shadow: var(--shadow-sm); width: 100%;
+  border-right: 3px solid var(--border2);
+}
+.role-card.rc-pm     { border-right-color: var(--rust); }
+.role-card.rc-arch   { border-right-color: var(--navy); }
+.role-card.rc-mcp    { border-right-color: var(--teal); }
+.role-card.rc-all    { border-right-color: var(--amber); }
+.role-card.rc-gate   { border-right-color: var(--red); }
+.role-card.rc-comp   { border-right-color: var(--teal); }
+.role-card.rc-eng    { border-right-color: var(--blue); }
+.role-card.rc-plat   { border-right-color: var(--navy); }
+.rc-name { font-family: var(--display); font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: .2rem; line-height: 1.3; }
+.rc-owns { font-family: var(--mono); font-size: 9.5px; color: var(--ink-faint); letter-spacing: .05em; line-height: 1.4; margin-bottom: .18rem; }
+.rc-owns strong { color: var(--ink3); font-weight: 500; }
+.rc-acct { font-family: var(--mono); font-size: 9px; color: var(--ink-ghost); letter-spacing: .04em; font-style: italic; line-height: 1.4; }
+.flow-conn { display: flex; flex-direction: column; align-items: center; }
+.f-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid; background: var(--surface); flex-shrink: 0; margin-top: 20px; position: relative; z-index: 1; }
+.f-line { width: 2px; flex: 1; margin-top: -1px; background: var(--border2); }
+.flow-step:last-child .f-line { display: none; }
+.flow-body { padding: .9rem 0 .9rem 1.25rem; display: flex; flex-direction: column; justify-content: center; gap: .55rem; }
+.flow-title { font-family: var(--display); font-size: 15px; font-weight: 700; margin-bottom: 0; }
+.flow-desc { font-size: 13px; color: var(--ink3); line-height: 1.6; }
+
+/* MCP interaction block */
+.mcp-block {
+  background: rgba(26,122,109,0.05);
+  border: 1px solid rgba(26,122,109,0.2);
+  border-left: 3px solid var(--teal);
+  border-radius: 0 6px 6px 0;
+  padding: .65rem .9rem;
+  display: flex; flex-direction: column; gap: .35rem;
+}
+.mcp-block-header {
+  display: flex; align-items: center; gap: .5rem;
+  font-family: var(--mono); font-size: 9.5px; color: var(--teal);
+  letter-spacing: .1em; text-transform: uppercase; font-weight: 700;
+}
+.mcp-arrow { font-size: 10px; }
+.mcp-rows { display: flex; flex-direction: column; gap: .25rem; }
+.mcp-row {
+  display: grid; grid-template-columns: 130px 1fr;
+  gap: .5rem; align-items: baseline;
+}
+.mcp-row-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink-faint); letter-spacing: .05em;
+  display: flex; align-items: center; gap: .3rem;
+}
+.mcp-tag {
+  display: inline-block; font-family: var(--mono); font-size: 9px;
+  padding: .08rem .4rem; border-radius: 3px; border: 1px solid;
+  letter-spacing: .06em; text-transform: uppercase; flex-shrink: 0;
+}
+.mt-platform { background: rgba(192,125,14,0.09); color: var(--amber); border-color: rgba(192,125,14,0.25); }
+.mt-domain   { background: rgba(26,122,109,0.09); color: var(--teal); border-color: rgba(26,122,109,0.25); }
+.mt-integ    { background: rgba(30,45,107,0.09);  color: var(--navy); border-color: rgba(30,45,107,0.22); }
+.mt-comp     { background: rgba(45,95,204,0.09);  color: var(--blue); border-color: rgba(45,95,204,0.22); }
+.mt-router   { background: rgba(42,125,79,0.09);  color: var(--green); border-color: rgba(42,125,79,0.22); }
+.mt-agent    { background: rgba(185,48,48,0.07);  color: var(--red); border-color: rgba(185,48,48,0.2); }
+.mcp-row-val {
+  font-family: var(--mono); font-size: 10.5px;
+  color: var(--ink2); line-height: 1.5;
+}
+.ftag {
+  display: inline-block; font-family: var(--mono); font-size: 10px;
+  padding: .13rem .48rem; border-radius: 3px; margin-left: .4rem; vertical-align: middle; border: 1px solid;
+}
+.tag-t { background: var(--amber-dim); color: var(--amber); border-color: rgba(217,124,11,.28); }
+.tag-g { background: var(--red-dim); color: var(--red); border-color: rgba(185,48,48,.22); }
+
+/* ── FAN-OUT BOX ──────────────────────────────── */
+.fanout-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 2.5rem; box-shadow: var(--shadow-sm); margin-top: 2.25rem;
+}
+.fanout-lbl { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 1.5rem; }
+.fo-top { text-align: center; margin-bottom: .5rem; }
+.fo-node {
+  display: inline-flex; flex-direction: column; align-items: center;
+  background: var(--bg); border: 1px solid var(--border2); border-top: 3px solid var(--rust);
+  border-radius: 6px; padding: .85rem 2rem; box-shadow: var(--shadow-sm);
+}
+.fo-node-lbl { font-family: var(--mono); font-size: 10px; color: var(--rust); letter-spacing: .12em; text-transform: uppercase; margin-bottom: .18rem; }
+.fo-node-title { font-family: var(--display); font-size: 15px; font-weight: 700; }
+.fo-stem { width: 2px; height: 30px; background: var(--border2); margin: 0 auto; }
+.fo-cross { height: 2px; background: var(--border2); margin: 0 16.5%; }
+.fo-branches { display: flex; justify-content: space-between; gap: 1.25rem; }
+.fo-branch { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.fo-bstem { width: 2px; height: 26px; background: var(--border2); }
+.fo-bdot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid; background: var(--surface); flex-shrink: 0; }
+.fo-bdot.ok  { border-color: var(--teal); }
+.fo-bdot.blk { border-color: var(--red); }
+.fo-repo {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-top: 2px solid var(--teal); border-radius: 6px; padding: .95rem; margin-top: .5rem; box-shadow: var(--shadow-sm);
+}
+.fo-repo.bl { border-top-color: var(--red); background: #fdf8f8; }
+.fo-rname { font-family: var(--mono); font-size: 11px; font-weight: 500; margin-bottom: .55rem; color: var(--teal); }
+.fo-repo.bl .fo-rname { color: var(--red); }
+.fo-row { display: flex; justify-content: space-between; font-size: 11px; padding: .17rem 0; border-bottom: 1px solid var(--border); }
+.fo-row:last-child { border-bottom: none; }
+.fk { color: var(--ink-faint); font-family: var(--mono); font-size: 10px; }
+.fv { color: var(--ink3); }
+.fv-bl { color: var(--red); font-weight: 500; }
+
+/* ── GATES ────────────────────────────────────── */
+.gates-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
+.gate { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .2s; }
+.gate:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.gate-num { font-family: var(--display); font-size: 2.1rem; font-weight: 800; color: var(--rust); opacity: .22; margin-bottom: .55rem; line-height: 1; font-style: italic; }
+.gate-title { font-family: var(--display); font-size: 14px; font-weight: 700; margin-bottom: .65rem; line-height: 1.3; }
+.gate-checks { list-style: none; display: flex; flex-direction: column; gap: .32rem; }
+.gate-checks li { font-size: 12px; color: var(--ink3); display: flex; align-items: flex-start; gap: .4rem; line-height: 1.45; }
+.gate-checks li::before { content:'›'; color: var(--rust); flex-shrink: 0; font-weight: 700; }
+.gate-note {
+  background: #fdf8f8; border: 1px solid rgba(185,48,48,.2); border-left: 3px solid var(--red);
+  padding: .95rem 1.25rem; border-radius: 0 6px 6px 0; font-size: 13px; color: var(--ink3);
+  display: flex; align-items: flex-start; gap: .75rem;
+}
+.gate-note strong { color: var(--red); }
+
+/* ── EXAMPLE PROMPTS ──────────────────────────── */
+.prompts-intro {
+  background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--navy);
+  border-radius: 0 8px 8px 0; padding: 1.5rem 1.75rem; margin-bottom: 1.75rem; box-shadow: var(--shadow-sm);
+}
+.prompts-intro h3 { font-family: var(--display); font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
+.prompts-intro p { font-size: 13.5px; color: var(--ink3); line-height: 1.65; font-style: italic; }
+.p-tabs { display: flex; flex-wrap: wrap; gap: 0; }
+.p-tab {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  padding: .55rem 1.1rem; cursor: pointer; user-select: none;
+  background: var(--surface2); border: 1px solid var(--border); border-bottom: none;
+  color: var(--ink3); transition: all .15s; margin-right: -1px; border-radius: 6px 6px 0 0;
+}
+.p-tab.on { background: var(--surface); color: var(--rust); font-weight: 500; z-index: 1; position: relative; }
+.p-panels {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 0 8px 8px 8px; box-shadow: var(--shadow-sm);
+}
+.p-panel { display: none; }
+.p-panel.on { display: block; }
+.p-item { padding: 1.6rem 2rem; border-bottom: 1px solid var(--border); transition: background .15s; }
+.p-item:last-child { border-bottom: none; }
+.p-item:hover { background: var(--bg); }
+.p-item-hd { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: .65rem; }
+.p-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  padding: .2rem .65rem; border-radius: 4px; border: 1px solid; flex-shrink: 0; margin-top: 1px;
+}
+.pb-pm   { background: rgba(192,68,42,.08); color: var(--rust); border-color: rgba(192,68,42,.2); }
+.pb-arch { background: rgba(30,45,107,.08); color: var(--navy); border-color: rgba(30,45,107,.2); }
+.pb-eng  { background: rgba(26,125,110,.08); color: var(--teal); border-color: rgba(26,125,110,.2); }
+.pb-ai   { background: rgba(217,124,11,.09); color: var(--amber); border-color: rgba(217,124,11,.25); }
+.pb-int  { background: rgba(42,125,79,.08); color: var(--green); border-color: rgba(42,125,79,.2); }
+.p-title { font-family: var(--display); font-size: 15.5px; font-weight: 700; line-height: 1.3; }
+.p-ctx { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); margin-bottom: .9rem; font-style: italic; }
+.p-bubble {
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: 8px; border-top-left-radius: 2px;
+  padding: 1rem 1.25rem; margin-bottom: .65rem;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: var(--ink);
+  position: relative;
+}
+.p-bubble::before {
+  content: '"'; position: absolute; top: 4px; left: 8px;
+  font-family: var(--display); font-size: 1.5rem; color: var(--rust); line-height: 1; opacity: .4;
+}
+.p-result { font-size: 12.5px; color: var(--ink3); display: flex; align-items: flex-start; gap: .5rem; line-height: 1.6; }
+.p-result::before { content:'→'; color: var(--teal); font-weight: 700; flex-shrink: 0; font-family: var(--mono); font-size: 12px; margin-top: 1px; }
+
+/* ── ROLES ────────────────────────────────────── */
+.roles-tbl { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.r-row { display: grid; grid-template-columns: 200px 1fr 1fr; background: var(--surface); transition: background .15s; }
+.r-row:not(.r-hd):not(:last-child) { border-bottom: 1px solid var(--border); }
+.r-row:hover:not(.r-hd) { background: var(--bg); }
+.r-hd { background: var(--surface2); border-bottom: 2px solid var(--border2); pointer-events: none; }
+.r-cell { padding: 1rem 1.25rem; font-size: 13.5px; border-right: 1px solid var(--border); }
+.r-cell:last-child { border-right: none; }
+.r-cell.hc { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--rust); padding: .7rem 1.25rem; }
+.r-name { font-family: var(--display); font-size: 14px; font-weight: 700; margin-bottom: .2rem; }
+.r-repo { font-family: var(--mono); font-size: 9.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .08em; }
+.r-cell p { color: var(--ink3); }
+
+/* ── SCALING ──────────────────────────────────── */
+.scale-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+.scale-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1.75rem; box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .2s;
+}
+.scale-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.s-dots { display: flex; gap: 5px; margin-bottom: 1.25rem; }
+.s-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border); }
+.s-dot.on { background: var(--rust); }
+.scale-card h3 { font-family: var(--display); font-size: 1.1rem; font-weight: 700; margin-bottom: .28rem; }
+.scale-teams { font-family: var(--mono); font-size: 11px; color: var(--rust); margin-bottom: .7rem; }
+.scale-desc { font-size: 13.5px; color: var(--ink3); line-height: 1.65; margin-bottom: 1rem; font-style: italic; }
+.scale-list { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+.scale-list li { font-size: 12.5px; color: var(--ink3); display: flex; align-items: flex-start; gap: .5rem; }
+.scale-list li::before { content:'→'; color: var(--rust); flex-shrink: 0; font-family: var(--mono); font-size: 11.5px; }
+
+/* ── CLOSING ──────────────────────────────────── */
+.closing {
+  margin-top: 5rem; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 3.5rem; box-shadow: var(--shadow-md);
+  border-top: 3px solid var(--rust); text-align: center;
+}
+.closing h2 { font-family: var(--display); font-size: clamp(1.5rem,2.4vw,2.1rem); font-weight: 800; margin-bottom: .7rem; }
+.closing > p { color: var(--ink3); max-width: 440px; margin: 0 auto 2.25rem; font-style: italic; }
+.d1-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); text-align: left; }
+.d1-phase { background: var(--bg); padding: 1.4rem; }
+.d1-lbl { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--rust); margin-bottom: .85rem; }
+.d1-list { list-style: none; display: flex; flex-direction: column; gap: .42rem; }
+.d1-list li { font-size: 12.5px; color: var(--ink3); display: flex; align-items: flex-start; gap: .5rem; line-height: 1.45; }
+.d1-list li::before { content:'□'; color: var(--ink-ghost); flex-shrink: 0; font-size: 10px; margin-top: 2px; }
+
+/* ── FOOTER ───────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border); padding: 1.75rem 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  color: var(--ink-faint); font-family: var(--mono); font-size: 11px; background: var(--surface);
+}
+footer em { font-style: italic; color: var(--ink-ghost); }
+
+/* ── FADE-IN ──────────────────────────────────── */
+.fi { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
+.fi.vis { opacity: 1; transform: none; }
+
+/* ── RESPONSIVE ───────────────────────────────── */
+@media (max-width:820px) {
+  .tools-grid, .repos-grid, .scale-grid { grid-template-columns: 1fr; }
+  .gates-grid { grid-template-columns: 1fr 1fr; }
+  .vs-row { grid-template-columns: 1fr; }
+  .vs-div { display: none; }
+  .flow-step { grid-template-columns: 1fr; }
+  .flow-role { justify-content: flex-start; padding: 0 0 .5rem 0; }
+  .role-card { text-align: left; border-right: none; border-left: 3px solid var(--border2); }
+  .role-card.rc-pm     { border-left-color: var(--rust); }
+  .role-card.rc-arch   { border-left-color: var(--navy); }
+  .role-card.rc-mcp    { border-left-color: var(--teal); }
+  .role-card.rc-all    { border-left-color: var(--amber); }
+  .role-card.rc-gate   { border-left-color: var(--red); }
+  .role-card.rc-comp   { border-left-color: var(--teal); }
+  .role-card.rc-eng    { border-left-color: var(--blue); }
+  .role-card.rc-plat   { border-left-color: var(--navy); }
+  .flow-conn { display: none; }
+  .r-row { grid-template-columns: 1fr 1fr; }
+  .r-cell:nth-child(3) { display: none; }
+  .d1-grid { grid-template-columns: 1fr 1fr; }
+  .fo-branches { flex-direction: column; }
+  nav .nav-links { display: none; }
+  .hero { padding: 6rem 1.5rem 3rem; }
+  main { padding: 0 1.5rem 4rem; }
+  .hero-version { display: none; }
+  footer { flex-direction: column; gap: .5rem; text-align: center; padding: 1.5rem; }
+}
+
+/* ── PROBLEM STATEMENT ────────────────────────────── */
+.problem-statement {
+  background: rgba(26,28,46,0.04);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--rust);
+  border-radius: 0 8px 8px 0;
+  padding: 1.5rem 1.75rem;
+  max-width: 680px;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+.ps-label {
+  font-family: var(--mono); font-size: 9.5px; color: var(--rust);
+  letter-spacing: .18em; text-transform: uppercase; margin-bottom: 1rem;
+}
+.ps-body { display: flex; flex-direction: column; gap: .75rem; }
+.ps-item {
+  display: flex; align-items: flex-start; gap: .85rem;
+  font-size: 13.5px; color: var(--ink3); line-height: 1.65;
+}
+.ps-item strong { color: var(--ink); }
+.ps-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.ps-divider { height: 1px; background: var(--border2); margin: .25rem 0; }
+.ps-resolution {
+  font-size: 13.5px; color: var(--ink2); line-height: 1.65;
+  font-style: italic;
+}
+.ps-resolution strong { font-style: normal; color: var(--rust); }
+
+/* ── METHODOLOGY DNA ──────────────────────────────── */
+.dna-intro {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--navy); border-radius: 0 8px 8px 0;
+  padding: 1.5rem 1.75rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);
+}
+.dna-intro p { font-size: 13.5px; color: var(--ink3); line-height: 1.7; font-style: italic; }
+.dna-grid { display: flex; flex-direction: column; gap: 1.5rem; }
+.dna-row {
+  display: grid; grid-template-columns: 240px 1fr;
+  border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s;
+}
+.dna-row:hover { box-shadow: var(--shadow-md); }
+.dna-source {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 1.5rem; border-right: 1px solid var(--border);
+}
+.dna-src-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; padding: .25rem .7rem; border-radius: 4px;
+  border: 1px solid; display: inline-flex; align-items: center; gap: .4rem;
+  margin-bottom: .7rem; width: fit-content;
+}
+.dsb-sdd   { background: rgba(192,125,14,.08); color: var(--amber); border-color: rgba(192,125,14,.25); }
+.dsb-mcp   { background: rgba(26,122,109,.08); color: var(--teal);  border-color: rgba(26,122,109,.25); }
+.dsb-adr   { background: rgba(30,45,107,.08);  color: var(--navy);  border-color: rgba(30,45,107,.22); }
+.dsb-xp    { background: rgba(45,95,204,.08);  color: var(--blue);  border-color: rgba(45,95,204,.22); }
+.dsb-lean  { background: rgba(42,125,79,.08);  color: var(--green); border-color: rgba(42,125,79,.22); }
+.dsb-drop  { background: rgba(185,48,48,.07);  color: var(--red);   border-color: rgba(185,48,48,.2); }
+.dsb-bmad  { background: rgba(120,60,180,.08); color: #7828c8;      border-color: rgba(120,60,180,.25); }
+.dsb-ospec { background: rgba(30,45,107,.06);  color: var(--navy);  border-color: rgba(30,45,107,.18); }
+.dsb-skit  { background: rgba(196,125,14,.06); color: var(--amber); border-color: rgba(196,125,14,.18); }
+.dna-src-name { font-family: var(--display); font-size: 15px; font-weight: 700; margin-bottom: .2rem; }
+.dna-src-origin { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: .04em; }
+.dna-content { padding: 1.5rem; background: var(--surface); }
+.dna-content-hd {
+  font-family: var(--mono); font-size: 10px; color: var(--ink-faint);
+  letter-spacing: .1em; text-transform: uppercase; margin-bottom: .8rem;
+}
+.dna-pieces { display: flex; flex-direction: column; gap: .55rem; }
+.dna-piece {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: baseline; gap: 1rem; padding: .5rem .75rem;
+  background: var(--bg); border-radius: 5px; border: 1px solid var(--border);
+}
+.dna-piece-desc { font-size: 13px; color: var(--ink3); line-height: 1.55; }
+.dna-piece-desc strong { color: var(--ink); }
+.dna-piece-why { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); text-align: right; white-space: nowrap; }
+.dna-piece.dropped {
+  background: #fdf8f8; border-color: rgba(185,48,48,.15);
+  opacity: .75;
+}
+.dna-piece.dropped .dna-piece-desc { text-decoration: line-through; color: var(--ink-ghost); }
+.dna-piece.dropped .dna-piece-desc strong { text-decoration: none; color: var(--red); }
+.dna-piece.dropped .dna-piece-why { color: var(--red); }
+@media (max-width:820px) {
+  .dna-row { grid-template-columns: 1fr; }
+  .dna-source { border-right: none; border-bottom: 1px solid var(--border); }
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">TOM · v3.0 · Feb 2026</div>
+  <ul class="nav-links">
+    <li><a href="#dna">Methodology Origins</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#layers">Layers</a></li>
+    <li><a href="#lifecycle">Lifecycle</a></li>
+    <li><a href="#gates">Gates</a></li>
+    <li><a href="#prompts">Prompts</a></li>
+    <li><a href="#roles">Roles</a></li>
+    <li><a href="#scale">Scale</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-rule"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Target Operating Model</div>
+    <h1>Software built as a<br><em>knowledge system</em></h1>
+    <div class="problem-statement">
+      <div class="ps-label">Problem Statement</div>
+      <div class="ps-body">
+        <div class="ps-item">
+          <div class="ps-icon">⏱</div>
+          <div><strong>Speed vs. correctness:</strong> AI agents can write code in seconds — but they invent context. Without governed specs, every agent call introduces drift between what was intended and what was built.</div>
+        </div>
+        <div class="ps-item">
+          <div class="ps-icon">🧠</div>
+          <div><strong>Tribal knowledge doesn't scale:</strong> Contracts, invariants, and architectural decisions live in Slack threads and people's heads. When a new agent or developer touches the system, they guess — and guesses in trading systems are expensive.</div>
+        </div>
+        <div class="ps-item">
+          <div class="ps-icon">⚙️</div>
+          <div><strong>Process overhead kills velocity:</strong> Heavy methodologies (router services, gate validators, contract registries as servers) add infrastructure that nobody maintains. Teams skip the process or drown in it.</div>
+        </div>
+        <div class="ps-divider"></div>
+        <div class="ps-resolution"><strong>The answer:</strong> Two MCP servers that serve governed knowledge. Four Markdown agents that carry the process. Zero overhead services — gates live as checklists inside templates, not in TypeScript validators. If a methodology component doesn't change what the agent writes, it's eliminated.</div>
+      </div>
+    </div>
+    <p class="hero-sub">A practical guide to Spec-Driven Development with two MCP servers, four Markdown agents, and zero overhead services — the enterprise model for teams that need alignment, traceability, and zero tribal knowledge.</p>
+    <div class="hero-quote">
+      <p>"Nothing is implemented without a validated spec backed by governed context." — Core Principle, v3.0</p>
+    </div>
+  </div>
+  <div class="hero-version">SDD + MCP Enterprise Model<br>Version 3.0 — February 2026</div>
+</section>
+
+<main>
+
+<!-- 00 ── THE BIG IDEA ─────────────────────────── -->
+<section class="section fi">
+  <div class="sec-hd"><span class="sec-num">00 —</span><h2 class="sec-title">The Big Idea</h2></div>
+  <p class="sec-desc">Your organisation is a knowledge system, not just a code system. Code is the output — specs, contracts, and decisions are the inputs that determine whether the code is right.</p>
+  <div class="vs-row">
+    <div class="vs-card bad">
+      <div class="vs-label bad-lbl">⚠ Without SDD</div>
+      <ul class="vs-items">
+        <li>Teams interpret requirements differently</li>
+        <li>Service contracts break without warning</li>
+        <li>Decisions live in Slack and people's heads</li>
+        <li>AI agents invent context from the codebase</li>
+        <li>Rework after costly integration bugs</li>
+        <li>Onboarding requires tribal knowledge</li>
+      </ul>
+    </div>
+    <div class="vs-div">vs.</div>
+    <div class="vs-card good">
+      <div class="vs-label good-lbl">✓ With SDD + MCP</div>
+      <ul class="vs-items g">
+        <li>Specs are the explicit, versioned source of truth</li>
+        <li>Contracts are governed with full consumer lists</li>
+        <li>Every decision is an ADR with an audit trail</li>
+        <li>Agents consume governed context — no invention</li>
+        <li>Gates block integration bugs before they happen</li>
+        <li>Context Packs enable fast, safe onboarding</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- DNA ── METHODOLOGY ORIGINS ─────────────────── -->
+<section id="dna" class="section fi">
+  <div class="sec-hd"><span class="sec-num">00b —</span><h2 class="sec-title">Why This Model — What We Took &amp; What We Dropped</h2></div>
+  <p class="sec-desc">This model is not a new methodology. It is a deliberate composition of proven ideas — taking only the pieces that directly change what an agent or engineer writes, and cutting everything else.</p>
+
+  <div class="dna-intro">
+    <p>Every component in this operating model was borrowed from an existing discipline. The selection criterion was ruthless: <em>"Does this piece change the output of the person or agent doing the work? If not, it's eliminated."</em> The result is a model where all process lives in Markdown files — versionable, readable, editable by anyone on the team via PR — and zero process lives in infrastructure.</p>
+    <p style="margin-top:.75rem;">Three frameworks contributed the core structural ideas: <strong>BMAD</strong> (Breakthrough Method for Agile AI Development) defined the four-role agent architecture and handoff protocol. <strong>OpenSpec</strong> defined the spec format, mandatory traceability metadata, and the Spec Graph linking all artifacts. <strong>SpecKit</strong> defined the template-driven assembly pattern — templates with embedded exit gate checklists and the Context Pack versioning mechanism. All three are documented below alongside SDD, MCP, ADR, Agile/XP, and Lean.</p>
+  </div>
+
+  <div class="dna-grid">
+
+    <!-- SDD -->
+    <div class="dna-row">
+      <div class="dna-source" style="background:rgba(196,125,14,.04);">
+        <div class="dna-src-badge dsb-sdd">📐 SDD</div>
+        <div class="dna-src-name">Spec-Driven Development</div>
+        <div class="dna-src-origin">From: enterprise software delivery practices</div>
+      </div>
+      <div class="dna-content">
+        <div class="dna-content-hd">What we took</div>
+        <div class="dna-pieces">
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Spec-before-code rule</strong> — no implementation begins without a written, validated spec. Not a PR description. An actual spec with ACs, data model, and edge cases.</div>
+            <div class="dna-piece-why">prevents context invention</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Acceptance Criteria in Given/When/Then</strong> — every feature has verifiable, testable conditions that the Verifier agent checks with observable evidence.</div>
+            <div class="dna-piece-why">makes "done" unambiguous</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Exit gates as self-verification</strong> — instead of external validators, gates are checklists embedded in templates. The agent self-checks before handing off.</div>
+            <div class="dna-piece-why">removes overhead server</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>Centralised spec registry with automated snapshots</strong> — spec databases with change tracking, contract registries as standalone services, automated snapshot pipelines.</div>
+            <div class="dna-piece-why">doesn't change what gets written</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MCP -->
+    <div class="dna-row">
+      <div class="dna-source" style="background:rgba(26,122,109,.04);">
+        <div class="dna-src-badge dsb-mcp">⬟ MCP</div>
+        <div class="dna-src-name">Model Context Protocol</div>
+        <div class="dna-src-origin">From: Anthropic — structured agent context</div>
+      </div>
+      <div class="dna-content">
+        <div class="dna-content-hd">What we took</div>
+        <div class="dna-pieces">
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Platform MCP</strong> — one instance that serves context packs, templates, agent definitions, and workflow configs. The agent calls a tool and gets governed truth, not a blank context window.</div>
+            <div class="dna-piece-why">eliminates context invention</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Component MCP (N instances, same image)</strong> — one per component, serving that component's contracts, invariants, patterns, and decisions. Local truth scoped to where the agent is working.</div>
+            <div class="dna-piece-why">right context, right scope</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>MCP Router</strong> — a central dispatcher that routes agent queries to the correct MCP server, aggregating responses into a single context pack.</div>
+            <div class="dna-piece-why">agents know their role — no router needed</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>Separate contracts-mcp and domain-mcp</strong> — dedicated servers for contract registries and domain invariants, each with their own deployment lifecycle.</div>
+            <div class="dna-piece-why">contracts are component knowledge — get_contracts() on the component MCP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADR -->
+    <div class="dna-row">
+      <div class="dna-source" style="background:rgba(30,45,107,.04);">
+        <div class="dna-src-badge dsb-adr">📋 ADR</div>
+        <div class="dna-src-name">Architecture Decision Records</div>
+        <div class="dna-src-origin">From: Michael Nygard (2011) · widely adopted in microservices</div>
+      </div>
+      <div class="dna-content">
+        <div class="dna-content-hd">What we took</div>
+        <div class="dna-pieces">
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Decisions as first-class artifacts</strong> — every significant technical choice is a Markdown file with context, decision, and consequences. Component MCP surfaces them via get_decisions().</div>
+            <div class="dna-piece-why">no repeated debates</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>ADR as a gate blocker</strong> — an open, unresolved ADR blocks the Verifier from clearing the merge gate. Ambiguity is resolved before code is written, not after.</div>
+            <div class="dna-piece-why">no spec can escape an unresolved decision</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>ADR query service</strong> — a queryable database of decisions with cross-repo search, impact analysis APIs, and automated staleness detection.</div>
+            <div class="dna-piece-why">Markdown files in git already provide this</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- XP / Agile -->
+    <div class="dna-row">
+      <div class="dna-source" style="background:rgba(45,95,204,.04);">
+        <div class="dna-src-badge dsb-xp">🔄 Agile / XP</div>
+        <div class="dna-src-name">Extreme Programming &amp; Agile</div>
+        <div class="dna-src-origin">From: Beck, Manifesto for Agile (2001)</div>
+      </div>
+      <div class="dna-content">
+        <div class="dna-content-hd">What we took</div>
+        <div class="dna-pieces">
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Risk-proportional process</strong> — quick workflow for low-risk/bug-fix changes, full workflow only for critical. The weight of the process matches the weight of the risk.</div>
+            <div class="dna-piece-why">eliminates unnecessary overhead</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Small deliverables per agent</strong> — each agent produces one or two files and hands off. No monolithic analysis → implementation cycles; the Architect can produce specs and Developers can start in parallel.</div>
+            <div class="dna-piece-why">parallel execution per component</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>Story points, velocity tracking, sprint ceremonies</strong> — estimation rituals, retrospective formats, burndown charts as mandatory process.</div>
+            <div class="dna-piece-why">tasks.yaml captures owner + points when needed — no ceremony</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lean -->
+    <div class="dna-row">
+      <div class="dna-source" style="background:rgba(42,125,79,.04);">
+        <div class="dna-src-badge dsb-lean">✂️ Lean</div>
+        <div class="dna-src-name">Lean Software Thinking</div>
+        <div class="dna-src-origin">From: Poppendieck, Toyota Production System adapted</div>
+      </div>
+      <div class="dna-content">
+        <div class="dna-content-hd">What we took</div>
+        <div class="dna-pieces">
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Golden rule — eliminate what doesn't change output</strong> — every component in this methodology was evaluated against a single question: "Does this change what the agent or engineer writes?" If no, it was cut.</div>
+            <div class="dna-piece-why">the core filter for the whole model</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Logic in files, not infrastructure</strong> — gates, workflows, agent behaviour, and templates all live in Markdown files in a git repo. Zero TypeScript validators, zero gate-server deployments.</div>
+            <div class="dna-piece-why">no server = no maintenance cost</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Knowledge feedback loop</strong> — every implementation cycle updates component MCP sources (patterns, invariants, ADRs), making the next initiative start from a richer context. The system learns.</div>
+            <div class="dna-piece-why">compound knowledge accumulation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- BMAD -->
+    <div class="dna-row">
+      <div class="dna-source" style="background:rgba(120,60,180,.03);">
+        <div class="dna-src-badge dsb-bmad">🤖 BMAD</div>
+        <div class="dna-src-name">Breakthrough Method for Agile AI Development</div>
+        <div class="dna-src-origin">From: BMAD-METHOD · AI-native multi-agent workflow design</div>
+      </div>
+      <div class="dna-content">
+        <div class="dna-content-hd">What we took — and why</div>
+        <div class="dna-pieces">
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Four bounded agent roles</strong> — analyst, architect, developer, verifier. Each role has a single, non-overlapping responsibility and produces exactly one or two artifacts before handing off. An agent never does another agent's job. <em>Why: role-scoped context prevents agents from overreaching and generating untraceable outputs.</em></div>
+            <div class="dna-piece-why">no scope creep per agent</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Sequential handoff with hard stops</strong> — each agent must complete its exit gate checklist before the next agent starts. The Verifier is a hard stop: no merge until every AC has observable evidence. <em>Why: handoffs make quality gates enforceable without an external service — the agent itself is the gate.</em></div>
+            <div class="dna-piece-why">quality enforced at each transition</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Parallel fan-out from Architect</strong> — once feature-spec.md is approved, one Developer agent runs per affected component simultaneously. The Verifier waits for all. <em>Why: eliminates the sequential bottleneck that makes large cross-domain features slow — components that don't depend on each other can be built concurrently.</em></div>
+            <div class="dna-piece-why">parallel execution without loss of traceability</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Agent definitions as Markdown files</strong> — each agent is a `.md` file in `.claude/agents/` loaded on demand. Behaviour lives in text, not code. <em>Why: the team can evolve agent behaviour via PR without a deployment — the same update path as specs and templates.</em></div>
+            <div class="dna-piece-why">agent evolution without deploys</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>Orchestrator agent</strong> — a meta-agent that decides which specialist agent to invoke, routing requests based on request type classification.</div>
+            <div class="dna-piece-why">Platform MCP get_workflow() replaces this — risk level determines the agent sequence, not a separate agent</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>Persona-based agent naming</strong> — agents named after team member personas ("Alex the Architect", "Dev Dana") to guide interaction style.</div>
+            <div class="dna-piece-why">role names are sufficient — persona framing doesn't change what gets written</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OpenSpec -->
+    <div class="dna-row">
+      <div class="dna-source" style="background:rgba(30,45,107,.03);">
+        <div class="dna-src-badge dsb-ospec">📄 OpenSpec</div>
+        <div class="dna-src-name">OpenSpec</div>
+        <div class="dna-src-origin">From: OpenSpec format · structured spec authoring for distributed systems</div>
+      </div>
+      <div class="dna-content">
+        <div class="dna-content-hd">What we took — and why</div>
+        <div class="dna-pieces">
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Mandatory traceability metadata on every spec</strong> — <code>implements</code> (parent spec ID + version), <code>context_pack</code> (the versioned snapshot used when the spec was authored), <code>blocked_by</code> (open ADR IDs), and <code>status</code>. <em>Why: without these fields, a spec is an island — you cannot tell what it is implementing, what context it was written against, or whether it is safe to act on.</em></div>
+            <div class="dna-piece-why">spec is never an island</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Spec Graph — <code>graph/index.yaml</code></strong> — a machine-readable index linking every artifact in a chain: Initiative → feature-spec → component-specs → impl-specs → verify.md → ADRs. Updated by the Verifier after every merge. <em>Why: the graph is the audit trail. It answers "what was built, why, against what context, and was it verified?" — questions that matter in regulated environments and post-incident analysis.</em></div>
+            <div class="dna-piece-why">complete audit trail</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>MCP source citation per section</strong> — every section of a spec declares where its content came from: which MCP tool, which version. <em>Why: a spec section without a source is an assertion without evidence. Citing the source makes the spec verifiable and makes it easy to see when a spec is stale relative to a newer MCP context.</em></div>
+            <div class="dna-piece-why">every claim has a cited source</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Specs are never deleted — only versioned</strong> — status transitions from Approved → Implementing → Done, or → Paused, or → Blocked. A spec is never removed from the graph. <em>Why: deleted specs create invisible debt. A Paused spec with its context pack pinned can be rebased and resumed; a deleted spec is lost work that gets redone from scratch.</em></div>
+            <div class="dna-piece-why">no invisible technical debt</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>Spec versioning server</strong> — a dedicated service managing spec versions with diff APIs, conflict detection, and branch-per-initiative spec trees.</div>
+            <div class="dna-piece-why">git already handles versioning — the spec graph provides the links without a separate server</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SpecKit -->
+    <div class="dna-row">
+      <div class="dna-source" style="background:rgba(196,125,14,.03);">
+        <div class="dna-src-badge dsb-skit">📦 SpecKit</div>
+        <div class="dna-src-name">SpecKit</div>
+        <div class="dna-src-origin">From: SpecKit · template-driven spec assembly for AI-assisted development</div>
+      </div>
+      <div class="dna-content">
+        <div class="dna-content-hd">What we took — and why</div>
+        <div class="dna-pieces">
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Templates with embedded exit gate checklists</strong> — spec templates are not blank forms. Each section of the template includes the checklist the agent must self-verify before handing off. <em>Why: separating "how to write the spec" from "how to verify the spec" creates a gap where quality degrades. Embedding the gate in the template closes that gap — the agent writes and checks in one pass.</em></div>
+            <div class="dna-piece-why">write and verify in one pass</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Context Pack — versioned snapshot assembled before spec writing</strong> — before any spec is written, the agent calls Platform MCP to assemble a pinned snapshot of all applicable policies, NFR baselines, and workflow config for this intent. <em>Why: writing a spec against a moving context is the root cause of spec drift. Pinning the context pack version makes the spec reproducible — another agent reading the same spec can retrieve the same context and understand exactly what constraints were in effect.</em></div>
+            <div class="dna-piece-why">specs are reproducible</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Template-driven spec types</strong> — feature-spec, component-spec, impl-spec, and verify.md each have a dedicated template. Every instance of a spec type has the same structure. <em>Why: uniform structure means agents, humans, and CI can parse and validate specs without special-casing. The Verifier knows exactly where to find the ACs because every component-spec has them in the same place.</em></div>
+            <div class="dna-piece-why">consistent structure → parseable by agents and CI</div>
+          </div>
+          <div class="dna-piece">
+            <div class="dna-piece-desc"><strong>Templates served by Platform MCP (<code>get_template(name)</code>)</strong> — templates are not stored locally with the agent. The agent calls the Platform MCP to fetch the current template version. <em>Why: this makes template evolution zero-friction — update the template in the specs repo and every agent immediately gets the new version on the next call, with no agent file changes required.</em></div>
+            <div class="dna-piece-why">template updates propagate instantly</div>
+          </div>
+          <div class="dna-piece dropped">
+            <div class="dna-piece-desc"><strong>Spec scaffolding CLI</strong> — a command-line tool that generates spec file stubs, pre-fills metadata, and validates spec structure on creation.</div>
+            <div class="dna-piece-why">Platform MCP get_template() replaces this — the agent fetches and fills the template inline, no CLI required</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 01 ── THREE TOOLS ──────────────────────────── -->
+<section id="tools" class="section fi">
+  <div class="sec-hd"><span class="sec-num">01 —</span><h2 class="sec-title">Two MCPs, Four Agents</h2></div>
+  <p class="sec-desc">Two MCP server types carry all the governed knowledge. Four Markdown agents carry all the process. No routers, no gate validators, no extra services — just logic in files.</p>
+  <div class="tools-grid">
+    <div class="tool-card tc-rust">
+      <div class="badge b-rust">⬟ Platform MCP</div>
+      <h3>Platform Intelligence</h3>
+      <div class="tool-layer">1 instance per org · reads openclaw-specs/ · 4 tools only</div>
+      <p class="tool-desc">The single source of platform-level truth. Provides context packs, templates with embedded exit gates, agent definitions, and workflow configs. Never needs redeployment — just update the specs repo.</p>
+      <ul class="tool-list">
+        <li><span class="dot d-rust"></span>get_context_pack(intent) → risk_level + policies + workflow</li>
+        <li><span class="dot d-rust"></span>get_template(name) → template with exit gate checklist embedded</li>
+        <li><span class="dot d-rust"></span>get_agent(name) → analyst / architect / developer / verifier</li>
+        <li><span class="dot d-rust"></span>get_workflow(risk_level) → which agents to activate</li>
+      </ul>
+    </div>
+    <div class="tool-card tc-teal">
+      <div class="badge b-teal">◈ Component MCP</div>
+      <h3>Component Knowledge</h3>
+      <div class="tool-layer">N instances · same image · different config per component</div>
+      <p class="tool-desc">One instance per component (mario-hugo, guaripolo, policarpo…). Serves the component's contracts, invariants, patterns, and technical decisions. The "local truth" each agent needs before writing a single line.</p>
+      <ul class="tool-list">
+        <li><span class="dot d-teal"></span>get_contracts() → NATS topics, HTTP endpoints, event schemas</li>
+        <li><span class="dot d-teal"></span>get_invariants() → immutable business rules for this component</li>
+        <li><span class="dot d-teal"></span>get_patterns() → approved implementation patterns + canonical examples</li>
+        <li><span class="dot d-teal"></span>get_decisions() → ADRs + prior technical decisions</li>
+      </ul>
+    </div>
+    <div class="tool-card tc-navy">
+      <div class="badge b-navy">▤ 4 Agents</div>
+      <h3>Development Workflow</h3>
+      <div class="tool-layer">Markdown files in .claude/agents/ · loaded on demand by Claude Code</div>
+      <p class="tool-desc">Four Markdown agents define the entire development process. Gates live inside the agent as checklists — not as external validators. Agents self-verify before handing off.</p>
+      <ul class="tool-list">
+        <li><span class="dot d-navy"></span>analyst.md — discovery, evidence, affected components (full only)</li>
+        <li><span class="dot d-navy"></span>architect.md — feature spec + component specs per domain</li>
+        <li><span class="dot d-navy"></span>developer.md — impl spec + tasks.yaml + code (parallel per component)</li>
+        <li><span class="dot d-navy"></span>verifier.md — AC verification, test evidence, sign-offs, merge gate</li>
+      </ul>
+    </div>
+  </div>
+</section><!-- 02 ── SYSTEM LAYERS ────────────────────────── -->
+<section id="layers" class="section fi">
+  <div class="sec-hd"><span class="sec-num">02 —</span><h2 class="sec-title">How the Layers Flow</h2></div>
+  <p class="sec-desc">Knowledge at the top feeds specs in the middle, which drive code at the bottom. Each layer depends only on what is above it — never sideways or upward.</p>
+  <div class="layers">
+    <div class="layer bg-k">
+      <div class="l-label bg-k"><strong style="color:var(--rust)">Knowledge Layer</strong><span>MCP Servers · governed context</span></div>
+      <div class="l-body bg-k"><span class="pill pk">Platform Policies</span><span class="pill pk">Domain Models</span><span class="pill pk">Integration Contracts</span><span class="pill pk">Component Context</span></div>
+    </div>
+    <div class="l-arr">↓ &nbsp;Context Pack (versioned) — assembled by Platform MCP before any spec is written</div>
+    <div class="layer bg-s">
+      <div class="l-label bg-s"><strong style="color:var(--navy)">Spec Layer</strong><span>Agents · 2 repos</span></div>
+      <div class="l-body bg-s"><span class="pill ps">Platform Specs</span><span class="pill ps">Component Specs</span><span class="pill ps">Contract Specs</span><span class="pill ps">ADRs</span></div>
+    </div>
+    <div class="l-arr">↓ &nbsp;Execution — implementation against approved, gate-checked specs</div>
+    <div class="layer bg-c">
+      <div class="l-label bg-c"><strong style="color:var(--teal)">Code Layer</strong><span>Implementation</span></div>
+      <div class="l-body bg-c"><span class="pill pc">Services</span><span class="pill pc">APIs</span><span class="pill pc">Infrastructure</span></div>
+    </div>
+    <div class="l-arr">↓</div>
+    <div class="layer bg-o">
+      <div class="l-label bg-o"><strong style="color:var(--green)">Observability</strong><span>Runtime signals</span></div>
+      <div class="l-body bg-o"><span class="pill po">Logs</span><span class="pill po">Metrics</span><span class="pill po">Traces</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 ── REPOS ────────────────────────────────── -->
+<section class="section fi">
+  <div class="sec-hd"><span class="sec-num">03 —</span><h2 class="sec-title">Repository Structure</h2></div>
+  <p class="sec-desc">Two repos. One for content (specs, agents, templates, policies) — editable by the whole team via PR. One for the system (code). Two types of MCP server. Zero overhead services.</p>
+  <div class="repos-grid">
+    <div class="repo-card">
+      <div class="repo-hd"><div class="repo-ico ico-r">⬡</div><div><div class="repo-title">Specs Repo</div><div class="repo-sub">Content · editable via PR by anyone</div></div></div>
+      <div class="repo-tree">
+        <div><span class="tc">openclaw-specs/</span></div>
+        <div>├── <span class="tc">constitution/</span>&nbsp;&nbsp;<span class="ac">← policies, NFRs</span></div>
+        <div>├── <span class="tc">agents/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ac">← 4 Markdown agents</span></div>
+        <div>├── <span class="tc">workflows/</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="ac">← quick/standard/full</span></div>
+        <div>├── <span class="tc">templates/</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="ac">← with exit gates</span></div>
+        <div>├── <span class="tc">components/</span>&nbsp;&nbsp;&nbsp;<span class="ac">← specs + ADRs</span></div>
+        <div>└── <span class="tc">graph/index.yaml</span><span class="ac">← traceability</span></div>
+      </div>
+    </div>
+    <div class="repo-card">
+      <div class="repo-hd"><div class="repo-ico ico-t">◈</div><div><div class="repo-title">System Repo</div><div class="repo-sub">Code · maintained by engineering</div></div></div>
+      <div class="repo-tree">
+        <div><span class="tc">openclaw/</span></div>
+        <div>├── <span class="tc">.claude/agents/</span>&nbsp;<span class="ac">← symlinks to specs</span></div>
+        <div>├── <span class="tc">agents/mario_hugo/</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;└── <span class="tc">docs/specs/</span>&nbsp;<span class="ac">← impl + verify</span></div>
+        <div>├── <span class="tc">internal/risk/</span>&nbsp;&nbsp;<span class="ac">← Guaripolo</span></div>
+        <div>└── <span class="tc">config/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ac">← all overrides</span></div>
+      </div>
+    </div>
+    <div class="repo-card">
+      <div class="repo-hd"><div class="repo-ico ico-n">⬟</div><div><div class="repo-title">MCP Servers</div><div class="repo-sub">2 types · no router · no overhead</div></div></div>
+      <div class="repo-tree">
+        <div><span class="tc">platform-intelligence/</span></div>
+        <div>├── <span class="tc">platform-mcp/</span>&nbsp;&nbsp;<span class="ac">← 1 instance</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;└── <span class="tc">4 tools only</span>&nbsp;&nbsp;<span class="ac">← context,template,</span></div>
+        <div>│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ac">&nbsp;&nbsp;agent,workflow</span></div>
+        <div>└── <span class="tc">component-mcp/</span>&nbsp;<span class="ac">← N instances</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ac">same image · diff config per component</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 ── LIFECYCLE ────────────────────────────── -->
+<section id="lifecycle" class="section fi">
+  <div class="sec-hd"><span class="sec-num">04 —</span><h2 class="sec-title">Development Lifecycle</h2></div>
+  <p class="sec-desc">Every initiative follows the same flow — from product intent to shipped code. The agent to activate depends on risk level: <em>quick</em> for low/bug_fix, <em>standard</em> for medium, <em>full</em> for high/critical.</p>
+
+  <!-- Workflow selector -->
+  <div style="display:flex;gap:.75rem;margin-bottom:2rem;flex-wrap:wrap;">
+    <div style="background:var(--bg);border:1px solid var(--border);border-top:3px solid var(--rust);border-radius:6px;padding:1rem 1.5rem;flex:1;min-width:200px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--rust);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4rem;">Quick Workflow</div>
+      <div style="font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:.3rem;">low · bug_fix</div>
+      <div style="font-size:12.5px;color:var(--ink3);font-style:italic;">Developer → Verifier. No high-level spec. Fastest path to fix.</div>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-top:3px solid var(--navy);border-radius:6px;padding:1rem 1.5rem;flex:1;min-width:200px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--navy);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4rem;">Standard Workflow</div>
+      <div style="font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:.3rem;">medium · new feature</div>
+      <div style="font-size:12.5px;color:var(--ink3);font-style:italic;">Architect → Developer → Verifier. No dedicated analyst needed.</div>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-top:3px solid var(--amber);border-radius:6px;padding:1rem 1.5rem;flex:1;min-width:200px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4rem;">Full Workflow</div>
+      <div style="font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:.3rem;">high · critical</div>
+      <div style="font-size:12.5px;color:var(--ink3);font-style:italic;">All 4 agents. Guaripolo changes, schema migrations, live trading.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <!-- STEP 1: Analyst (full workflow only) -->
+    <div class="flow-step">
+      <div class="flow-role">
+        <div class="role-card rc-pm">
+          <div class="rc-name">Analyst Agent</div>
+          <div class="rc-owns"><strong>Loads:</strong> analyst.md from .claude/agents/</div>
+          <div class="rc-acct">Full workflow only · high / critical</div>
+        </div>
+      </div>
+      <div class="flow-conn"><div class="f-dot" style="border-color:var(--rust);background:var(--rust)"></div><div class="f-line"></div></div>
+      <div class="flow-body">
+        <div class="flow-title">Discovery <span class="ftag tag-t">analyst.md</span> <span class="ftag tag-g">full only</span></div>
+        <div class="flow-desc">Define the problem, evidence, affected components, and success metrics. One question at a time — real data from the team, not template examples. Produces discovery.md.</div>
+        <div class="mcp-block">
+          <div class="mcp-block-header"><span class="mcp-arrow">⬟</span> MCP interaction — context loading</div>
+          <div class="mcp-rows">
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-platform">Platform MCP</span></div><div class="mcp-row-val">get_context_pack(intent) → risk_level, applicable policies, workflow to follow</div></div>
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-platform">Platform MCP</span></div><div class="mcp-row-val">get_template("discovery") → discovery.md template with embedded exit gate checklist</div></div>
+          </div>
+        </div>
+        <div style="background:var(--red-dim);border:1px solid rgba(185,48,48,.2);border-radius:6px;padding:.7rem 1rem;margin-top:.65rem;">
+          <div style="font-family:var(--mono);font-size:9.5px;color:var(--red);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;">Exit Gate — analyst self-checks before handoff</div>
+          <div style="font-size:12px;color:var(--ink3);line-height:1.6;">Problem Statement with concrete metric · Evidence with ≥1 real data point · ≥2 User Stories · ≥2 Out of Scope exclusions · Affected Components table · Success Metrics with timeframe</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Architect -->
+    <div class="flow-step">
+      <div class="flow-role">
+        <div class="role-card rc-arch">
+          <div class="rc-name">Architect Agent</div>
+          <div class="rc-owns"><strong>Loads:</strong> architect.md from .claude/agents/</div>
+          <div class="rc-acct">Standard + Full workflows · skipped for quick</div>
+        </div>
+      </div>
+      <div class="flow-conn"><div class="f-dot" style="border-color:var(--navy)"></div><div class="f-line"></div></div>
+      <div class="flow-body">
+        <div class="flow-title">Feature Spec + Component Specs <span class="ftag tag-t">architect.md</span></div>
+        <div class="flow-desc">Define the "what": UX flow, domain responsibilities, NFRs, contract changes, risk flags. Produces one feature-spec.md (platform level) + one component-spec.md per affected component. Developers can start in parallel per component.</div>
+        <div class="mcp-block">
+          <div class="mcp-block-header"><span class="mcp-arrow">⬟</span> MCP interaction — per affected component</div>
+          <div class="mcp-rows">
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-platform">Platform MCP</span></div><div class="mcp-row-val">get_context_pack(intent) → policies, NFR baselines, constitution rules applicable to this feature</div></div>
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-comp">Component MCP</span></div><div class="mcp-row-val">get_contracts() → NATS topics, API endpoints, event schemas for each affected component</div></div>
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-comp">Component MCP</span></div><div class="mcp-row-val">get_invariants() → business rules that cannot be violated — Architect validates spec against these before writing</div></div>
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-comp">Component MCP</span></div><div class="mcp-row-val">get_decisions() → ADRs and prior technical decisions — Architect cannot contradict an approved ADR</div></div>
+          </div>
+        </div>
+        <div style="background:var(--red-dim);border:1px solid rgba(185,48,48,.2);border-radius:6px;padding:.7rem 1rem;margin-top:.65rem;">
+          <div style="font-family:var(--mono);font-size:9.5px;color:var(--red);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;">Exit Gate — architect self-checks before handoff</div>
+          <div style="font-size:12px;color:var(--ink3);line-height:1.6;">≥3 ACs in Given/When/Then · NFRs with concrete numbers · Contract Changes declared or "none" explicit · Feature flag + rollback strategy · Component spec per affected component · If critical: "REQUIRES HUMAN APPROVAL" flag present</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Developer (parallel per component) -->
+    <div class="flow-step">
+      <div class="flow-role">
+        <div class="role-card rc-comp">
+          <div class="rc-name">Developer Agent</div>
+          <div class="rc-owns"><strong>Loads:</strong> developer.md from .claude/agents/</div>
+          <div class="rc-acct">All workflows · runs per component (parallel)</div>
+        </div>
+      </div>
+      <div class="flow-conn"><div class="f-dot" style="border-color:var(--teal)"></div><div class="f-line"></div></div>
+      <div class="flow-body">
+        <div class="flow-title">Impl Spec + Tasks <span class="ftag tag-t">developer.md</span></div>
+        <div class="flow-desc">Define the "how": exact data model, code changes, edge cases, observability. Produces impl-spec.md + tasks.yaml in the component's docs/specs/ folder. Reads all context before writing a single line — MCP patterns are the starting point, not approximations.</div>
+        <div class="mcp-block">
+          <div class="mcp-block-header"><span class="mcp-arrow">⬟</span> MCP interaction — implementation grounding</div>
+          <div class="mcp-rows">
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-comp">Component MCP</span></div><div class="mcp-row-val">get_patterns() → approved implementation patterns, canonical examples, approved libraries — agent uses directly, not approximated</div></div>
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-comp">Component MCP</span></div><div class="mcp-row-val">get_decisions() → existing ADRs — if impl contradicts a decision, Developer flags to Architect before continuing</div></div>
+          </div>
+        </div>
+        <div style="background:var(--red-dim);border:1px solid rgba(185,48,48,.2);border-radius:6px;padding:.7rem 1rem;margin-top:.65rem;">
+          <div style="font-family:var(--mono);font-size:9.5px;color:var(--red);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;">Exit Gate — developer self-checks before handoff</div>
+          <div style="font-size:12px;color:var(--ink3);line-height:1.6;">Data model with all fields + types · All endpoints/functions with request/response/errors · Edge cases table (≥4) · Observability section (metrics, alerts) · Rollout plan with config flag · tasks.yaml with owner + points + dependencies</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: Verifier -->
+    <div class="flow-step">
+      <div class="flow-role">
+        <div class="role-card rc-gate">
+          <div class="rc-name">Verifier Agent</div>
+          <div class="rc-owns"><strong>Loads:</strong> verifier.md from .claude/agents/</div>
+          <div class="rc-acct">All workflows · waits for all developers</div>
+        </div>
+      </div>
+      <div class="flow-conn"><div class="f-dot" style="border-color:var(--red);background:var(--red)"></div><div class="f-line"></div></div>
+      <div class="flow-body">
+        <div class="flow-title">Verification + Sign-offs <span class="ftag tag-t">verifier.md</span> <span class="ftag tag-g">hard stop</span></div>
+        <div class="flow-desc">Verify every AC with observable evidence. No merge without all checks marked. Produces verify.md. For critical changes (Guaripolo, schema migrations, live flag), merge is blocked until human sign-off is explicitly documented in verify.md.</div>
+        <div class="mcp-block">
+          <div class="mcp-block-header"><span class="mcp-arrow">⬟</span> MCP interaction — definition of done</div>
+          <div class="mcp-rows">
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-platform">Platform MCP</span></div><div class="mcp-row-val">get_context_pack(intent) → loads correct DoD based on risk_level — critical requires 4 sign-offs, low requires 1</div></div>
+          </div>
+        </div>
+        <div style="background:var(--red-dim);border:1px solid rgba(185,48,48,.2);border-radius:6px;padding:.7rem 1rem;margin-top:.65rem;">
+          <div style="font-family:var(--mono);font-size:9.5px;color:var(--red);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;">Exit Gate — merge blocked until ALL checks marked</div>
+          <div style="font-size:12px;color:var(--ink3);line-height:1.6;">Every AC verified with evidence · Tests passing (output attached) · Observability confirmed in staging · Rollback tested · Sign-offs per risk level · If critical: "HUMAN APPROVED" with name + date in verify.md</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5: Merge + Knowledge Update -->
+    <div class="flow-step">
+      <div class="flow-role">
+        <div class="role-card rc-plat">
+          <div class="rc-name">Team / Domain Owner</div>
+          <div class="rc-owns"><strong>Owns:</strong> openclaw-specs/ updates, component MCP refresh</div>
+          <div class="rc-acct">Accountable for: Institutional memory, graph freshness</div>
+        </div>
+      </div>
+      <div class="flow-conn"><div class="f-dot" style="border-color:var(--green);background:var(--green)"></div><div class="f-line"></div></div>
+      <div class="flow-body">
+        <div class="flow-title">Release + Knowledge Update</div>
+        <div class="flow-desc">After merge, update the spec graph index and component MCP sources. Any new invariant, pattern, or ADR discovered during implementation enriches the context available to the next initiative. The system gets smarter with each cycle.</div>
+        <div class="mcp-block">
+          <div class="mcp-block-header"><span class="mcp-arrow">⬟</span> Knowledge that gets updated post-release</div>
+          <div class="mcp-rows">
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-comp">Component MCP</span></div><div class="mcp-row-val">New patterns, runbooks, or constraints discovered during implementation → components/{domain}/specs/ and /adrs/ updated via PR</div></div>
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-platform">Platform MCP</span></div><div class="mcp-row-val">New constitution rules, NFR baselines, or risk profile refinements → openclaw-specs/constitution/ updated via PR</div></div>
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-comp">Component MCP</span></div><div class="mcp-row-val">Contracts shipped → get_contracts() on component MCP returns updated versions; deprecations noted with sunset dates</div></div>
+            <div class="mcp-row"><div class="mcp-row-label"><span class="mcp-tag mt-platform">Platform MCP</span></div><div class="mcp-row-val">graph/index.yaml updated → initiative → feature-spec → component-specs → verify.md fully linked for audit trail</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fan-out diagram — simplified 2-repo model -->
+  <div class="fanout-box">
+    <div class="fanout-lbl">How the Architect hands off to Developer agents — one per component, parallel</div>
+    <div class="fo-top"><div class="fo-node"><div class="fo-node-lbl">Architect · feature-spec.md ready</div><div class="fo-node-title">Fan-out → per component</div></div></div>
+    <div class="fo-stem"></div>
+    <div class="fo-cross"></div>
+    <div class="fo-branches">
+      <div class="fo-branch">
+        <div class="fo-bstem"></div><div class="fo-bdot ok"></div>
+        <div class="fo-repo">
+          <div class="fo-rname">mario-hugo</div>
+          <div class="fo-row"><span class="fk">component_spec</span><span class="fv">OC-047-momentum</span></div>
+          <div class="fo-row"><span class="fk">mcp_source</span><span class="fv">mario-hugo MCP</span></div>
+          <div class="fo-row"><span class="fk">contract_change</span><span class="fv">no</span></div>
+          <div class="fo-row"><span class="fk">blocked_by</span><span class="fv">—</span></div>
+        </div>
+      </div>
+      <div class="fo-branch">
+        <div class="fo-bstem"></div><div class="fo-bdot ok"></div>
+        <div class="fo-repo">
+          <div class="fo-rname">performance</div>
+          <div class="fo-row"><span class="fk">component_spec</span><span class="fv">OC-047-feedback</span></div>
+          <div class="fo-row"><span class="fk">mcp_source</span><span class="fv">performance MCP</span></div>
+          <div class="fo-row"><span class="fk">contract_change</span><span class="fv">no</span></div>
+          <div class="fo-row"><span class="fk">blocked_by</span><span class="fv">—</span></div>
+        </div>
+      </div>
+      <div class="fo-branch">
+        <div class="fo-bstem"></div><div class="fo-bdot blk"></div>
+        <div class="fo-repo bl">
+          <div class="fo-rname">⛔ guaripolo</div>
+          <div class="fo-row"><span class="fk">component_spec</span><span class="fv">OC-048-cb-rules</span></div>
+          <div class="fo-row"><span class="fk">mcp_source</span><span class="fv">guaripolo MCP</span></div>
+          <div class="fo-row"><span class="fk">contract_change</span><span class="fv">yes</span></div>
+          <div class="fo-row"><span class="fk">blocked_by</span><span class="fv fv-bl">HUMAN APPROVAL</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- 05 ── GATES ────────────────────────────────── -->
+<section id="gates" class="section fi">
+  <div class="sec-hd"><span class="sec-num">05 —</span><h2 class="sec-title">The 5 Gates</h2></div>
+  <p class="sec-desc">Non-negotiable checkpoints enforced at CLI, CI, PR, and agent levels. If any gate fails, progress is blocked — no exceptions.</p>
+  <div class="gates-grid">
+    <div class="gate"><div class="gate-num">G1</div><div class="gate-title">Context Completeness</div><ul class="gate-checks"><li>All MCP sources cited with versions</li><li>Context Pack version pinned in spec</li><li>constitution.md exists and non-empty</li></ul></div>
+    <div class="gate"><div class="gate-num">G2</div><div class="gate-title">Domain Validity</div><ul class="gate-checks"><li>No invariant violations</li><li>Domain ownership respected</li><li>No direct cross-domain DB access</li></ul></div>
+    <div class="gate"><div class="gate-num">G3</div><div class="gate-title">Integration Safety</div><ul class="gate-checks"><li>All contract consumers identified</li><li>Compatibility plan for breaking changes</li><li>Dual-publish strategy defined</li></ul></div>
+    <div class="gate"><div class="gate-num">G4</div><div class="gate-title">NFR Compliance</div><ul class="gate-checks"><li>Logging, metrics, tracing declared</li><li>PII handling specified</li><li>Performance targets set (p95)</li></ul></div>
+    <div class="gate"><div class="gate-num">G5</div><div class="gate-title">Ready to Implement</div><ul class="gate-checks"><li>No open BlockedBy ADRs</li><li>Spec is unambiguous</li><li>All acceptance criteria testable</li></ul></div>
+  </div>
+  <div class="gate-note">
+    <span>🚫</span>
+    <div><strong>If any gate FAILS →</strong> the system must block progress. The failure must be resolved before moving forward. Self-enforced by the Verifier agent checklist at merge time, and by CI spec link validation in both repos.</div>
+  </div>
+</section>
+
+<!-- 06 ── EXAMPLE PROMPTS ──────────────────────── -->
+<section id="prompts" class="section fi">
+  <div class="sec-hd"><span class="sec-num">06 —</span><h2 class="sec-title">Example Prompts</h2></div>
+  <p class="sec-desc">Real prompts for a Spec-Oriented Agent — showing how each role interacts with the system in practice. The agent always runs Phase 1 (identify) before Phase 2 (produce spec).</p>
+
+  <div class="prompts-intro">
+    <h3>How to use these prompts</h3>
+    <p>Send these to a Spec-Oriented Agent (Claude Code, Cursor, Copilot) configured with the SDD system prompt. The agent must identify the request type and missing context before generating any spec or code — jumping straight to implementation is a system violation.</p>
+  </div>
+
+  <div class="p-tabs">
+    <div class="p-tab on"  onclick="showTab('feature')">New Feature</div>
+    <div class="p-tab"     onclick="showTab('contract')">Contract Change</div>
+    <div class="p-tab"     onclick="showTab('component')">Component Spec</div>
+    <div class="p-tab"     onclick="showTab('hotfix')">Hotfix</div>
+    <div class="p-tab"     onclick="showTab('adr')">ADR</div>
+    <div class="p-tab"     onclick="showTab('gatechk')">Gate Check</div>
+  </div>
+
+  <div class="p-panels">
+
+    <!-- NEW FEATURE -->
+    <div class="p-panel on" id="panel-feature">
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-pm">Product Manager</span><div class="p-title">Kicking off a new cross-domain initiative</div></div>
+        <div class="p-ctx">Context: Starting Guest Checkout (ECO-124). No spec exists yet. Context Pack cp-v2 is ready.</div>
+        <div class="p-bubble">We need guest checkout on our e-commerce platform. Users complete a full purchase without an account. Cart, Checkout, Payments, and Fulfillment are all involved. Create the platform spec for initiative ECO-124 using context pack cp-v2.</div>
+        <div class="p-result">Agent runs Phase 1 — identifies cross-domain feature, maps domains (cart, checkout, payments, fulfillment), checks for missing context. Phase 2 produces a full Platform Spec: UX flow, domain responsibilities, contract baselines, NFRs, and complete Gate Check with all 5 gates evaluated.</div>
+      </div>
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-pm">Product Manager</span><div class="p-title">Surfacing ambiguities before planning begins</div></div>
+        <div class="p-ctx">Context: Architect agent has produced the feature spec. Running clarify pass before handing off to Developer agents.</div>
+        <div class="p-bubble">Run clarify on the guest checkout platform spec. Surface all ambiguities before we write the plan. Flag anything that needs an ADR and assign owners.</div>
+        <div class="p-result">Agent surfaces open questions: idempotency strategy for payment retries, session TTL for abandoned carts, which service owns guest_token generation, Fulfillment dedup strategy. Creates ADR Drafts ADR-219, ADR-220, ADR-221. Marks spec BlockedBy: ADR-219, ADR-220, ADR-221. Prevents planning until ADRs are resolved.</div>
+      </div>
+    </div>
+
+    <!-- CONTRACT CHANGE -->
+    <div class="p-panel" id="panel-contract">
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-int">Integration Owner</span><div class="p-title">Proposing a breaking change to OrderPlaced</div></div>
+        <div class="p-ctx">Context: Need to add payment_intent_id and guest_email to OrderPlaced event for ECO-124.</div>
+        <div class="p-bubble">I need to add two new fields to OrderPlaced: payment_intent_id (string) and guest_email (string, PII). Required for guest checkout. Check who consumes OrderPlaced v2, assess whether this is a breaking change, and draft Contract Change Spec SPEC-CONTRACT-77 with a compatibility plan.</div>
+        <div class="p-result">Agent queries Integration MCP — finds 4 consumers of OrderPlaced v2 (fulfillment, shipping, analytics, notification). Flags guest_email as PII, cites SEC-001 from Platform MCP (PII masking required at API boundary). Identifies this as a breaking change requiring dual-publish. Generates SPEC-CONTRACT-77: dual-publish v2 + v3 for 30 days, deprecation schedule, consumer notification plan.</div>
+      </div>
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-int">Integration Owner</span><div class="p-title">Verifying consumer migration before sunsetting v1</div></div>
+        <div class="p-ctx">Context: CartUpdated v1 has been deprecated. Dual-publish window ends next week.</div>
+        <div class="p-bubble">Check whether all consumers of CartUpdated v1 have migrated to v2. If confirmed, create the deprecation closure notice and mark v1 as sunset-ready in the contract registry.</div>
+        <div class="p-result">Agent queries Integration MCP for CartUpdated v1 consumer list — finds checkout-service as the only consumer and confirms migration to v2 is complete. Generates deprecation closure: marks CartUpdated v1 status as "sunset", closes dual-publish window, creates Contract Spec update entry in the Spec Graph with migration audit trail.</div>
+      </div>
+    </div>
+
+    <!-- COMPONENT SPEC -->
+    <div class="p-panel" id="panel-component">
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-eng">Component Team — Cart</span><div class="p-title">Picking up a fan-out task and writing a Component Spec</div></div>
+        <div class="p-ctx">Context: Fan-out task received. Platform Spec OC-124 v1, context pack cp-v2, contract_change: yes.</div>
+        <div class="p-bubble">I have the Cart fan-out task for ECO-124. Platform spec OC-124 v1, context pack cp-v2. Write the Cart Component Spec. Cart must support guest sessions via token (no auth dependency), persist through checkout, and emit CartUpdated v2. Check Cart domain invariants first.</div>
+        <div class="p-result">Agent reads context pack cp-v2, queries Domain MCP for Cart invariants — finds CART-INV-001 (auth-free sessions), CART-INV-002 (30-min TTL minimum), CART-INV-003 (no cross-domain DB access). Queries Component MCP for cart-service patterns (Redis for sessions, transactional outbox for events). Generates Component Spec with declares: implements: OC-124 v1, context_pack: cp-v2, contracts_referenced: CartUpdated v2. Gate Check: all 5 gates pass.</div>
+      </div>
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-eng">Component Team — Payments</span><div class="p-title">Unblocking a spec after ADR approval</div></div>
+        <div class="p-ctx">Context: Payments Component Spec was blocked on ADR-219. ADR-219 has just been approved.</div>
+        <div class="p-bubble">ADR-219 is approved — idempotency key is payment_intent_id, stored in DB before each capture attempt. Unblock the Payments Component Spec and generate the implementation plan.</div>
+        <div class="p-result">Agent updates Payments Component Spec: removes BlockedBy: ADR-219, status changes from Blocked → Approved. Incorporates the approved idempotency pattern (references ADR-219 as authoritative decision). Architect re-runs with confirmed approach. Gate 5 now passes — no open ADRs. Generates tasks.md with dependency-ordered implementation tasks.</div>
+      </div>
+    </div>
+
+    <!-- HOTFIX -->
+    <div class="p-panel" id="panel-hotfix">
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-ai">On-Call Engineer</span><div class="p-title">Production payment timeout — urgent hotfix path</div></div>
+        <div class="p-ctx">Context: Production incident. Payment authorisations timing out. Revenue impacted. Stripe EU degraded.</div>
+        <div class="p-bubble">URGENT: Production is failing. Payment authorisation calls to Stripe are timing out after 30s. Orders dropping. Stripe status page shows EU region degraded. We route all traffic there. Need immediate fix.</div>
+        <div class="p-result">Agent switches to Hotfix Path — creates minimal Hotfix Spec HOTFIX-12 in &lt;60 seconds: issue = Stripe EU timeout, fix = add regional fallback routing to Stripe US endpoint with 15s timeout + 2 retries, rollback = revert routing config flag, observability = monitor payment_authorization.timeout_rate metric. Marks follow-up spec required for full circuit breaker implementation with ADR for resilience strategy.</div>
+      </div>
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-eng">Component Team</span><div class="p-title">Post-hotfix hardening spec</div></div>
+        <div class="p-ctx">Context: Hotfix HOTFIX-12 is stable and deployed. Time to harden the payments service properly.</div>
+        <div class="p-bubble">The HOTFIX-12 fix is stable. Now write the follow-up hardening spec for payments. We need a proper circuit breaker for Stripe calls, full observability, and an ADR documenting the resilience strategy decision.</div>
+        <div class="p-result">Agent creates Follow-up Spec referencing HOTFIX-12. Queries Component MCP for payments-service approved patterns — finds opossum circuit breaker is registered. Generates full Component Spec: circuit breaker config (5 failures/10s window, 30s half-open recovery), new metrics declared (circuit_breaker.state, payment_provider.timeout_rate), creates ADR-226 for resilience strategy with options analysed. Gate 4 check verifies observability section is complete.</div>
+      </div>
+    </div>
+
+    <!-- ADR -->
+    <div class="p-panel" id="panel-adr">
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-arch">Platform Architect</span><div class="p-title">Resolving a blocking ADR before planning</div></div>
+        <div class="p-ctx">Context: ADR-220 (guest session expiry) is blocking Cart and Checkout component specs.</div>
+        <div class="p-bubble">Resolve ADR-220 on guest session expiry strategy. Three options: (A) 30-minute sliding window TTL, (B) 24-hour fixed TTL, (C) TTL tied to checkout session lifecycle. Consider Cart domain invariants, Redis cost, and abandonment rates. Draft the ADR with a recommendation.</div>
+        <div class="p-result">Agent queries Domain MCP — finds CART-INV-002 (sessions must outlive checkout flow, minimum 30-min TTL). Queries Platform MCP for performance constraints. Analyses all 3 options: Option B violates no invariant but increases Redis cost 6×. Option C creates coupling between domains (violates boundary rules). Recommends Option A (sliding 30-min window). Generates ADR-220 in Proposed state with decision rationale, trade-offs, and consequence analysis. Marks Cart and Checkout specs as unblocked on approval.</div>
+      </div>
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-arch">Platform Architect</span><div class="p-title">Settling a cross-domain event versioning debate</div></div>
+        <div class="p-ctx">Context: Multiple teams are adopting inconsistent strategies for event schema versioning.</div>
+        <div class="p-bubble">Teams keep making different calls on event schema versioning — some use field-addition only, others create new event types. I need a global ADR that settles this for all domains once and for all. Consider Kafka compatibility constraints and our existing consumer patterns.</div>
+        <div class="p-result">Agent queries Integration MCP for existing contracts and identifies the inconsistency pattern. Creates global ADR-225 scoped to Platform Repo (affects all components). Documents two options with full Kafka compatibility analysis. Recommends semantic versioning: field additions are backward-compatible (MINOR bump), field removal/rename/type-change are breaking (MAJOR version, requires dual-publish). Marks ADR-225 as blocking all future Contract Specs until approved by Integration Owner.</div>
+      </div>
+    </div>
+
+    <!-- GATE CHECK -->
+    <div class="p-panel" id="panel-gatechk">
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-ai">AI Agent</span><div class="p-title">Running gate analysis before fan-out</div></div>
+        <div class="p-ctx">Context: Architect has produced feature-spec.md OC-124 v1. Running Verifier gate check before fan-out to Developer agents.</div>
+        <div class="p-bubble">Run full gate analysis on OC-124 v1. I need a Gate 1–5 check before we fan out to component teams. Show each gate result with specific evidence.</div>
+        <div class="p-result">G1 PASS — all MCP sources cited with versions, cp-v2 pinned. G2 PASS — no invariant violations, domain ownership respected across Cart/Checkout/Payments/Fulfillment. G3 FAIL — OrderPlaced v3 consumer list incomplete (shipping-service missing; only fulfillment, analytics, notification declared). G4 PASS — logging/metrics/tracing declared, PII masking plan for guest_email documented citing SEC-001. G5 FAIL — BlockedBy: ADR-219 still in Proposed state (no approved owner). Fan-out BLOCKED. Agent outputs exact remediation steps for both failing gates.</div>
+      </div>
+      <div class="p-item">
+        <div class="p-item-hd"><span class="p-badge pb-eng">Component Team</span><div class="p-title">Checking a local design decision against domain invariants</div></div>
+        <div class="p-ctx">Context: Cart engineer wants to store checkout session state in Cart's Redis instance to simplify the architecture.</div>
+        <div class="p-bubble">We're thinking of storing checkout session state in the Cart Redis — it's already there for cart sessions and would simplify the architecture. Is this okay from a domain perspective?</div>
+        <div class="p-result">Agent queries Domain MCP and immediately flags two invariant violations: CART-INV-001 (Cart owns cart session state — Checkout must not store or mutate it) and CHK-INV-001 (Checkout owns order lifecycle — its session state must live in Checkout's own storage). Returns Gate 2 FAIL with specific invariant IDs and rationale. Explains the ownership model with a diagram. Suggests the correct pattern: Checkout creates its own Redis namespace (checkout-sessions:*) or Postgres table, referencing the cart via cart_token only.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 07 ── ROLES ─────────────────────────────────── -->
+<section id="roles" class="section fi">
+  <div class="sec-hd"><span class="sec-num">07 —</span><h2 class="sec-title">Roles &amp; Responsibilities</h2></div>
+  <p class="sec-desc">Every role has a clear repo, clear ownership, and clear accountability. No overlap — no ambiguity about who decides what.</p>
+  <div class="roles-tbl">
+    <div class="r-row r-hd">
+      <div class="r-cell hc">Role</div>
+      <div class="r-cell hc">Owns</div>
+      <div class="r-cell hc">Accountable For</div>
+    </div>
+    <div class="r-row"><div class="r-cell"><div class="r-name">Product Manager</div><div class="r-repo">Platform Repo</div></div><div class="r-cell"><p>Initiative definition, business goals, UX intent</p></div><div class="r-cell"><p>Initiative (Epic), success criteria</p></div></div>
+    <div class="r-row"><div class="r-cell"><div class="r-name">Platform Architect</div><div class="r-repo">Specs Repo</div></div><div class="r-cell"><p>constitution/, templates/, workflows/, graph/index.yaml — the governed inputs that Platform MCP serves</p></div><div class="r-cell"><p>"What the system must do" across all components · approves Architect agent output</p></div></div>
+    <div class="r-row"><div class="r-cell"><div class="r-name">Domain Owner</div><div class="r-repo">Specs + System Repo</div></div><div class="r-cell"><p>components/{name}/specs/ — invariants, contracts, patterns, ADRs served by Component MCP</p></div><div class="r-cell"><p>Domain correctness of all specs touching their component · approves Developer agent output</p></div></div>
+    <div class="r-row"><div class="r-cell"><div class="r-name">Integration Owner</div><div class="r-repo">Specs Repo</div></div><div class="r-cell"><p>contracts/ inside each component spec — get_contracts() on Component MCP returns these</p></div><div class="r-cell"><p>Approves contract changes declared in Architect exit gate · verifies no breaking changes</p></div></div>
+    <div class="r-row"><div class="r-cell"><div class="r-name">Component Team</div><div class="r-repo">System Repo</div></div><div class="r-cell"><p>Implementation specs (docs/specs/), code, tests, local ADRs</p></div><div class="r-cell"><p>"How the system works locally" — Developer + Verifier agents</p></div></div>
+    <div class="r-row"><div class="r-cell"><div class="r-name">ADR Owner</div><div class="r-repo">Platform or Component</div></div><div class="r-cell"><p>Technical decisions — global or local scope</p></div><div class="r-cell"><p>Resolving ambiguity before implementation proceeds</p></div></div>
+    <div class="r-row"><div class="r-cell"><div class="r-name">AI Agents</div><div class="r-repo">analyst · architect · developer · verifier</div></div><div class="r-cell"><p>Discovery, specification, implementation, and verification — loaded from .claude/agents/ as Markdown</p></div><div class="r-cell"><p>Must call Platform + Component MCPs · self-check exit gates · produce traceable outputs per risk level</p></div></div>
+  </div>
+</section>
+
+<!-- 08 ── SCALING ───────────────────────────────── -->
+<section id="scale" class="section fi">
+  <div class="sec-hd"><span class="sec-num">08 —</span><h2 class="sec-title">Scaling Guide</h2></div>
+  <p class="sec-desc">Start with one repo and add structure only when the team needs it. The two-MCP model and four agents never change — only the physical organisation of content does.</p>
+  <div class="scale-grid">
+    <div class="scale-card">
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot"></div><div class="s-dot"></div></div>
+      <h3>Early Stage</h3><div class="scale-teams">1–2 people</div>
+      <p class="scale-desc">One repo. Platform MCP reads a single openclaw-specs/ directory. Component MCP reads the one monorepo component you have. Quick workflow only.</p>
+      <ul class="scale-list">
+        <li>Single repo: specs + code together</li>
+        <li>Platform MCP reads local directory</li>
+        <li>One component MCP for the whole system</li>
+        <li>Quick workflow only (developer → verifier)</li>
+      </ul>
+    </div>
+    <div class="scale-card">
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot on"></div><div class="s-dot"></div></div>
+      <h3>Growing Team</h3><div class="scale-teams">3–6 people</div>
+      <p class="scale-desc">Split repos. openclaw-specs/ becomes its own repo so product and engineering can PR separately. One component MCP instance per bounded context.</p>
+      <ul class="scale-list">
+        <li>openclaw-specs/ repo split from system repo</li>
+        <li>Component MCP instances per major component</li>
+        <li>Standard workflow introduced for new features</li>
+        <li>agents/ symlinked into .claude/ from specs repo</li>
+      </ul>
+    </div>
+    <div class="scale-card">
+      <div class="s-dots"><div class="s-dot on"></div><div class="s-dot on"></div><div class="s-dot on"></div></div>
+      <h3>Full Model</h3><div class="scale-teams">6+ people</div>
+      <p class="scale-desc">Full two-repo model as described in this document. Full workflow for high/critical. Human approval gates enforced at Verifier. Spec graph fully linked.</p>
+      <ul class="scale-list">
+        <li>Full workflow for high/critical risk</li>
+        <li>Analyst agent activated for major initiatives</li>
+        <li>Human approval gates enforced in verifier.md</li>
+        <li>graph/index.yaml fully linked for audit trail</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING ─────────────────────────────────────── -->
+<div class="closing fi">
+  <h2>Ready to start on Day 1?</h2>
+  <p>Four phases. MCP servers first — then your first initiative — then parallel fan-out — then harden.</p>
+  <div class="d1-grid">
+    <div class="d1-phase"><div class="d1-lbl">Phase 1 · Foundation</div><ul class="d1-list"><li>Create openclaw-specs/ repo</li><li>Write constitution/policies.md</li><li>Deploy Platform MCP (reads specs/)</li><li>Deploy Component MCP per component</li><li>Symlink .claude/agents/ to specs/agents/</li></ul></div>
+    <div class="d1-phase"><div class="d1-lbl">Phase 2 · First Initiative</div><ul class="d1-list"><li>Select one low-risk pilot feature</li><li>Run quick workflow: developer.md only</li><li>Developer calls Component MCP</li><li>Verifier produces verify.md</li><li>Validate gate checklist end-to-end</li></ul></div>
+    <div class="d1-phase"><div class="d1-lbl">Phase 3 · Standard Flow</div><ul class="d1-list"><li>Run standard workflow for a medium feature</li><li>Architect produces feature-spec.md</li><li>Fan out: developer.md per component (parallel)</li><li>Verifier waits for all developers done</li><li>Update graph/index.yaml post-merge</li></ul></div>
+    <div class="d1-phase"><div class="d1-lbl">Phase 4 · Harden</div><ul class="d1-list"><li>Add full workflow for critical changes</li><li>Analyst activated for Guaripolo/live flag</li><li>Human approval gate in verifier.md</li><li>CI enforces verify.md sign-off before merge</li></ul></div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <span>Target Operating Model · SDD + MCP · v3.0</span>
+  <em>"Software is no longer just built — it is specified, validated, and executed as a system of knowledge."</em>
+  <span>February 2026</span>
+</footer>
+
+<script>
+function showTab(id) {
+  const ids = ['feature','contract','component','hotfix','adr','gatechk'];
+  const tabs = document.querySelectorAll('.p-tab');
+  const panels = document.querySelectorAll('.p-panel');
+  tabs.forEach(t => t.classList.remove('on'));
+  panels.forEach(p => p.classList.remove('on'));
+  const idx = ids.indexOf(id);
+  if (idx >= 0) tabs[idx].classList.add('on');
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('on');
+}
+
+// Fade-in on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+}, { threshold: 0.07 });
+document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+
+// Nav highlight
+const sects = document.querySelectorAll('section[id]');
+const navAs = document.querySelectorAll('.nav-links a');
+const navObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.getAttribute('id');
+      navAs.forEach(a => { a.style.color = a.getAttribute('href') === '#' + id ? 'var(--rust)' : ''; });
+    }
+  });
+}, { threshold: 0.4 });
+sects.forEach(s => navObs.observe(s));
+</script>
+</body>
+</html>

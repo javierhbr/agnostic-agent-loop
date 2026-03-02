@@ -15,6 +15,95 @@
 
 ---
 
+## Working in an Existing Codebase
+
+### Decision: Small Fix vs Full Pipeline
+
+| Situation | Approach | Time |
+| --------- | -------- | ---- |
+| Bug, typo, single file | Direct edit | 5-15 min |
+| Small feature (1–3 files) | Direct edit | 15-30 min |
+| New feature (4+ files) | **Openspec pipeline** | 2-4 hours |
+| Modify behavior (breaking change) | **Openspec pipeline** | 3-8 hours |
+| Have PRD/spec ready | `openspec init --from file` | 1-3 hours |
+| Resume in-progress work | `task continue` | Ongoing |
+
+### Three Essential Prompts
+
+**For small changes:**
+
+```
+Change [X] in [file/component] to do [Y instead].
+Use the existing [pattern] as reference.
+```
+
+**For new features:**
+
+```
+I want to add [feature] to this project. Can you brainstorm?
+Problem: [what problem?]
+Users: [who needs this?]
+Help me create a PRD using product-wizard.
+```
+
+**After PRD → Ready to structure:**
+
+```
+Use openspec to create tasks:
+agentic-agent openspec init "Feature Name" --from <prd-file>
+```
+
+### Five Essential CLI Commands
+
+```bash
+agentic-agent status                          # Project health
+agentic-agent context generate <dir>          # Before editing a directory
+agentic-agent openspec init "Name" --from ... # Start a change from spec
+agentic-agent task claim <ID>                 # Start a task
+agentic-agent task complete <ID>              # Finish a task
+```
+
+### Full Example: CSV Export Feature
+
+```
+1. You: "I want to add CSV export"
+2. Me: Brainstorm (ask clarifying questions)
+3. You: Answer with specifics
+4. Me: Create PRD with product-wizard
+5. You: agentic-agent openspec init "CSV Export" --from prd.md
+6. Me: Creates 4 tasks (service, API, UI, tests)
+7. You: For each task:
+         agentic-agent task claim TASK-X
+         Tell me: "Implement this task"
+         agentic-agent task complete TASK-X
+8. You: agentic-agent openspec complete csv-export
+9. Done: Feature is tracked, tested, implemented
+```
+
+**Total time:** 2–3 hours for complete, production-ready feature.
+
+### Key Rules
+
+✅ **Do This**
+
+- Read existing code first
+- Use `agentic-agent context generate <dir>` before editing
+- Run `agentic-agent validate` before completing
+- Use openspec for anything 4+ files or multi-layer
+- Use feature flags for risky/breaking changes
+
+❌ **Don't Do This**
+
+- Assume scope (4 files becomes 6 when you start)
+- Skip brainstorm/PRD for "obvious" features
+- Bypass openspec to "save time"
+- Commit without running `agentic-agent validate`
+- Change behavior without migration/rollback plan
+
+**See [05-existing-codebase/](05-existing-codebase/) for complete examples and prompts.**
+
+---
+
 ## Essential Prompts (Copy & Adapt)
 
 ### Starting from Vague Idea

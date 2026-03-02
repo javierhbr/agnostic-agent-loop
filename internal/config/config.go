@@ -56,6 +56,20 @@ func SetDefaults(cfg *models.Config) {
 	if cfg.Paths.OpenSpecDir == "" {
 		cfg.Paths.OpenSpecDir = ".agentic/openspec/changes"
 	}
+
+	// Set default SDD config if not configured
+	if cfg.SDD.SpecGraphPath == "" {
+		cfg.SDD.SpecGraphPath = ".agentic/spec-graph.json"
+	}
+	if cfg.SDD.AgentsDir == "" {
+		cfg.SDD.AgentsDir = ".claude/agents"
+	}
+	if cfg.SDD.ADRDir == "" {
+		cfg.SDD.ADRDir = "adr"
+	}
+	if cfg.SDD.InitiativesDir == "" {
+		cfg.SDD.InitiativesDir = ".agentic/sdd/initiatives"
+	}
 }
 
 // GetAgentConfig returns the effective config for a specific agent,

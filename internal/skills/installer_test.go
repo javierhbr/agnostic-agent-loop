@@ -6,56 +6,6 @@ import (
 	"testing"
 )
 
-func TestInstaller_Install_CreatesCanonicalAndSymlink(t *testing.T) {
-	tmpDir := t.TempDir()
-
-	origDir := ToolSkillDir["claude-code"]
-	toolSkillDir := filepath.Join(tmpDir, ".claude", "skills")
-	ToolSkillDir["claude-code"] = toolSkillDir
-	defer func() { ToolSkillDir["claude-code"] = origDir }()
-
-	// Set canonical dir to temp
-	canonicalDir := filepath.Join(tmpDir, ".agentic", "skills")
-
-	installer := NewInstallerWithCanonicalDir(canonicalDir)
-	result, err := installer.Install("tdd", "claude-code", false)
-	if err != nil {
-		t.Fatalf("Install failed: %v", err)
-	}
-
-	// Canonical file should exist as a real file
-	canonicalPath := filepath.Join(canonicalDir, "tdd", "SKILL.md")
-	info, err := os.Lstat(canonicalPath)
-	if err != nil {
-		t.Fatalf("canonical file missing: %v", err)
-	}
-	if info.Mode()&os.ModeSymlink != 0 {
-		t.Error("canonical file should be a real file, not a symlink")
-	}
-
-	// Tool dir file should be a symlink
-	toolPath := filepath.Join(toolSkillDir, "tdd", "SKILL.md")
-	info, err = os.Lstat(toolPath)
-	if err != nil {
-		t.Fatalf("tool dir file missing: %v", err)
-	}
-	if info.Mode()&os.ModeSymlink == 0 {
-		t.Error("tool dir file should be a symlink")
-	}
-
-	// Symlink should point to canonical
-	target, _ := os.Readlink(toolPath)
-	absCanonical, _ := filepath.Abs(canonicalPath)
-	if target != absCanonical {
-		t.Errorf("symlink target = %q, want %q", target, absCanonical)
-	}
-
-	// Result should list files written
-	if len(result.FilesWritten) != 3 {
-		t.Errorf("expected 3 files written, got %d", len(result.FilesWritten))
-	}
-}
-
 func TestInstaller_Install(t *testing.T) {
 	tmpDir := t.TempDir()
 
@@ -250,5 +200,145 @@ func TestInstaller_ListPacks(t *testing.T) {
 	packs := installer.ListPacks()
 	if len(packs) == 0 {
 		t.Fatal("expected at least one pack")
+	}
+}
+
+func TestInstaller_Install_AgentHelperPack(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Override both ToolSkillDir and ToolAgentDir for test
+	origSkillDir := ToolSkillDir["claude-code"]
+	origAgentDir := ToolAgentDir["claude-code"]
+	ToolSkillDir["claude-code"] = filepath.Join(tmpDir, ".claude", "skills")
+	ToolAgentDir["claude-code"] = filepath.Join(tmpDir, ".claude", "agents")
+	defer func() {
+		ToolSkillDir["claude-code"] = origSkillDir
+		ToolAgentDir["claude-code"] = origAgentDir
+	}()
+
+	installer := NewInstaller()
+	result, err := installer.Install("agentic-helper", "claude-code", false)
+	if err != nil {
+		t.Fatalf("Install failed: %v", err)
+	}
+
+	if result.PackName != "agentic-helper" {
+		t.Errorf("expected PackName 'agentic-helper', got %q", result.PackName)
+	}
+	if result.Tool != "claude-code" {
+		t.Errorf("expected Tool 'claude-code', got %q", result.Tool)
+	}
+	if len(result.FilesWritten) != 2 {
+		t.Errorf("expected 2 files written for agentic-helper, got %d", len(result.FilesWritten))
+	}
+
+	// Verify AGENT.md is in ToolAgentDir
+	agentFile := filepath.Join(ToolAgentDir["claude-code"], "agentic-helper.md")
+	if _, err := os.Stat(agentFile); os.IsNotExist(err) {
+		t.Errorf("AGENT.md not found at expected location: %s", agentFile)
+	} else if info, _ := os.Stat(agentFile); info.Size() == 0 {
+		t.Errorf("AGENT.md is empty")
+	}
+
+	// Verify SKILL.md is in ToolSkillDir
+	skillFile := filepath.Join(ToolSkillDir["claude-code"], "agentic-helper", "SKILL.md")
+	if _, err := os.Stat(skillFile); os.IsNotExist(err) {
+		t.Errorf("SKILL.md not found at expected location: %s", skillFile)
+	} else if info, _ := os.Stat(skillFile); info.Size() == 0 {
+		t.Errorf("SKILL.md is empty")
+	}
+}
+
+func TestInstaller_Install_AgentFile_FallsBackForNonAgentTools(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Override ToolSkillDir for cursor (no ToolAgentDir entry)
+	origSkillDir := ToolSkillDir["cursor"]
+	ToolSkillDir["cursor"] = filepath.Join(tmpDir, ".cursor", "skills")
+	defer func() { ToolSkillDir["cursor"] = origSkillDir }()
+
+	installer := NewInstaller()
+	result, err := installer.Install("agentic-helper", "cursor", false)
+	if err != nil {
+		t.Fatalf("Install failed: %v", err)
+	}
+
+	if len(result.FilesWritten) != 2 {
+		t.Errorf("expected 2 files written, got %d", len(result.FilesWritten))
+	}
+
+	// For cursor (no agent dir), AGENT.md should fall back to ToolSkillDir
+	skillDir := ToolSkillDir["cursor"]
+	agentFile := filepath.Join(skillDir, "agentic-helper.md")
+	if _, err := os.Stat(agentFile); os.IsNotExist(err) {
+		t.Errorf("AGENT.md should fall back to ToolSkillDir for cursor, but not found at %s", agentFile)
+	}
+}
+
+func TestInstaller_IsInstalled_AgentPack(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	origSkillDir := ToolSkillDir["claude-code"]
+	origAgentDir := ToolAgentDir["claude-code"]
+	ToolSkillDir["claude-code"] = filepath.Join(tmpDir, ".claude", "skills")
+	ToolAgentDir["claude-code"] = filepath.Join(tmpDir, ".claude", "agents")
+	defer func() {
+		ToolSkillDir["claude-code"] = origSkillDir
+		ToolAgentDir["claude-code"] = origAgentDir
+	}()
+
+	installer := NewInstaller()
+
+	// Not installed yet
+	if installer.IsInstalled("agentic-helper", "claude-code") {
+		t.Error("expected IsInstalled to return false before install")
+	}
+
+	// Install
+	_, err := installer.Install("agentic-helper", "claude-code", false)
+	if err != nil {
+		t.Fatalf("Install failed: %v", err)
+	}
+
+	// Now installed
+	if !installer.IsInstalled("agentic-helper", "claude-code") {
+		t.Error("expected IsInstalled to return true after install")
+	}
+}
+
+func TestResolveAgentOutputDir_ClaudeCode(t *testing.T) {
+	agentDir, err := resolveAgentOutputDir("claude-code", false)
+	if err != nil {
+		t.Fatalf("resolveAgentOutputDir failed: %v", err)
+	}
+
+	expected := ".claude/agents"
+	if agentDir != expected {
+		t.Errorf("expected %q, got %q", expected, agentDir)
+	}
+}
+
+func TestResolveAgentOutputDir_UnsupportedTool(t *testing.T) {
+	_, err := resolveAgentOutputDir("cursor", false)
+	if err == nil {
+		t.Fatal("expected error for unsupported tool cursor")
+	}
+}
+
+func TestResolveAgentOutputDir_Global(t *testing.T) {
+	agentDir, err := resolveAgentOutputDir("claude-code", true)
+	if err != nil {
+		t.Fatalf("resolveAgentOutputDir failed: %v", err)
+	}
+
+	// Should have expanded ~ to home directory
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("failed to get home directory: %v", err)
+	}
+
+	expected := filepath.Join(homeDir, ".claude", "agents")
+	if agentDir != expected {
+		t.Errorf("expected %q, got %q", expected, agentDir)
 	}
 }

@@ -20,7 +20,7 @@ func TestInit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	change, err := m.Init("Auth Feature", reqFile)
+	change, err := m.Init("Auth Feature", reqFile, "", "", "feature", nil, nil)
 	if err != nil {
 		t.Fatalf("Init failed: %v", err)
 	}
@@ -67,10 +67,10 @@ func TestInitDuplicate(t *testing.T) {
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("test"), 0644)
 
-	if _, err := m.Init("My Feature", reqFile); err != nil {
+	if _, err := m.Init("My Feature", reqFile, "", "", "feature", nil, nil); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := m.Init("My Feature", reqFile); err == nil {
+	if _, err := m.Init("My Feature", reqFile, "", "", "feature", nil, nil); err == nil {
 		t.Error("expected error for duplicate change")
 	}
 }
@@ -88,7 +88,7 @@ func TestImport(t *testing.T) {
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
 
-	change, err := m.Init("Import Test", reqFile)
+	change, err := m.Init("Import Test", reqFile, "", "", "feature", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +153,9 @@ func TestComplete(t *testing.T) {
 	// Init + import
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, _ := m.Init("Complete Test", reqFile)
+	packDir := filepath.Join(dir, ".agentic/context/packs/cp-test")
+	os.MkdirAll(packDir, 0755)
+	change, _ := m.Init("Complete Test", reqFile, "SPEC-PLAT-1", "cp-test", "feature", nil, nil)
 
 	tasksPath := filepath.Join(changesDir, change.ID, "tasks.md")
 	os.WriteFile(tasksPath, []byte("1. Single task\n"), 0644)
@@ -199,7 +201,9 @@ func TestArchive(t *testing.T) {
 	// Init + import + complete
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, _ := m.Init("Archive Test", reqFile)
+	packDir := filepath.Join(dir, ".agentic/context/packs/cp-test")
+	os.MkdirAll(packDir, 0755)
+	change, _ := m.Init("Archive Test", reqFile, "SPEC-PLAT-1", "cp-test", "feature", nil, nil)
 
 	tasksPath := filepath.Join(changesDir, change.ID, "tasks.md")
 	os.WriteFile(tasksPath, []byte("1. Do something\n"), 0644)
@@ -231,7 +235,7 @@ func TestArchiveWithoutImplemented(t *testing.T) {
 
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("test"), 0644)
-	change, _ := m.Init("No Impl", reqFile)
+	change, _ := m.Init("No Impl", reqFile, "", "", "feature", nil, nil)
 
 	if err := m.Archive(change.ID); err == nil {
 		t.Error("expected error archiving without IMPLEMENTED marker")
@@ -411,7 +415,7 @@ func TestSync(t *testing.T) {
 	// Init a change
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, err := m.Init("Sync Test", reqFile)
+	change, err := m.Init("Sync Test", reqFile, "", "", "feature", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -461,7 +465,7 @@ func TestSyncSkipsEmptyTasks(t *testing.T) {
 	// Init a change (tasks.md will be template-only)
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	_, err := m.Init("Empty Tasks", reqFile)
+	_, err := m.Init("Empty Tasks", reqFile, "", "", "feature", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -498,7 +502,7 @@ func TestSyncIdempotent(t *testing.T) {
 	// Init and populate tasks
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, _ := m.Init("Idempotent Test", reqFile)
+	change, _ := m.Init("Idempotent Test", reqFile, "", "", "feature", nil, nil)
 
 	tasksPath := filepath.Join(changesDir, change.ID, "tasks.md")
 	os.WriteFile(tasksPath, []byte("1. Task one\n2. Task two\n"), 0644)
@@ -541,8 +545,8 @@ func TestSyncMultipleChanges(t *testing.T) {
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
 
 	// Init two changes
-	change1, _ := m.Init("Feature Alpha", reqFile)
-	change2, _ := m.Init("Feature Beta", reqFile)
+	change1, _ := m.Init("Feature Alpha", reqFile, "", "", "feature", nil, nil)
+	change2, _ := m.Init("Feature Beta", reqFile, "", "", "feature", nil, nil)
 
 	// Populate tasks.md for change1 only
 	tasksPath1 := filepath.Join(changesDir, change1.ID, "tasks.md")
@@ -972,7 +976,7 @@ func TestImportWithTasksDir(t *testing.T) {
 	// Init change
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, err := m.Init("Detail Test", reqFile)
+	change, err := m.Init("Detail Test", reqFile, "", "", "feature", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1058,7 +1062,7 @@ func TestImportMixedWithAndWithoutDetailFiles(t *testing.T) {
 
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, _ := m.Init("Mixed Test", reqFile)
+	change, _ := m.Init("Mixed Test", reqFile, "", "", "feature", nil, nil)
 
 	changeDir := filepath.Join(changesDir, change.ID)
 	tasksSubDir := filepath.Join(changeDir, "tasks")
@@ -1118,7 +1122,7 @@ func TestImportWithMissingDetailFile(t *testing.T) {
 
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, _ := m.Init("Missing File Test", reqFile)
+	change, _ := m.Init("Missing File Test", reqFile, "", "", "feature", nil, nil)
 
 	changeDir := filepath.Join(changesDir, change.ID)
 	os.MkdirAll(filepath.Join(changeDir, "tasks"), 0755)
@@ -1163,7 +1167,7 @@ func TestImportWithTasksDirButNoReferences(t *testing.T) {
 
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, _ := m.Init("No Refs Test", reqFile)
+	change, _ := m.Init("No Refs Test", reqFile, "", "", "feature", nil, nil)
 
 	changeDir := filepath.Join(changesDir, change.ID)
 	os.MkdirAll(filepath.Join(changeDir, "tasks"), 0755)
@@ -1203,7 +1207,7 @@ func TestImportWithTasksDir_SkillRefs(t *testing.T) {
 
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, err := m.Init("Skills Test", reqFile)
+	change, err := m.Init("Skills Test", reqFile, "", "", "feature", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1258,7 +1262,7 @@ func TestScaffoldTaskFiles(t *testing.T) {
 
 	reqFile := filepath.Join(dir, "req.md")
 	os.WriteFile(reqFile, []byte("requirements"), 0644)
-	change, err := m.Init("Scaffold Test", reqFile)
+	change, err := m.Init("Scaffold Test", reqFile, "", "", "feature", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

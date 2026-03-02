@@ -267,7 +267,8 @@ func runSkillsSubmenu() {
 		case "generate":
 			skillsGenerateCmd.Run(skillsGenerateCmd, []string{})
 		case "install":
-			skillsInstallCmd.Run(skillsInstallCmd, []string{})
+			// Pass -i flag to trigger interactive mode in the skills install command
+			skillsInstallCmd.Run(skillsInstallCmd, []string{"-i"})
 		case "list":
 			skillsListCmd.Run(skillsListCmd, []string{})
 		case "check":

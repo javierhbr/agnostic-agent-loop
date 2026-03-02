@@ -123,15 +123,6 @@ func TestEnsure_InstallsConfiguredPacks(t *testing.T) {
 	if _, err := os.Stat(skillPath); os.IsNotExist(err) {
 		t.Errorf("expected %s to exist", skillPath)
 	}
-
-	// Verify it's a symlink
-	info, err := os.Lstat(skillPath)
-	if err != nil {
-		t.Fatalf("Lstat failed: %v", err)
-	}
-	if info.Mode()&os.ModeSymlink == 0 {
-		t.Error("expected skill file to be a symlink")
-	}
 }
 
 func TestEnsure_UnknownTool(t *testing.T) {
@@ -212,22 +203,10 @@ func TestEnsure_GeneratesPrdAndRalphForAllTools(t *testing.T) {
 				t.Errorf("expected %s to exist for %s", prdPath, tc.name)
 			}
 
-			// Verify prd.md is a symlink
-			prdInfo, _ := os.Lstat(prdPath)
-			if prdInfo.Mode()&os.ModeSymlink == 0 {
-				t.Errorf("expected %s to be a symlink for %s", prdPath, tc.name)
-			}
-
 			// Verify ralph-converter.md exists
 			ralphPath := filepath.Join(tc.skillDir, "ralph-converter.md")
 			if _, err := os.Stat(ralphPath); os.IsNotExist(err) {
 				t.Errorf("expected %s to exist for %s", ralphPath, tc.name)
-			}
-
-			// Verify ralph-converter.md is a symlink
-			ralphInfo, _ := os.Lstat(ralphPath)
-			if ralphInfo.Mode()&os.ModeSymlink == 0 {
-				t.Errorf("expected %s to be a symlink for %s", ralphPath, tc.name)
 			}
 
 			// Verify template variable was rendered

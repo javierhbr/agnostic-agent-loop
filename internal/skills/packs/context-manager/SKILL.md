@@ -1,35 +1,42 @@
 ---
 name: context-manager
-description: System rules for context management and architectural boundaries. These are mandatory rules, not optional techniques. See AGENT_RULES.md for complete documentation.
+description: Enforce mandatory context workflow before code changes: read local AGENTS.md files, respect architecture boundaries, and update context docs after structural changes.
 ---
 
-# Context Management Rules
+# skill:context-manager
 
-⚠️ **This is now a system-level rule, not an optional skill.**
+## Does exactly this
 
-**For complete documentation, see [AGENT_RULES.md](../../../../AGENT_RULES.md) in the repository root.**
+Enforces mandatory context workflow: read local AGENTS.md files before edits, respect architecture boundaries, and update context docs after structural changes.
 
 ---
 
-## Quick Reference
+## When to use
 
-### Mandatory: Read-Before-Write
+Apply this skill when a task includes any of the following:
 
-Before modifying ANY file in a directory:
+- Editing files.
+- Creating, moving, or deleting source directories.
+- Changing dependencies between architectural layers.
 
-1. Check if `AGENTS.md` exists in that directory
-2. If it exists, **read it** - identify dependencies, architectural role, constraints
-3. If it does NOT exist and the directory has source files, generate context
-4. Only after reading context may you edit files
-5. Update `AGENTS.md` after architectural changes
+## Required Workflow
 
-### Red Flags — STOP and Fix
+1. Identify all directories that will be edited.
+2. For each directory, check whether `AGENTS.md` exists.
+3. If `AGENTS.md` exists, read it before editing.
+4. If `AGENTS.md` does not exist and the directory contains source files, create documentation context first.
+5. Validate dependency direction against architecture boundaries.
+6. Perform edits.
+7. If structure, entrypoints, or boundaries changed, update the affected `AGENTS.md` files in the same turn.
 
-- ❌ Editing without reading `AGENTS.md` first
-- ❌ Creating directories without generating context
-- ❌ Importing forbidden dependencies
-- ❌ "Too small to need context" — no task is too small
-- ❌ "I'll update context later" — later means never
+## Stop Conditions
+
+Stop and fix context before proceeding if any of these occur:
+
+- Editing starts before reading applicable `AGENTS.md`.
+- A new source directory is added without context documentation.
+- A dependency violates layer boundaries.
+- Architectural changes are made without updating context docs.
 
 ### Hexagonal Architecture Boundaries
 
@@ -40,25 +47,22 @@ Before modifying ANY file in a directory:
 | Infrastructure/Adapters | Domain, Application | Other adapters directly |
 | Infrastructure/Config | All layers | — |
 
+## References
+
+- `AGENT_RULES.md`: Unknown - verify (file not found in current repository).
+- `CLAUDE.md`: Available in repository root for tool-specific guidance.
+- `OPENCODE.md`: Unknown - verify (file not found in current repository).
+- `COPILOT.md`: Unknown - verify (file not found in current repository).
+
+## Execution Checklist
+
+- [ ] Read all relevant `AGENTS.md` files before editing.
+- [ ] Confirm imports respect architecture boundaries.
+- [ ] Apply code changes.
+- [ ] Update context documentation for structural changes.
+
 ---
 
-## Full Documentation
+## If you need more detail
 
-**👉 See [AGENT_RULES.md](../../../../AGENT_RULES.md) for:**
-
-- Complete context management workflow
-- Code quality rules
-- Task management rules
-- Documentation guidelines
-- Communication protocols
-- Emergency procedures
-
-**These rules apply to all agents regardless of tool (Claude, OpenCode, Copilot).**
-
----
-
-## Tool-Specific Commands
-
-- **Claude**: See `CLAUDE.md` for `agentic-agent` CLI commands
-- **OpenCode**: See `OPENCODE.md` for tool integration
-- **Copilot**: See `COPILOT.md` for GitHub-specific features
+No additional resources — this skill is self-contained. Use the workflow above as your checklist.

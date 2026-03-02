@@ -10,7 +10,7 @@ import (
 
 var (
 	// Version information (set via ldflags at build time)
-	Version   = "1.0.1"
+	Version   = "2.1.0"
 	Commit    = "none"
 	BuildDate = "unknown"
 
@@ -110,4 +110,9 @@ func init() {
 	rootCmd.AddCommand(simplifyCmd)
 	rootCmd.AddCommand(openspecCmd)
 	rootCmd.AddCommand(promptsCmd)
+	rootCmd.AddCommand(platformCmd)
+	rootCmd.AddCommand(sddCmd)
+
+	// Initialize SDD subcommands
+	initSDDCmd()
 }

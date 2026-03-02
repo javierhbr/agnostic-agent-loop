@@ -11,28 +11,29 @@ type DetectedAgent struct {
 	Source string // "flag", "env", "filesystem", "unknown"
 }
 
-// envMapping maps environment variable names to agent tool names.
-var envMapping = map[string]string{
-	"AGENTIC_AGENT":  "", // value is the agent name itself
-	"CLAUDE":         "claude-code",
-	"CLAUDE_CODE":    "claude-code",
-	"CURSOR_SESSION": "cursor",
-	"GEMINI_CLI":     "gemini",
-	"WINDSURF_SESSION": "windsurf",
-	"CODEX_SANDBOX":    "codex",
-	"GITHUB_COPILOT":   "copilot",
-	"OPENCODE":         "opencode",
+var envOrder = []struct {
+	Var   string
+	Agent string
+}{
+	{"AGENTIC_AGENT", ""},
+	{"CLAUDE", "claude-code"},
+	{"CLAUDE_CODE", "claude-code"},
+	{"CURSOR_SESSION", "cursor"},
+	{"GEMINI_CLI", "gemini"},
+	{"WINDSURF_SESSION", "windsurf"},
+	{"GITHUB_COPILOT", "copilot"},
+	{"OPENCODE", "opencode"},
 }
 
 // fsMapping maps filesystem paths to agent tool names.
 var fsMapping = map[string]string{
-	".claude":  "claude-code",
-	"CLAUDE.md": "claude-code",
-	".cursor":  "cursor",
-	".gemini":  "gemini",
-	".windsurf": "windsurf",
-	".codex":   "codex",
-	".agent":                       "antigravity",
+	".claude":                         "claude-code",
+	"CLAUDE.md":                       "claude-code",
+	".cursor":                         "cursor",
+	".gemini":                         "gemini",
+	".windsurf":                       "windsurf",
+	".codex":                          "codex",
+	".agent":                          "antigravity",
 	".github/copilot-instructions.md": "copilot",
 	".opencode":                       "opencode",
 }
@@ -49,12 +50,12 @@ func DetectAgent(flagValue string, projectRoot string) DetectedAgent {
 	if val := os.Getenv("AGENTIC_AGENT"); val != "" {
 		return DetectedAgent{Name: val, Source: "env"}
 	}
-	for envVar, agentName := range envMapping {
-		if envVar == "AGENTIC_AGENT" {
-			continue // already checked
+	for _, entry := range envOrder {
+		if entry.Var == "AGENTIC_AGENT" {
+			continue
 		}
-		if os.Getenv(envVar) != "" {
-			return DetectedAgent{Name: agentName, Source: "env"}
+		if os.Getenv(entry.Var) != "" {
+			return DetectedAgent{Name: entry.Agent, Source: "env"}
 		}
 	}
 
@@ -64,6 +65,11 @@ func DetectAgent(flagValue string, projectRoot string) DetectedAgent {
 		if _, err := os.Stat(fullPath); err == nil {
 			return DetectedAgent{Name: agentName, Source: "filesystem"}
 		}
+	}
+
+	// 4. Fallback: CODEX_SANDBOX only if nothing else matched
+	if os.Getenv("CODEX_SANDBOX") != "" {
+		return DetectedAgent{Name: "codex", Source: "env"}
 	}
 
 	return DetectedAgent{Source: "unknown"}

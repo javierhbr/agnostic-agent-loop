@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//private/tmp/test-agentic-helper/**)",
+      "Read(//private/tmp/test-agentic-helper2/**)",
+      "Bash(/Users/javierbenavides/others/ai-agents/agnostic-agent-loop/agentic-agent skills ensure --agent claude-code)",
+      "Bash(./agentic-agent-new version)"
+    ],
+    "additionalDirectories": [
+      "/Users/javierbenavides/others/ai-agents/agnostic-agent-loop/internal/skills/packs"
+    ]
+  }
+}

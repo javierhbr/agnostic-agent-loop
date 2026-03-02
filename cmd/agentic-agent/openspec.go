@@ -79,11 +79,27 @@ Examples:
 			os.Exit(1)
 		}
 
-		change, err := m.Init(args[0], fromFile)
+		implements, _ := cmd.Flags().GetString("implements")
+		contextPack, _ := cmd.Flags().GetString("context-pack")
+		changeType, _ := cmd.Flags().GetString("type")
+		contractsCSV, _ := cmd.Flags().GetString("contracts")
+		blockedByCSV, _ := cmd.Flags().GetString("blocked-by")
+		riskLevel, _ := cmd.Flags().GetString("risk")
+
+		contracts := splitCSV(contractsCSV)
+		blockedBy := splitCSV(blockedByCSV)
+		if changeType == "" {
+			changeType = "feature"
+		}
+
+		change, err := m.Init(args[0], fromFile, implements, contextPack, changeType, contracts, blockedBy)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
+
+		// Store risk level for SDD workflow routing (for future enhancement)
+		_ = riskLevel
 
 		// Handle --tech-stack flag: overwrite template with user-provided content
 		techStackContent, _ := cmd.Flags().GetString("tech-stack")
@@ -336,6 +352,38 @@ Examples:
 	},
 }
 
+var openspecCheckCmd = &cobra.Command{
+	Use:   "check <id>",
+	Short: "Validate gates and metadata for a change",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		cfg := getConfig()
+		m := openspec.NewManager(cfg.Paths.OpenSpecDir)
+		issues := m.Check(args[0])
+		if len(issues) == 0 {
+			if helpers.ShouldUseInteractiveMode(cmd) {
+				fmt.Println(styles.RenderSuccess("All gates PASS"))
+			} else {
+				fmt.Println("PASS")
+			}
+			return
+		}
+		if helpers.ShouldUseInteractiveMode(cmd) {
+			var b strings.Builder
+			b.WriteString(styles.TitleStyle.Render("Gate Check Failed") + "\n\n")
+			for _, issue := range issues {
+				b.WriteString(fmt.Sprintf("  %s %s\n", styles.IconPending, issue))
+			}
+			fmt.Println(styles.ContainerStyle.Render(b.String()))
+		} else {
+			for _, issue := range issues {
+				fmt.Printf("FAIL: %s\n", issue)
+			}
+		}
+		os.Exit(1)
+	},
+}
+
 func changeStatusIcon(s openspec.ChangeStatus) string {
 	switch s {
 	case openspec.StatusDraft:
@@ -370,9 +418,30 @@ func changeStatusStyle(s openspec.ChangeStatus) string {
 	}
 }
 
+func splitCSV(raw string) []string {
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	var out []string
+	for _, p := range parts {
+		clean := strings.TrimSpace(p)
+		if clean != "" {
+			out = append(out, clean)
+		}
+	}
+	return out
+}
+
 func init() {
 	openspecInitCmd.Flags().String("from", "", "Requirements file to seed the proposal (required)")
 	openspecInitCmd.Flags().String("tech-stack", "", "Pre-populate tech stack content (e.g. 'Go, React, PostgreSQL')")
+	openspecInitCmd.Flags().String("implements", "", "Platform spec ID + version that this change implements")
+	openspecInitCmd.Flags().String("context-pack", "", "Context Pack version to lock this change to")
+	openspecInitCmd.Flags().String("type", "feature", "Change type: feature|change|bug|hotfix")
+	openspecInitCmd.Flags().String("contracts", "", "Comma-separated contract IDs referenced")
+	openspecInitCmd.Flags().String("blocked-by", "", "Comma-separated ADR IDs that block this change")
+	openspecInitCmd.Flags().String("risk", "", "Risk level: low|medium|high|critical (optional, for SDD workflow routing)")
 
 	openspecCmd.AddCommand(openspecInitCmd)
 	openspecCmd.AddCommand(openspecImportCmd)
@@ -381,4 +450,5 @@ func init() {
 	openspecCmd.AddCommand(openspecStatusCmd)
 	openspecCmd.AddCommand(openspecCompleteCmd)
 	openspecCmd.AddCommand(openspecArchiveCmd)
+	openspecCmd.AddCommand(openspecCheckCmd)
 }
