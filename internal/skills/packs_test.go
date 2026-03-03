@@ -82,6 +82,7 @@ func TestNewPackRegistry_AllPacksRegistered(t *testing.T) {
 		{"diataxis", 3},
 		{"extract-wisdom", 1},
 		{"openclaw", 11},
+		{"openclaw-coordinator", 30},
 		{"openspec", 1},
 		{"product-wizard", 5},
 		{"run-with-ralph", 1},
