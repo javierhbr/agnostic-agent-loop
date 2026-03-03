@@ -115,6 +115,26 @@ func (tm *TaskManager) MoveTask(taskID string, fromType, toType string, newStatu
 		return fmt.Errorf("task %s not found in %s", taskID, fromType)
 	}
 
+	// NEW: Capture commits from the task's branch before cleanup
+	if taskToMove.Branch != "" && taskToMove.WorktreePath != "" {
+		since := taskToMove.ClaimedAt.Format(time.RFC3339)
+		commits, err := CaptureCommits(taskToMove.Branch, ".", since)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "⚠️  Could not capture commits: %v\n", err)
+		} else if len(commits) > 0 {
+			taskToMove.Commits = commits
+			fmt.Fprintf(os.Stderr, "✅ Captured %d commits\n", len(commits))
+		}
+	}
+
+	// NEW: Auto-delete worktree when completing task
+	if toType == "done" && taskToMove.WorktreePath != "" {
+		if err := CleanupWorktree(taskToMove.WorktreePath); err != nil {
+			fmt.Fprintf(os.Stderr, "⚠️  Could not clean up worktree: %v\n", err)
+			// Don't fail task completion if cleanup fails
+		}
+	}
+
 	fromList.Tasks = newFromTasks
 	if err := tm.SaveTasks(fromType, fromList); err != nil {
 		return err
@@ -126,6 +146,7 @@ func (tm *TaskManager) MoveTask(taskID string, fromType, toType string, newStatu
 	}
 
 	taskToMove.Status = newStatus
+	taskToMove.CompletedAt = time.Now()
 	toList.Tasks = append(toList.Tasks, taskToMove)
 	return tm.SaveTasks(toType, toList)
 }

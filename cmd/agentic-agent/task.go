@@ -216,7 +216,23 @@ var taskClaimCmd = &cobra.Command{
 			fmt.Printf("Error claiming task: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("Claimed task %s\n", taskID)
+
+		// NEW: Load and display task with worktree info
+		inProgress, err := tm.LoadTasks("in-progress")
+		if err == nil {
+			for _, t := range inProgress.Tasks {
+				if t.ID == taskID {
+					fmt.Printf("✅ Claimed task %s: %s\n", taskID, t.Title)
+					if t.WorktreePath != "" {
+						fmt.Printf("\n🔧 Isolated worktree created:\n")
+						fmt.Printf("   cd %s\n", t.WorktreePath)
+						fmt.Printf("\n📝 When done, run:\n")
+						fmt.Printf("   agentic-agent task complete %s\n", taskID)
+					}
+					break
+				}
+			}
+		}
 	},
 }
 
@@ -249,14 +265,36 @@ var taskCompleteCmd = &cobra.Command{
 		}
 
 		taskID := args[0]
+		learnings, _ := cmd.Flags().GetString("learnings")
+
 		tm := tasks.NewTaskManager(".agentic/tasks")
+
+		// Load task before moving (to get worktree path)
+		task, source, err := tm.FindTask(taskID)
+		if err != nil {
+			fmt.Printf("Error finding task: %v\n", err)
+			os.Exit(1)
+		}
+
+		if source != "in-progress" {
+			fmt.Printf("Error: task %s is not in-progress (currently: %s)\n", taskID, source)
+			os.Exit(1)
+		}
+
+		// NEW: Record learnings if provided
+		if learnings != "" {
+			task.Learnings = learnings
+		}
 
 		// Assuming from in-progress to done
 		if err := tm.MoveTask(taskID, "in-progress", "done", models.StatusDone); err != nil {
 			fmt.Printf("Error completing task: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("Completed task %s\n", taskID)
+		fmt.Printf("✅ Completed task %s\n", taskID)
+		if learnings != "" {
+			fmt.Printf("📚 Learnings recorded\n")
+		}
 	},
 }
 
@@ -938,4 +976,7 @@ func init() {
 	taskCmd.AddCommand(taskContinueCmd)
 	taskCmd.AddCommand(taskCompleteCmd)
 	taskCmd.AddCommand(taskDecomposeCmd)
+
+	// NEW: Add learnings flag to complete command
+	taskCompleteCmd.Flags().StringP("learnings", "l", "", "Lessons learned during task (optional)")
 }

@@ -10,6 +10,12 @@ const (
 	StatusDone       TaskStatus = "done"
 )
 
+type GithubPR struct {
+	URL       string    `yaml:"url,omitempty"`
+	Number    int       `yaml:"number,omitempty"`
+	CreatedAt time.Time `yaml:"created_at,omitempty"`
+}
+
 type Task struct {
 	ID          string     `yaml:"id"`
 	Title       string     `yaml:"title"`
@@ -29,6 +35,10 @@ type Task struct {
 	CompletedAt time.Time  `yaml:"completed_at,omitempty"` // When the task was completed
 	Branch      string     `yaml:"branch,omitempty"`       // Git branch when claimed
 	Commits     []string   `yaml:"commits,omitempty"`      // Associated git commit hashes
+	WorktreePath string    `yaml:"worktree_path,omitempty"` // Path to isolated git worktree
+	Learnings   string     `yaml:"learnings,omitempty"`    // Lessons learned during task
+	Type        string     `yaml:"type,omitempty"`         // Task type (build, review, research, etc.)
+	GithubPR    GithubPR   `yaml:"github_pr,omitempty"`    // Associated GitHub PR
 }
 
 type SubTask struct {
