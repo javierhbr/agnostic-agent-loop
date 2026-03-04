@@ -30,9 +30,16 @@ type Change struct {
 	ID         string       `yaml:"id"`
 	Name       string       `yaml:"name"`
 	Status     ChangeStatus `yaml:"status"`
-	SourceFile string       `yaml:"source_file"`
-	TaskIDs    []string     `yaml:"task_ids,omitempty"`
-	CreatedAt  time.Time    `yaml:"created_at"`
+	ChangeType string       `yaml:"change_type,omitempty"`
+
+	Implements          string   `yaml:"implements,omitempty"`
+	ContextPack         string   `yaml:"context_pack,omitempty"`
+	ContractsReferenced []string `yaml:"contracts_referenced,omitempty"`
+	BlockedBy           []string `yaml:"blocked_by,omitempty"`
+
+	SourceFile string    `yaml:"source_file"`
+	TaskIDs    []string  `yaml:"task_ids,omitempty"`
+	CreatedAt  time.Time `yaml:"created_at"`
 }
 
 // Registry is the index file listing all changes.
@@ -61,7 +68,15 @@ func NewManager(baseDir string) *Manager {
 
 // Init creates a new change directory with proposal.md and tasks.md templates.
 // If fromFile is provided, its content is seeded into the proposal.
-func (m *Manager) Init(name, fromFile string) (*Change, error) {
+func (m *Manager) Init(
+	name string,
+	fromFile string,
+	implements string,
+	contextPack string,
+	changeType string,
+	contracts []string,
+	blockedBy []string,
+) (*Change, error) {
 	id := toKebabCase(name)
 	changeDir := filepath.Join(m.baseDir, id)
 
@@ -97,18 +112,29 @@ func (m *Manager) Init(name, fromFile string) (*Change, error) {
 	}
 
 	change := Change{
-		ID:         id,
-		Name:       name,
-		Status:     StatusDraft,
-		SourceFile: fromFile,
-		CreatedAt:  time.Now(),
+		ID:                  id,
+		Name:                name,
+		Status:              StatusDraft,
+		ChangeType:          changeType,
+		Implements:          implements,
+		ContextPack:         contextPack,
+		ContractsReferenced: contracts,
+		BlockedBy:           blockedBy,
+		SourceFile:          fromFile,
+		CreatedAt:           time.Now(),
 	}
 
 	// Render and write proposal.md
 	tmplData := TemplateData{
-		Name:         name,
-		SourceFile:   fromFile,
-		Requirements: requirements,
+		Name:                name,
+		SourceFile:          fromFile,
+		Requirements:        requirements,
+		Implements:          implements,
+		ContextPack:         contextPack,
+		ContractsReferenced: strings.Join(contracts, ", "),
+		BlockedBy:           strings.Join(blockedBy, ", "),
+		ChangeType:          changeType,
+		Status:              string(StatusDraft),
 	}
 
 	proposalContent, err := renderTemplate("proposal.md.tmpl", tmplData)
@@ -323,6 +349,10 @@ func (m *Manager) Progress(id string, tm *tasks.TaskManager) (*ChangeProgress, e
 
 // Complete validates all tasks are done and writes the IMPLEMENTED marker.
 func (m *Manager) Complete(id string, tm *tasks.TaskManager) error {
+	if issues := m.Check(id); len(issues) > 0 {
+		return fmt.Errorf("change %q failed gate checks: %s", id, strings.Join(issues, "; "))
+	}
+
 	progress, err := m.Progress(id, tm)
 	if err != nil {
 		return err
@@ -353,6 +383,46 @@ func (m *Manager) Complete(id string, tm *tasks.TaskManager) error {
 	}
 	changeDir := filepath.Join(m.baseDir, id)
 	return m.writeMetadata(changeDir, change)
+}
+
+// Check validates minimal SDD+MCP gate readiness for a change.
+// Returns a slice of issues; empty slice means PASS.
+func (m *Manager) Check(id string) []string {
+	change, err := m.Get(id)
+	if err != nil {
+		return []string{err.Error()}
+	}
+
+	var issues []string
+	if change.Implements == "" {
+		issues = append(issues, "implements (platform spec) is missing")
+	}
+	if change.ContextPack == "" {
+		issues = append(issues, "context_pack version is missing")
+	} else {
+		// Allow context packs relative to repo root OR sibling of openspec baseDir
+		packDir := filepath.Join(".agentic", "context", "packs", change.ContextPack)
+		if _, err := os.Stat(packDir); os.IsNotExist(err) {
+			packDir = filepath.Join(filepath.Dir(m.baseDir), ".agentic", "context", "packs", change.ContextPack)
+		}
+		if info, err := os.Stat(packDir); err != nil || !info.IsDir() {
+			issues = append(issues, fmt.Sprintf("context_pack %s not found at %s", change.ContextPack, packDir))
+		}
+	}
+	if len(change.BlockedBy) > 0 {
+		issues = append(issues, "change has blocked_by ADRs pending")
+	}
+
+	// Ensure tasks exist
+	if len(change.TaskIDs) == 0 {
+		tasksPath := filepath.Join(m.baseDir, id, "tasks.md")
+		titles, err := ParseTasksFile(tasksPath)
+		if err != nil || len(titles) == 0 {
+			issues = append(issues, "tasks.md has no tasks; import would create zero tasks")
+		}
+	}
+
+	return issues
 }
 
 // Archive moves a completed change to the _archive directory.

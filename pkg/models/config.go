@@ -6,6 +6,7 @@ type Config struct {
 	Workflow    WorkflowConfig    `yaml:"workflow"`
 	Paths       PathsConfig       `yaml:"paths"`
 	Checkpoint  CheckpointConfig  `yaml:"checkpoint,omitempty"`
+	SDD         SDDConfig         `yaml:"sdd,omitempty"`
 	ActiveAgent string            `yaml:"-"` // Runtime-only: detected agent name
 }
 
@@ -52,4 +53,13 @@ type PathsConfig struct {
 	ContextDirs      []string `yaml:"contextDirs,omitempty"`
 	TrackDir         string   `yaml:"trackDir,omitempty"`
 	OpenSpecDir      string   `yaml:"openSpecDir,omitempty"`
+}
+
+type SDDConfig struct {
+	DefaultRisk    string `yaml:"default_risk,omitempty"`
+	SpecGraphPath  string `yaml:"spec_graph_path,omitempty"`
+	PlatformRepo   string `yaml:"platform_repo,omitempty"`
+	AgentsDir      string `yaml:"agents_dir,omitempty"`
+	ADRDir         string `yaml:"adr_dir,omitempty"`
+	InitiativesDir string `yaml:"initiatives_dir,omitempty"`
 }

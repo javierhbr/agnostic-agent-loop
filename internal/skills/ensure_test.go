@@ -26,7 +26,7 @@ func TestEnsure_GeneratesRulesWhenMissing(t *testing.T) {
 	defer cleanup()
 
 	cfg := &models.Config{}
-	result, err := Ensure("claude-code", cfg)
+	result, err := Ensure("claude-code", cfg, EnsureOptions{})
 	if err != nil {
 		t.Fatalf("Ensure failed: %v", err)
 	}
@@ -51,7 +51,7 @@ func TestEnsure_Idempotent(t *testing.T) {
 	cfg := &models.Config{}
 
 	// First run generates
-	result1, err := Ensure("claude-code", cfg)
+	result1, err := Ensure("claude-code", cfg, EnsureOptions{})
 	if err != nil {
 		t.Fatalf("First ensure failed: %v", err)
 	}
@@ -60,7 +60,7 @@ func TestEnsure_Idempotent(t *testing.T) {
 	}
 
 	// Second run is a no-op
-	result2, err := Ensure("claude-code", cfg)
+	result2, err := Ensure("claude-code", cfg, EnsureOptions{})
 	if err != nil {
 		t.Fatalf("Second ensure failed: %v", err)
 	}
@@ -79,13 +79,13 @@ func TestEnsure_FixesDrift(t *testing.T) {
 	cfg := &models.Config{}
 
 	// Generate first
-	Ensure("claude-code", cfg)
+	Ensure("claude-code", cfg, EnsureOptions{})
 
 	// Manually modify the file to create drift
 	os.WriteFile("CLAUDE.md", []byte("modified content"), 0644)
 
 	// Ensure should fix drift
-	result, err := Ensure("claude-code", cfg)
+	result, err := Ensure("claude-code", cfg, EnsureOptions{})
 	if err != nil {
 		t.Fatalf("Ensure failed: %v", err)
 	}
@@ -109,7 +109,7 @@ func TestEnsure_InstallsConfiguredPacks(t *testing.T) {
 		},
 	}
 
-	result, err := Ensure("claude-code", cfg)
+	result, err := Ensure("claude-code", cfg, EnsureOptions{})
 	if err != nil {
 		t.Fatalf("Ensure failed: %v", err)
 	}
@@ -130,7 +130,7 @@ func TestEnsure_UnknownTool(t *testing.T) {
 	defer cleanup()
 
 	cfg := &models.Config{}
-	result, err := Ensure("unknown-tool", cfg)
+	result, err := Ensure("unknown-tool", cfg, EnsureOptions{})
 	if err != nil {
 		t.Fatalf("Ensure should not fail for unknown tool: %v", err)
 	}
@@ -145,7 +145,7 @@ func TestEnsure_CursorTool(t *testing.T) {
 	defer cleanup()
 
 	cfg := &models.Config{}
-	result, err := Ensure("cursor", cfg)
+	result, err := Ensure("cursor", cfg, EnsureOptions{})
 	if err != nil {
 		t.Fatalf("Ensure failed: %v", err)
 	}
@@ -192,7 +192,7 @@ func TestEnsure_GeneratesPrdAndRalphForAllTools(t *testing.T) {
 			cfg := &models.Config{}
 			cfg.Paths.PRDOutputPath = ".agentic/tasks/"
 
-			_, err := Ensure(tc.name, cfg)
+			_, err := Ensure(tc.name, cfg, EnsureOptions{})
 			if err != nil {
 				t.Fatalf("Ensure failed for %s: %v", tc.name, err)
 			}
@@ -233,7 +233,7 @@ func TestEnsure_GeminiAlsoGetsCommands(t *testing.T) {
 	cfg := &models.Config{}
 	cfg.Paths.PRDOutputPath = ".agentic/tasks/"
 
-	_, err := Ensure("gemini", cfg)
+	_, err := Ensure("gemini", cfg, EnsureOptions{})
 	if err != nil {
 		t.Fatalf("Ensure failed: %v", err)
 	}

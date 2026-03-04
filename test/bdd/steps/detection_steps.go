@@ -92,16 +92,23 @@ func (s *DetectionSteps) createEmptyProjectRoot(_ context.Context) error {
 // --- Actions ---
 
 func (s *DetectionSteps) applyEnv() (restore func()) {
+	known := []string{"AGENTIC_AGENT", "CLAUDE", "CLAUDE_CODE", "CURSOR_SESSION", "GEMINI_CLI", "WINDSURF_SESSION", "GITHUB_COPILOT", "OPENCODE", "CODEX_SANDBOX"}
 	originals := make(map[string]string)
-	for key := range s.envVars {
+
+	// Save originals and clear all known vars to avoid ambient contamination
+	for _, key := range known {
 		originals[key] = os.Getenv(key)
+		os.Unsetenv(key)
 	}
+
+	// Apply scenario-specific envs
 	for key, val := range s.envVars {
 		os.Setenv(key, val)
 	}
+
 	return func() {
-		for key := range s.envVars {
-			if orig, ok := originals[key]; ok && orig != "" {
+		for _, key := range known {
+			if orig := originals[key]; orig != "" {
 				os.Setenv(key, orig)
 			} else {
 				os.Unsetenv(key)

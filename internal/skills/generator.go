@@ -77,7 +77,22 @@ func (g *Generator) Generate(tool string) error {
 		}
 	}
 
-	if err := os.WriteFile(skill.OutputFile, buf.Bytes(), 0644); err != nil {
+	// Check if file exists and read existing content
+	var finalContent []byte
+	existingContent, err := os.ReadFile(skill.OutputFile)
+	if err == nil {
+		// File exists, append new content with separator
+		finalContent = append(existingContent, []byte("\n\n---\n\n")...)
+		finalContent = append(finalContent, buf.Bytes()...)
+	} else if os.IsNotExist(err) {
+		// File doesn't exist, create new
+		finalContent = buf.Bytes()
+	} else {
+		// Error reading file (other than not exists)
+		return err
+	}
+
+	if err := os.WriteFile(skill.OutputFile, finalContent, 0644); err != nil {
 		return err
 	}
 

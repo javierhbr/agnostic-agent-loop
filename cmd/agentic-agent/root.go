@@ -10,7 +10,7 @@ import (
 
 var (
 	// Version information (set via ldflags at build time)
-	Version   = "1.0.1"
+	Version   = "2.2.0"
 	Commit    = "none"
 	BuildDate = "unknown"
 
@@ -70,11 +70,17 @@ a unified task and context management system.`,
 		// Auto-ensure mandatory skills for detected agent.
 		// Skip for commands that don't need it (version, help, skills, start, init).
 		cmdName := cmd.Name()
+		var parentName string
+		if cmd.Parent() != nil {
+			parentName = cmd.Parent().Name()
+		}
+		isSkillsCommand := cmdName == "skills"
+		isSkillsSubcommand := parentName == "skills"
 		skipEnsure := cmdName == "version" || cmdName == "help" || cmdName == "start" ||
-			cmdName == "init" || cmd.Parent() != nil && cmd.Parent().Name() == "skills"
+			cmdName == "init" || isSkillsCommand || isSkillsSubcommand
 		if !skipEnsure && detectedAgent.Name != "" {
 			// Silent ensure — only installs missing mandatory packs
-			skills.Ensure(detectedAgent.Name, appConfig)
+			skills.Ensure(detectedAgent.Name, appConfig, skills.EnsureOptions{})
 		}
 
 		return nil
@@ -110,4 +116,9 @@ func init() {
 	rootCmd.AddCommand(simplifyCmd)
 	rootCmd.AddCommand(openspecCmd)
 	rootCmd.AddCommand(promptsCmd)
+	rootCmd.AddCommand(platformCmd)
+	rootCmd.AddCommand(sddCmd)
+
+	// Initialize SDD subcommands
+	initSDDCmd()
 }

@@ -95,7 +95,7 @@ func (a *AutopilotLoop) Run(ctx context.Context) error {
 
 	// Ensure agent skills are set up before starting
 	if a.cfg.ActiveAgent != "" {
-		result, err := skills.Ensure(a.cfg.ActiveAgent, a.cfg)
+		result, err := skills.Ensure(a.cfg.ActiveAgent, a.cfg, skills.EnsureOptions{})
 		if err != nil {
 			fmt.Printf("Warning: could not ensure agent skills: %v\n", err)
 		} else if result.RulesGenerated || result.DriftFixed || len(result.PacksInstalled) > 0 {

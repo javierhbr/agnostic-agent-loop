@@ -24,6 +24,11 @@ var validateCmd = &cobra.Command{
 		v.Register(&rules.TaskScopeRule{})
 		v.Register(&rules.TaskSizeRule{})
 		v.Register(&rules.BrowserVerificationRule{})
+		v.Register(&rules.SpecMetadataRule{})
+		v.Register(&rules.SpecGraphRule{})
+		v.Register(&rules.ADRBlockingRule{})
+		v.Register(&rules.VerifyMdRule{})
+	v.Register(&rules.SkillTierRule{})
 
 		ctx := &validator.ValidationContext{
 			ProjectRoot: cwd,

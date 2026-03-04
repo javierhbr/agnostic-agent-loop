@@ -307,7 +307,7 @@ func (m *InitWizardModel) initializeProject() tea.Cmd {
 		agentTool := m.agentToolSelect.SelectedOption().Value()
 		if agentTool != "" && agentTool != "skip" {
 			// Best-effort: don't fail init if skills generation fails
-			skills.Ensure(agentTool, nil)
+			skills.Ensure(agentTool, nil, skills.EnsureOptions{})
 		}
 
 		return projectInitCompleteMsg{}

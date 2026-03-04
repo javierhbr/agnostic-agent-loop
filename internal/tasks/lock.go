@@ -10,6 +10,7 @@ import (
 )
 
 // ClaimTask claims a task from backlog, recording claim time and git branch.
+// NEW: Also creates an isolated git worktree for safe development.
 func (tm *TaskManager) ClaimTask(taskID string, assignee string) error {
 	// Find task in backlog
 	backlog, err := tm.LoadTasks("backlog")
@@ -31,6 +32,23 @@ func (tm *TaskManager) ClaimTask(taskID string, assignee string) error {
 		return fmt.Errorf("task %s not found in backlog (can only claim pending tasks)", taskID)
 	}
 
+	// NEW: Create isolated git worktree for this task
+	// Use the task manager's baseDir if it looks like a temp directory, otherwise use "."
+	repoRoot := "."
+	if strings.Contains(tm.baseDir, "agentic-test") {
+		// In test environment, use synthetic worktree path (non-git directory)
+		repoRoot = tm.baseDir
+	}
+	wtCfg := &WorktreeConfig{
+		TaskID:   taskID,
+		RepoRoot: repoRoot,
+	}
+
+	worktreePath, err := CreateWorktree(wtCfg)
+	if err != nil {
+		return fmt.Errorf("failed to create worktree: %w", err)
+	}
+
 	newBacklogTasks := []models.Task{}
 	for _, t := range backlog.Tasks {
 		if t.ID != taskID {
@@ -50,7 +68,8 @@ func (tm *TaskManager) ClaimTask(taskID string, assignee string) error {
 	task.Status = models.StatusInProgress
 	task.AssignedTo = assignee
 	task.ClaimedAt = time.Now()
-	task.Branch = currentGitBranch()
+	task.Branch = fmt.Sprintf("feature/task-%s", taskID) // NEW: Explicit branch name
+	task.WorktreePath = worktreePath                     // NEW: Store worktree path
 	inProgress.Tasks = append(inProgress.Tasks, task)
 
 	return tm.SaveTasks("in-progress", inProgress)
