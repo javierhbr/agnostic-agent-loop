@@ -105,7 +105,7 @@ func (inst *Installer) InstallMulti(packName string, tools []string, global bool
 
 // IsInstalled checks whether a pack's files exist and match the embedded content.
 func (inst *Installer) IsInstalled(packName, tool string) bool {
-	dir, ok := ToolSkillDir[tool]
+	skillDir, ok := ToolSkillDir[tool]
 	if !ok {
 		return false
 	}
