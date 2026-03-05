@@ -58,7 +58,7 @@ func (s *AgentInstallSteps) installPackForTool(ctx context.Context, packName, to
 
 	// Install the pack
 	installer := skills.NewInstaller()
-	_, err := installer.Install(packName, tool, false, false)
+	_, err := installer.Install(packName, tool, false)
 	s.suite.LastCommandErr = err
 	return nil
 }
@@ -91,7 +91,7 @@ func (s *AgentInstallSteps) runSkillsEnsure(ctx context.Context, tool string) er
 	// Run Ensure (simplified - just install mandatory packs)
 	installer := skills.NewInstaller()
 	for _, packName := range skills.MandatoryPacks {
-		_, err := installer.Install(packName, tool, false, false)
+		_, err := installer.Install(packName, tool, false)
 		if err != nil {
 			s.suite.LastCommandErr = err
 			return nil
