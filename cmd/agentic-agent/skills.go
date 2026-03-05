@@ -419,7 +419,7 @@ func (m skillsInstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *skillsInstallModel) performInstallation() {
-	results, err := m.installer.InstallMulti(m.packName, m.agents, m.global, m.symlink)
+	results, err := m.installer.InstallMulti(m.packName, m.agents, m.global)
 	m.results = results
 	if err != nil {
 		m.message = fmt.Sprintf("Error: %v", err)
@@ -630,7 +630,7 @@ List available packs:
 			tools[i] = strings.TrimSpace(tools[i])
 		}
 
-		results, err := installer.InstallMulti(args[0], tools, global, false)
+		results, err := installer.InstallMulti(args[0], tools, global)
 		if err != nil {
 			// Print any partial successes before the error
 			for _, r := range results {

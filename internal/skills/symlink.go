@@ -8,16 +8,6 @@ import (
 
 const CanonicalGlobalSkillDir = "~/.agentic/skills"
 
-// resolveCanonicalPath returns the full path to ~/.agentic/skills/<packName>
-// It expands ~ to the user's home directory.
-func resolveCanonicalPath(packName string) (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get home directory: %w", err)
-	}
-	return filepath.Join(home, ".agentic", "skills", packName), nil
-}
-
 // EnsureSymlink ensures dst is a symlink pointing to src.
 // If dst is a regular file (legacy copy), it is removed and replaced.
 // If dst is a symlink with the wrong target, it is re-created.

@@ -180,8 +180,8 @@ func Ensure(agentName string, cfg *models.Config, opts EnsureOptions) (*EnsureRe
 
 	// Mandatory packs are always installed regardless of config
 	for _, packName := range MandatoryPacks {
-		if !installer.IsInstalledAt(packName, agentName, opts.Global) {
-			_, installErr := installer.Install(packName, agentName, opts.Global, opts.Symlink)
+		if !installer.IsInstalled(packName, agentName) {
+			_, installErr := installer.Install(packName, agentName, opts.Global)
 			if installErr != nil {
 				result.Warnings = append(result.Warnings,
 					fmt.Sprintf("Failed to install mandatory pack %s: %v", packName, installErr))
@@ -194,8 +194,8 @@ func Ensure(agentName string, cfg *models.Config, opts EnsureOptions) (*EnsureRe
 	// Additional configured packs from agent config
 	agentCfg := config.GetAgentConfig(cfg, agentName)
 	for _, packName := range agentCfg.SkillPacks {
-		if !installer.IsInstalledAt(packName, agentName, opts.Global) {
-			_, installErr := installer.Install(packName, agentName, opts.Global, opts.Symlink)
+		if !installer.IsInstalled(packName, agentName) {
+			_, installErr := installer.Install(packName, agentName, opts.Global)
 			if installErr != nil {
 				result.Warnings = append(result.Warnings,
 					fmt.Sprintf("Failed to install pack %s: %v", packName, installErr))
