@@ -10,7 +10,7 @@ import (
 
 var (
 	// Version information (set via ldflags at build time)
-	Version   = "2.2.0"
+	Version   = "2.3.0"
 	Commit    = "none"
 	BuildDate = "unknown"
 
