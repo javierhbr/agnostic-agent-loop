@@ -6,6 +6,56 @@ import (
 	"testing"
 )
 
+func TestInstaller_Install_CreatesCanonicalAndSymlink(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	origDir := ToolSkillDir["claude-code"]
+	toolSkillDir := filepath.Join(tmpDir, ".claude", "skills")
+	ToolSkillDir["claude-code"] = toolSkillDir
+	defer func() { ToolSkillDir["claude-code"] = origDir }()
+
+	// Set canonical dir to temp
+	canonicalDir := filepath.Join(tmpDir, ".agentic", "skills")
+
+	installer := NewInstallerWithCanonicalDir(canonicalDir)
+	result, err := installer.Install("tdd", "claude-code", false)
+	if err != nil {
+		t.Fatalf("Install failed: %v", err)
+	}
+
+	// Canonical file should exist as a real file
+	canonicalPath := filepath.Join(canonicalDir, "tdd", "SKILL.md")
+	info, err := os.Lstat(canonicalPath)
+	if err != nil {
+		t.Fatalf("canonical file missing: %v", err)
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		t.Error("canonical file should be a real file, not a symlink")
+	}
+
+	// Tool dir file should be a symlink
+	toolPath := filepath.Join(toolSkillDir, "tdd", "SKILL.md")
+	info, err = os.Lstat(toolPath)
+	if err != nil {
+		t.Fatalf("tool dir file missing: %v", err)
+	}
+	if info.Mode()&os.ModeSymlink == 0 {
+		t.Error("tool dir file should be a symlink")
+	}
+
+	// Symlink should point to canonical
+	target, _ := os.Readlink(toolPath)
+	absCanonical, _ := filepath.Abs(canonicalPath)
+	if target != absCanonical {
+		t.Errorf("symlink target = %q, want %q", target, absCanonical)
+	}
+
+	// Result should list files written
+	if len(result.FilesWritten) != 3 {
+		t.Errorf("expected 3 files written, got %d", len(result.FilesWritten))
+	}
+}
+
 func TestInstaller_Install(t *testing.T) {
 	tmpDir := t.TempDir()
 
