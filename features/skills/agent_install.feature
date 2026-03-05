@@ -10,22 +10,22 @@ Feature: Agent Pack Installation
   Scenario: Installing agentic-helper for claude-code creates agent file
     When I install the "agentic-helper" pack for "claude-code"
     Then the command should succeed
-    And the file ".claude/agents/agentic-helper.md" should exist
-    And the file ".claude/agents/agentic-helper.md" should contain "name: agentic-helper"
-    And the file ".claude/agents/agentic-helper.md" should contain "tools: Read, Write, Edit, Bash"
+    And the file ".claude/skills/agentic-helper.md" should exist
+    And the file ".claude/skills/agentic-helper.md" should contain "name: agentic-helper"
+    And the file ".claude/skills/agentic-helper.md" should contain "tools: Read, Write, Edit, Bash"
     And the file ".claude/skills/agentic-helper/SKILL.md" should exist
 
   Scenario: Agent file contains the workflow decision tree
     When I install the "agentic-helper" pack for "claude-code"
-    Then the file ".claude/agents/agentic-helper.md" should contain "Workflow Decision Tree"
-    And the file ".claude/agents/agentic-helper.md" should contain "Full SDD"
-    And the file ".claude/agents/agentic-helper.md" should contain "openspec init"
+    Then the file ".claude/skills/agentic-helper.md" should contain "Workflow Decision Tree"
+    And the file ".claude/skills/agentic-helper.md" should contain "Full SDD"
+    And the file ".claude/skills/agentic-helper.md" should contain "openspec init"
 
   Scenario: Agent file contains CLI command examples
     When I install the "agentic-helper" pack for "claude-code"
-    Then the file ".claude/agents/agentic-helper.md" should contain "task claim"
-    And the file ".claude/agents/agentic-helper.md" should contain "context generate"
-    And the file ".claude/agents/agentic-helper.md" should contain "agentic-agent validate"
+    Then the file ".claude/skills/agentic-helper.md" should contain "task claim"
+    And the file ".claude/skills/agentic-helper.md" should contain "context generate"
+    And the file ".claude/skills/agentic-helper.md" should contain "agentic-agent validate"
 
   Scenario: Installing agentic-helper for cursor falls back to skill directory
     When I install the "agentic-helper" pack for "cursor"
@@ -34,16 +34,16 @@ Feature: Agent Pack Installation
 
   Scenario: agentic-helper is installed during skills ensure
     When I run skills ensure for "claude-code"
-    Then the file ".claude/agents/agentic-helper.md" should exist
-    And the file ".claude/agents/agentic-helper.md" should not be empty
+    Then the file ".claude/skills/agentic-helper.md" should exist
+    And the file ".claude/skills/agentic-helper.md" should not be empty
 
   Scenario: agentic-helper agent file uses sonnet model
     When I install the "agentic-helper" pack for "claude-code"
-    Then the file ".claude/agents/agentic-helper.md" should contain "model: sonnet"
+    Then the file ".claude/skills/agentic-helper.md" should contain "model: sonnet"
 
   Scenario: agentic-helper agent file enables project memory
     When I install the "agentic-helper" pack for "claude-code"
-    Then the file ".claude/agents/agentic-helper.md" should contain "memory: project"
+    Then the file ".claude/skills/agentic-helper.md" should contain "memory: project"
 
   Scenario: agentic-helper skill file explains when to use it
     When I install the "agentic-helper" pack for "claude-code"
@@ -52,8 +52,8 @@ Feature: Agent Pack Installation
 
   Scenario: agentic-helper agent file contains error recovery guidance
     When I install the "agentic-helper" pack for "claude-code"
-    Then the file ".claude/agents/agentic-helper.md" should contain "Error Recovery"
-    And the file ".claude/agents/agentic-helper.md" should contain "Red Flags"
+    Then the file ".claude/skills/agentic-helper.md" should contain "Error Recovery"
+    And the file ".claude/skills/agentic-helper.md" should contain "Red Flags"
 
   Scenario: agentic-helper is marked as mandatory
     When I run the installed agentic-agent CLI
