@@ -140,8 +140,14 @@ var skillsGenerateCmd = &cobra.Command{
 
 			p := tea.NewProgram(model, tea.WithAltScreen())
 			if _, err := p.Run(); err != nil {
-				fmt.Printf("Error: %v\n", err)
-				os.Exit(1)
+				// UI failed - check if -i was explicitly requested and we have auto-detected agent
+				interactive, _ := cmd.Flags().GetBool("interactive")
+				if !interactive {
+					// User didn't request -i, so this is a genuine error
+					fmt.Printf("Error: %v\n", err)
+					os.Exit(1)
+				}
+				// -i was requested but UI failed - just continue without showing the UI
 			}
 			if model.done {
 				if model.success {
@@ -313,17 +319,20 @@ var skillsGenerateGeminiCmd = &cobra.Command{
 
 // skillsInstallModel is a Bubble Tea model for interactive pack installation
 type skillsInstallModel struct {
-	step      string // "select-pack", "select-tool", "select-scope", "done"
-	packSel   components.SimpleSelect
-	toolSel   components.MultiSelect
-	scopeSel  components.SimpleSelect
-	installer *skills.Installer
-	packName  string
-	tools     []string
-	results   []*skills.InstallResult
-	done      bool
-	success   bool
-	message   string
+	step         string // "select-pack", "select-scope", "select-method", "select-agents", "done"
+	packSel      components.SimpleSelect
+	scopeSel     components.SimpleSelect
+	methodSel    components.SimpleSelect
+	agentSel     components.MultiSelect
+	installer    *skills.Installer
+	packName     string
+	agents       []string
+	global       bool
+	symlink      bool
+	results      []*skills.InstallResult
+	done         bool
+	success      bool
+	message      string
 }
 
 func (m skillsInstallModel) Init() tea.Cmd {
@@ -340,26 +349,6 @@ func (m skillsInstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if m.step == "select-pack" {
 				m.packName = m.packSel.SelectedOption().Value()
-				// Build tool multi-selector
-				toolOptions := []components.SelectOption{}
-				for _, t := range skills.SupportedTools() {
-					dir := skills.ToolSkillDir[t]
-					toolOptions = append(toolOptions, components.NewSelectOption(
-						t,
-						fmt.Sprintf("Install to %s/", dir),
-						t,
-					))
-				}
-				m.toolSel = components.NewMultiSelect("Select target tools (Space to toggle, Enter to confirm)", toolOptions)
-				m.step = "select-tool"
-			} else if m.step == "select-tool" {
-				m.tools = m.toolSel.SelectedValues()
-				if len(m.tools) == 0 {
-					m.message = "No tools selected"
-					m.success = false
-					m.done = true
-					return m, tea.Quit
-				}
 				// Build scope selector
 				m.scopeSel = components.NewSimpleSelect("Install scope", []components.SelectOption{
 					components.NewSelectOption("Project-level", "Install to the current project directory", "local"),
@@ -367,40 +356,90 @@ func (m skillsInstallModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				})
 				m.step = "select-scope"
 			} else if m.step == "select-scope" {
-				global := m.scopeSel.SelectedOption().Value() == "global"
-				results, err := m.installer.InstallMulti(m.packName, m.tools, global)
-				m.results = results
-				if err != nil {
-					m.message = fmt.Sprintf("Error: %v", err)
-					m.success = false
+				m.global = m.scopeSel.SelectedOption().Value() == "global"
+				// Build method selector
+				m.methodSel = components.NewSimpleSelect("Installation method", []components.SelectOption{
+					components.NewSelectOption("Copy", "Write files directly to destination", "copy"),
+					components.NewSelectOption("Symlink", "Create symlinks to canonical copy (~/.agentic/skills/)", "symlink"),
+				})
+				m.step = "select-method"
+			} else if m.step == "select-method" {
+				m.symlink = m.methodSel.SelectedOption().Value() == "symlink"
+
+				// If global + symlink, prompt for which agents; otherwise use all supported tools
+				if m.global && m.symlink {
+					agentOptions := []components.SelectOption{}
+					for _, agent := range skills.SupportedTools() {
+						agentOptions = append(agentOptions, components.NewSelectOption(
+							agent,
+							fmt.Sprintf("Install to %s", agent),
+							agent,
+						))
+					}
+					m.agentSel = components.NewMultiSelect(
+						"Select agents to install for (Space to toggle, Enter to confirm)",
+						agentOptions,
+					)
+					m.step = "select-agents"
 				} else {
-					var toolNames []string
-					for _, r := range results {
-						toolNames = append(toolNames, r.Tool)
-					}
-					scope := "project"
-					if global {
-						scope = "global"
-					}
-					m.message = fmt.Sprintf("Installed pack %q (%s) for %s", m.packName, scope, strings.Join(toolNames, ", "))
-					m.success = true
+					// For non-global or non-symlink, use all supported tools
+					m.agents = skills.SupportedTools()
+					m.performInstallation()
+					m.done = true
+					return m, tea.Quit
 				}
+			} else if m.step == "select-agents" {
+				m.agents = m.agentSel.SelectedValues()
+				if len(m.agents) == 0 {
+					m.message = "No agents selected"
+					m.success = false
+					m.done = true
+					return m, tea.Quit
+				}
+				m.performInstallation()
 				m.done = true
 				return m, tea.Quit
 			}
 
 		default:
-			if m.step == "select-pack" {
+			switch m.step {
+			case "select-pack":
 				m.packSel = m.packSel.Update(msg)
-			} else if m.step == "select-tool" {
-				m.toolSel = m.toolSel.Update(msg)
-			} else if m.step == "select-scope" {
+			case "select-scope":
 				m.scopeSel = m.scopeSel.Update(msg)
+			case "select-method":
+				m.methodSel = m.methodSel.Update(msg)
+			case "select-agents":
+				m.agentSel = m.agentSel.Update(msg)
 			}
 		}
 	}
 
 	return m, nil
+}
+
+func (m *skillsInstallModel) performInstallation() {
+	results, err := m.installer.InstallMulti(m.packName, m.agents, m.global)
+	m.results = results
+	if err != nil {
+		m.message = fmt.Sprintf("Error: %v", err)
+		m.success = false
+	} else {
+		var agentNames []string
+		for _, r := range results {
+			agentNames = append(agentNames, r.Tool)
+		}
+		scope := "project"
+		if m.global {
+			scope = "global"
+		}
+		method := "copy"
+		if m.symlink {
+			method = "symlink"
+		}
+		m.message = fmt.Sprintf("Installed pack %q (%s, %s) for %s", m.packName, scope, method, strings.Join(agentNames, ", "))
+		m.success = true
+	}
 }
 
 func (m skillsInstallModel) View() string {
@@ -422,20 +461,41 @@ func (m skillsInstallModel) View() string {
 	var b strings.Builder
 	b.WriteString(styles.TitleStyle.Render("Install Skill Pack") + "\n\n")
 
-	if m.step == "select-pack" {
+	switch m.step {
+	case "select-pack":
 		b.WriteString(m.packSel.View() + "\n")
 		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
-	} else if m.step == "select-tool" {
+	case "select-scope":
 		b.WriteString(fmt.Sprintf("Pack: %s\n\n", styles.BoldStyle.Render(m.packName)))
-		b.WriteString(m.toolSel.View() + "\n")
-		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Space toggle • Enter confirm • Esc cancel") + "\n")
-	} else if m.step == "select-scope" {
-		b.WriteString(fmt.Sprintf("Pack: %s  Tools: %s\n\n",
-			styles.BoldStyle.Render(m.packName),
-			styles.BoldStyle.Render(strings.Join(m.tools, ", ")),
-		))
 		b.WriteString(m.scopeSel.View() + "\n")
 		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
+	case "select-method":
+		scopeStr := "project"
+		if m.global {
+			scopeStr = "global"
+		}
+		b.WriteString(fmt.Sprintf("Pack: %s  Scope: %s\n\n",
+			styles.BoldStyle.Render(m.packName),
+			styles.BoldStyle.Render(scopeStr),
+		))
+		b.WriteString(m.methodSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter select • Esc cancel") + "\n")
+	case "select-agents":
+		scopeStr := "project"
+		if m.global {
+			scopeStr = "global"
+		}
+		methodStr := "copy"
+		if m.symlink {
+			methodStr = "symlink"
+		}
+		b.WriteString(fmt.Sprintf("Pack: %s  Scope: %s  Method: %s\n\n",
+			styles.BoldStyle.Render(m.packName),
+			styles.BoldStyle.Render(scopeStr),
+			styles.BoldStyle.Render(methodStr),
+		))
+		b.WriteString(m.agentSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Space toggle • Enter confirm • Esc cancel") + "\n")
 	}
 
 	return styles.ContainerStyle.Render(b.String())
@@ -649,8 +709,46 @@ Usage:
   agentic-agent skills ensure --all                  # All detected agents`,
 	Run: func(cmd *cobra.Command, args []string) {
 		all, _ := cmd.Flags().GetBool("all")
+		globalFlag, _ := cmd.Flags().GetBool("global")
+		symlinkFlag, _ := cmd.Flags().GetBool("symlink")
 		cfg := getConfig()
 		agent := getAgent()
+
+		// First, determine installation options (destination + method)
+		global := globalFlag
+		symlink := symlinkFlag
+
+		// Check if flags were explicitly set
+		globalChanged := cmd.Flags().Changed("global")
+		symlinkChanged := cmd.Flags().Changed("symlink")
+		noInteractive, _ := cmd.Flags().GetBool("no-interactive")
+
+		// If options not explicitly set and in interactive mode, prompt via Pretty UI
+		var selectedAgents []string
+		if !globalChanged && !symlinkChanged && !noInteractive && helpers.ShouldUseInteractiveMode(cmd) {
+			optsModel := &skillsEnsureOptionsModel{
+				step: "scope",
+				scopeSel: components.NewSimpleSelect("Installation destination", []components.SelectOption{
+					components.NewSelectOption("Project-level", "Install to the current project directory", "local"),
+					components.NewSelectOption("Global (user-level)", "Install to your home directory for all projects", "global"),
+				}),
+			}
+			p := tea.NewProgram(optsModel, tea.WithAltScreen())
+			finalModel, err := p.Run()
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				os.Exit(1)
+			}
+			if optsModel, ok := finalModel.(*skillsEnsureOptionsModel); ok && optsModel.done {
+				global = optsModel.global
+				symlink = optsModel.symlink
+				selectedAgents = optsModel.agents
+			} else {
+				return
+			}
+		}
+
+		opts := skills.EnsureOptions{Global: global, Symlink: symlink}
 
 		var agents []skills.DetectedAgent
 		if all {
@@ -662,7 +760,14 @@ Usage:
 					agents = append(agents, skills.DetectedAgent{Name: s.ToolName, Source: "registry"})
 				}
 			}
+		} else if len(selectedAgents) > 0 {
+			// Use agents selected from the interactive modal (destination + method + agents flow)
+			// Priority: interactive selection > auto-detected agent
+			for _, agentName := range selectedAgents {
+				agents = append(agents, skills.DetectedAgent{Name: agentName, Source: "interactive"})
+			}
 		} else if agent.Name != "" {
+			// Agent auto-detected (or explicitly provided via --agent flag)
 			agents = []skills.DetectedAgent{agent}
 		} else {
 			// Interactive mode: prompt for agent selection
@@ -679,7 +784,7 @@ Usage:
 				}
 
 				selector := components.NewMultiSelect("Select agent tools to ensure", options)
-				model := &skillsEnsureModel{selector: selector, cfg: cfg}
+				model := &skillsEnsureModel{selector: selector, cfg: cfg, opts: opts}
 				p := tea.NewProgram(model, tea.WithAltScreen())
 				if _, err := p.Run(); err != nil {
 					fmt.Printf("Error: %v\n", err)
@@ -702,19 +807,15 @@ Usage:
 
 		for _, a := range agents {
 			if helpers.ShouldUseInteractiveMode(cmd) {
-				var b strings.Builder
-				b.WriteString(styles.TitleStyle.Render(fmt.Sprintf("Ensuring skills for %s", a.Name)) + "\n\n")
-
-				result, err := skills.Ensure(a.Name, cfg)
+				result, err := skills.Ensure(a.Name, cfg, opts)
 				if err != nil {
-					b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Error: %v", err)) + "\n")
+					fmt.Printf("  %-20s %s\n", a.Name, styles.ErrorStyle.Render(fmt.Sprintf("Error: %v", err)))
 				} else {
-					b.WriteString(styles.SuccessStyle.Render(skills.FormatEnsureResult(result)))
+					fmt.Printf("  %-20s %s\n", a.Name, styles.SuccessStyle.Render(skills.FormatEnsureResultCompact(result)))
 				}
-				fmt.Println(styles.ContainerStyle.Render(b.String()))
 			} else {
 				fmt.Printf("Ensuring skills for %s...\n", a.Name)
-				result, err := skills.Ensure(a.Name, cfg)
+				result, err := skills.Ensure(a.Name, cfg, opts)
 				if err != nil {
 					fmt.Printf("Error: %v\n", err)
 					os.Exit(1)
@@ -725,10 +826,146 @@ Usage:
 	},
 }
 
+// skillsEnsureOptionsModel is a Bubble Tea model for interactive selection of install options (scope + method + agents + confirm)
+type skillsEnsureOptionsModel struct {
+	step      string                  // "scope", "method", "agents", or "confirm"
+	scopeSel  components.SimpleSelect // For selecting local vs global
+	methodSel components.SimpleSelect // For selecting copy vs symlink
+	agentSel  components.MultiSelect  // For selecting which agents
+	confirmSel components.SimpleSelect // For confirming the operation
+	global    bool                    // Result: global or local
+	symlink   bool                    // Result: symlink or copy
+	agents    []string                // Result: selected agents
+	done      bool
+}
+
+func (m *skillsEnsureOptionsModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m *skillsEnsureOptionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			return m, tea.Quit
+		case "enter":
+			if m.step == "scope" {
+				// Move to method selection
+				m.global = m.scopeSel.SelectedOption().Value() == "global"
+				methodOptions := []components.SelectOption{
+					components.NewSelectOption("Copy", "Write files directly", "copy"),
+					components.NewSelectOption("Symlink", "Create symlinks to canonical copy (~/.agentic/skills/)", "symlink"),
+				}
+				m.methodSel = components.NewSimpleSelect("Installation method", methodOptions)
+				m.step = "method"
+			} else if m.step == "method" {
+				// Move to agent selection
+				m.symlink = m.methodSel.SelectedOption().Value() == "symlink"
+				agentOptions := []components.SelectOption{}
+				for _, agent := range skills.SupportedTools() {
+					agentOptions = append(agentOptions, components.NewSelectOption(
+						agent,
+						fmt.Sprintf("Ensure skills for %s", agent),
+						agent,
+					))
+				}
+				m.agentSel = components.NewMultiSelect(
+					"Select agents to ensure (Space to toggle, Enter to confirm)",
+					agentOptions,
+				)
+				m.step = "agents"
+			} else if m.step == "agents" {
+				// Move to confirmation
+				m.agents = m.agentSel.SelectedValues()
+				if len(m.agents) == 0 {
+					m.agents = skills.SupportedTools() // Default to all if none selected
+				}
+				confirmOptions := []components.SelectOption{
+					components.NewSelectOption("Yes", "Proceed with the operation", "confirm"),
+					components.NewSelectOption("No", "Cancel and go back", "cancel"),
+				}
+				m.confirmSel = components.NewSimpleSelect("Confirm operation", confirmOptions)
+				m.step = "confirm"
+			} else if m.step == "confirm" {
+				// Final confirmation
+				if m.confirmSel.SelectedOption().Value() == "confirm" {
+					m.done = true
+					return m, tea.Quit
+				}
+				// Go back to agent selection
+				m.step = "agents"
+			}
+		default:
+			switch m.step {
+			case "scope":
+				m.scopeSel = m.scopeSel.Update(msg)
+			case "method":
+				m.methodSel = m.methodSel.Update(msg)
+			case "agents":
+				m.agentSel = m.agentSel.Update(msg)
+			case "confirm":
+				m.confirmSel = m.confirmSel.Update(msg)
+			}
+		}
+	}
+	return m, nil
+}
+
+func (m *skillsEnsureOptionsModel) View() string {
+	var b strings.Builder
+
+	b.WriteString(styles.TitleStyle.Render("Ensure Agent Skills") + "\n\n")
+
+	if m.step == "scope" {
+		b.WriteString(m.scopeSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter confirm • Ctrl+C cancel") + "\n")
+	} else if m.step == "method" {
+		scopeStr := "project"
+		if m.global {
+			scopeStr = "global"
+		}
+		b.WriteString(fmt.Sprintf("Destination: %s\n\n", styles.BoldStyle.Render(scopeStr)))
+		b.WriteString(m.methodSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter confirm • Ctrl+C cancel") + "\n")
+	} else if m.step == "agents" {
+		scopeStr := "project"
+		if m.global {
+			scopeStr = "global"
+		}
+		methodStr := "copy"
+		if m.symlink {
+			methodStr = "symlink"
+		}
+		b.WriteString(fmt.Sprintf("Destination: %s  Method: %s\n\n",
+			styles.BoldStyle.Render(scopeStr),
+			styles.BoldStyle.Render(methodStr),
+		))
+		b.WriteString(m.agentSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Space toggle • Enter confirm • Ctrl+C cancel") + "\n")
+	} else if m.step == "confirm" {
+		scopeStr := "project"
+		if m.global {
+			scopeStr = "global"
+		}
+		methodStr := "copy"
+		if m.symlink {
+			methodStr = "symlink"
+		}
+		b.WriteString(fmt.Sprintf("Destination: %s  Method: %s\n", styles.BoldStyle.Render(scopeStr), styles.BoldStyle.Render(methodStr)))
+		b.WriteString(fmt.Sprintf("Agents: %s\n\n", styles.BoldStyle.Render(fmt.Sprintf("%d selected", len(m.agents)))))
+		b.WriteString(m.confirmSel.View() + "\n")
+		b.WriteString(styles.HelpStyle.Render("↑/↓ navigate • Enter confirm • Ctrl+C cancel") + "\n")
+	}
+
+	return styles.ContainerStyle.Render(b.String())
+}
+
 // skillsEnsureModel is a Bubble Tea model for interactive multi-agent selection in ensure
 type skillsEnsureModel struct {
 	selector components.MultiSelect
 	cfg      *models.Config
+	opts     skills.EnsureOptions
 	done     bool
 	message  string
 	success  bool
@@ -759,7 +996,7 @@ func (m *skillsEnsureModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			var msgs []string
 			m.success = true
 			for _, tool := range selected {
-				result, err := skills.Ensure(tool, m.cfg)
+				result, err := skills.Ensure(tool, m.cfg, m.opts)
 				if err != nil {
 					msgs = append(msgs, fmt.Sprintf("%s: Error: %v", tool, err))
 					m.success = false
@@ -801,6 +1038,8 @@ func init() {
 	skillsInstallCmd.Flags().Bool("list", false, "List available skill packs")
 
 	skillsEnsureCmd.Flags().Bool("all", false, "Ensure for all detected agents")
+	skillsEnsureCmd.Flags().Bool("global", false, "Install to global user directory (~/.claude/skills/) instead of project-level")
+	skillsEnsureCmd.Flags().Bool("symlink", false, "Create symlinks from destination to canonical copy at ~/.agentic/skills/")
 
 	skillsCmd.AddCommand(skillsGenerateCmd)
 	skillsCmd.AddCommand(skillsCheckCmd)

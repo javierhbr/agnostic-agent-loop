@@ -77,7 +77,22 @@ func (g *Generator) Generate(tool string) error {
 		}
 	}
 
-	if err := os.WriteFile(skill.OutputFile, buf.Bytes(), 0644); err != nil {
+	// Check if file exists and read existing content
+	var finalContent []byte
+	existingContent, err := os.ReadFile(skill.OutputFile)
+	if err == nil {
+		// File exists, append new content with separator
+		finalContent = append(existingContent, []byte("\n\n---\n\n")...)
+		finalContent = append(finalContent, buf.Bytes()...)
+	} else if os.IsNotExist(err) {
+		// File doesn't exist, create new
+		finalContent = buf.Bytes()
+	} else {
+		// Error reading file (other than not exists)
+		return err
+	}
+
+	if err := os.WriteFile(skill.OutputFile, finalContent, 0644); err != nil {
 		return err
 	}
 
@@ -151,17 +166,28 @@ func (g *Generator) GenerateToolSkills(agentName string) error {
 			return fmt.Errorf("failed to execute template: %w", err)
 		}
 
-		outputFile := filepath.Join(skillDir, skill.outputName)
-		if err := os.MkdirAll(filepath.Dir(outputFile), 0755); err != nil {
-			return fmt.Errorf("failed to create directory for %s: %w", outputFile, err)
+		// Write to canonical dir
+		canonicalPath := filepath.Join(CanonicalSkillDir, skill.outputName)
+		if err := os.MkdirAll(filepath.Dir(canonicalPath), 0755); err != nil {
+			return fmt.Errorf("failed to create canonical dir: %w", err)
+		}
+		if err := os.WriteFile(canonicalPath, buf.Bytes(), 0644); err != nil {
+			return fmt.Errorf("failed to write canonical %s: %w", canonicalPath, err)
 		}
 
-		if err := os.WriteFile(outputFile, buf.Bytes(), 0644); err != nil {
-			return fmt.Errorf("failed to write skill file %s: %w", outputFile, err)
+		// Symlink from tool dir to canonical
+		absCan, err := filepath.Abs(canonicalPath)
+		if err != nil {
+			return fmt.Errorf("failed to resolve absolute path: %w", err)
+		}
+
+		outputFile := filepath.Join(skillDir, skill.outputName)
+		if err := EnsureSymlink(absCan, outputFile); err != nil {
+			return fmt.Errorf("failed to symlink %s: %w", outputFile, err)
 		}
 	}
 
-	// Gemini also gets slash command TOML files
+	// Gemini also gets slash command TOML files (not symlinked — these are tool-specific)
 	if agentName == "gemini" {
 		if err := g.generateGeminiCommands(data); err != nil {
 			return err

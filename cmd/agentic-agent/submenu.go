@@ -268,12 +268,14 @@ func runSkillsSubmenu() {
 			skillsGenerateCmd.Run(skillsGenerateCmd, []string{})
 		case "install":
 			// Pass -i flag to trigger interactive mode in the skills install command
-			skillsInstallCmd.Run(skillsInstallCmd, []string{"-i"})
+			skillsInstallCmd.Flags().Set("interactive", "true")
+			skillsInstallCmd.Run(skillsInstallCmd, []string{})
 		case "list":
 			skillsListCmd.Run(skillsListCmd, []string{})
 		case "check":
 			skillsCheckCmd.Run(skillsCheckCmd, []string{})
 		case "ensure":
+			skillsEnsureCmd.Flags().Set("interactive", "true")
 			skillsEnsureCmd.Run(skillsEnsureCmd, []string{})
 		case "exit":
 			// Do nothing, return to main menu

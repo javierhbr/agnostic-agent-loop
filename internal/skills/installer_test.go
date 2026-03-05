@@ -6,6 +6,56 @@ import (
 	"testing"
 )
 
+func TestInstaller_Install_CreatesCanonicalAndSymlink(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	origDir := ToolSkillDir["claude-code"]
+	toolSkillDir := filepath.Join(tmpDir, ".claude", "skills")
+	ToolSkillDir["claude-code"] = toolSkillDir
+	defer func() { ToolSkillDir["claude-code"] = origDir }()
+
+	// Set canonical dir to temp
+	canonicalDir := filepath.Join(tmpDir, ".agentic", "skills")
+
+	installer := NewInstallerWithCanonicalDir(canonicalDir)
+	result, err := installer.Install("tdd", "claude-code", false)
+	if err != nil {
+		t.Fatalf("Install failed: %v", err)
+	}
+
+	// Canonical file should exist as a real file
+	canonicalPath := filepath.Join(canonicalDir, "tdd", "SKILL.md")
+	info, err := os.Lstat(canonicalPath)
+	if err != nil {
+		t.Fatalf("canonical file missing: %v", err)
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		t.Error("canonical file should be a real file, not a symlink")
+	}
+
+	// Tool dir file should be a symlink
+	toolPath := filepath.Join(toolSkillDir, "tdd", "SKILL.md")
+	info, err = os.Lstat(toolPath)
+	if err != nil {
+		t.Fatalf("tool dir file missing: %v", err)
+	}
+	if info.Mode()&os.ModeSymlink == 0 {
+		t.Error("tool dir file should be a symlink")
+	}
+
+	// Symlink should point to canonical
+	target, _ := os.Readlink(toolPath)
+	absCanonical, _ := filepath.Abs(canonicalPath)
+	if target != absCanonical {
+		t.Errorf("symlink target = %q, want %q", target, absCanonical)
+	}
+
+	// Result should list files written
+	if len(result.FilesWritten) != 3 {
+		t.Errorf("expected 3 files written, got %d", len(result.FilesWritten))
+	}
+}
+
 func TestInstaller_Install(t *testing.T) {
 	tmpDir := t.TempDir()
 
@@ -232,20 +282,13 @@ func TestInstaller_Install_AgentHelperPack(t *testing.T) {
 		t.Errorf("expected 2 files written for agentic-helper, got %d", len(result.FilesWritten))
 	}
 
-	// Verify AGENT.md is in ToolAgentDir
-	agentFile := filepath.Join(ToolAgentDir["claude-code"], "agentic-helper.md")
-	if _, err := os.Stat(agentFile); os.IsNotExist(err) {
-		t.Errorf("AGENT.md not found at expected location: %s", agentFile)
-	} else if info, _ := os.Stat(agentFile); info.Size() == 0 {
-		t.Errorf("AGENT.md is empty")
-	}
-
-	// Verify SKILL.md is in ToolSkillDir
-	skillFile := filepath.Join(ToolSkillDir["claude-code"], "agentic-helper", "SKILL.md")
-	if _, err := os.Stat(skillFile); os.IsNotExist(err) {
-		t.Errorf("SKILL.md not found at expected location: %s", skillFile)
-	} else if info, _ := os.Stat(skillFile); info.Size() == 0 {
-		t.Errorf("SKILL.md is empty")
+	// Verify both files are in ToolSkillDir (including AGENT.md which is now treated like any other file)
+	for _, filePath := range result.FilesWritten {
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			t.Errorf("file not found at expected location: %s", filePath)
+		} else if info, _ := os.Stat(filePath); info.Size() == 0 {
+			t.Errorf("file is empty: %s", filePath)
+		}
 	}
 }
 
@@ -267,11 +310,11 @@ func TestInstaller_Install_AgentFile_FallsBackForNonAgentTools(t *testing.T) {
 		t.Errorf("expected 2 files written, got %d", len(result.FilesWritten))
 	}
 
-	// For cursor (no agent dir), AGENT.md should fall back to ToolSkillDir
-	skillDir := ToolSkillDir["cursor"]
-	agentFile := filepath.Join(skillDir, "agentic-helper.md")
-	if _, err := os.Stat(agentFile); os.IsNotExist(err) {
-		t.Errorf("AGENT.md should fall back to ToolSkillDir for cursor, but not found at %s", agentFile)
+	// All files (including AGENT.md) should be installed to ToolSkillDir
+	for _, filePath := range result.FilesWritten {
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			t.Errorf("file not found at expected location: %s", filePath)
+		}
 	}
 }
 
@@ -287,7 +330,8 @@ func TestInstaller_IsInstalled_AgentPack(t *testing.T) {
 		ToolAgentDir["claude-code"] = origAgentDir
 	}()
 
-	installer := NewInstaller()
+	canonicalDir := filepath.Join(tmpDir, ".agentic", "skills")
+	installer := NewInstallerWithCanonicalDir(canonicalDir)
 
 	// Not installed yet
 	if installer.IsInstalled("agentic-helper", "claude-code") {

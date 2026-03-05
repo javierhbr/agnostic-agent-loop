@@ -60,7 +60,7 @@ var runCmd = &cobra.Command{
 						fmt.Printf("Skills not found for %s. Generating %s...\n", agent.Name, skill.OutputFile)
 					}
 					cfg := getConfig()
-					result, ensureErr := skills.Ensure(agent.Name, cfg)
+					result, ensureErr := skills.Ensure(agent.Name, cfg, skills.EnsureOptions{})
 					if ensureErr != nil {
 						fmt.Printf("Warning: could not ensure skills: %v\n", ensureErr)
 					} else {

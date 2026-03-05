@@ -10,6 +10,12 @@ import (
 	"github.com/javierbenavides/agentic-agent/pkg/models"
 )
 
+// EnsureOptions controls how packs are installed during Ensure.
+type EnsureOptions struct {
+	Global  bool // Install to global user dir (~/.claude/skills/) instead of project-local
+	Symlink bool // Create symlinks from destination to canonical copy (~/.agentic/skills/)
+}
+
 // EnsureResult holds the outcome of an ensure operation.
 type EnsureResult struct {
 	Agent          string
@@ -22,31 +28,47 @@ type EnsureResult struct {
 	Warnings       []string
 }
 
-// ensureAgentRules copies AGENT_RULES.md to the project root if it doesn't exist or is outdated.
+// ensureAgentRules appends AGENT_RULES.md to the project root if it doesn't exist, or appends content if it does.
 func ensureAgentRules() (bool, error) {
 	targetPath := "AGENT_RULES.md"
 
-	// Check if file exists
-	if _, err := os.Stat(targetPath); err == nil {
-		return false, nil // File already exists, skip
-	}
-
 	// Read template from configs/templates/init/
 	templatePath := filepath.Join("configs", "templates", "init", "AGENT_RULES.md")
-	content, err := os.ReadFile(templatePath)
+	templateContent, err := os.ReadFile(templatePath)
 	if err != nil {
 		return false, fmt.Errorf("failed to read AGENT_RULES.md template: %w", err)
 	}
 
+	// Check if file exists
+	fileExists := true
+	existingContent, err := os.ReadFile(targetPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return false, fmt.Errorf("failed to read existing AGENT_RULES.md: %w", err)
+		}
+		fileExists = false
+	}
+
+	var finalContent []byte
+	if fileExists {
+		// Append template content to existing file with a separator
+		finalContent = append(existingContent, []byte("\n\n---\n\n")...)
+		finalContent = append(finalContent, templateContent...)
+	} else {
+		// Create new file with template content
+		finalContent = templateContent
+	}
+
 	// Write to project root
-	if err := os.WriteFile(targetPath, content, 0644); err != nil {
+	if err := os.WriteFile(targetPath, finalContent, 0644); err != nil {
 		return false, fmt.Errorf("failed to write AGENT_RULES.md: %w", err)
 	}
 
 	return true, nil
 }
 
-// ensureToolRules copies the tool-specific rules file (e.g., CLAUDE.md) to the project root.
+// ensureToolRules appends the tool-specific rules file (e.g., CLAUDE.md) to the project root.
+// If the file exists, appends new content; otherwise creates it.
 func ensureToolRules(agentName string) (bool, error) {
 	// Map agent name to rules filename
 	rulesFileMap := map[string]string{
@@ -64,14 +86,9 @@ func ensureToolRules(agentName string) (bool, error) {
 
 	targetPath := rulesFile
 
-	// Check if file exists
-	if _, err := os.Stat(targetPath); err == nil {
-		return false, nil // File already exists, skip
-	}
-
 	// Read template from configs/templates/init/tool-rules/
 	templatePath := filepath.Join("configs", "templates", "init", "tool-rules", rulesFile)
-	content, err := os.ReadFile(templatePath)
+	templateContent, err := os.ReadFile(templatePath)
 	if err != nil {
 		// If template doesn't exist, it's not an error - just skip
 		if os.IsNotExist(err) {
@@ -80,8 +97,28 @@ func ensureToolRules(agentName string) (bool, error) {
 		return false, fmt.Errorf("failed to read %s template: %w", rulesFile, err)
 	}
 
+	// Check if file exists and read existing content
+	fileExists := true
+	existingContent, err := os.ReadFile(targetPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return false, fmt.Errorf("failed to read existing %s: %w", rulesFile, err)
+		}
+		fileExists = false
+	}
+
+	var finalContent []byte
+	if fileExists {
+		// Append template content to existing file with a separator
+		finalContent = append(existingContent, []byte("\n\n---\n\n")...)
+		finalContent = append(finalContent, templateContent...)
+	} else {
+		// Create new file with template content
+		finalContent = templateContent
+	}
+
 	// Write to project root
-	if err := os.WriteFile(targetPath, content, 0644); err != nil {
+	if err := os.WriteFile(targetPath, finalContent, 0644); err != nil {
 		return false, fmt.Errorf("failed to write %s: %w", rulesFile, err)
 	}
 
@@ -90,7 +127,7 @@ func ensureToolRules(agentName string) (bool, error) {
 
 // Ensure makes sure an agent has all necessary skills and rules.
 // It is idempotent and safe to run repeatedly.
-func Ensure(agentName string, cfg *models.Config) (*EnsureResult, error) {
+func Ensure(agentName string, cfg *models.Config, opts EnsureOptions) (*EnsureResult, error) {
 	result := &EnsureResult{Agent: agentName}
 	gen := NewGeneratorWithConfig(cfg)
 
@@ -144,7 +181,7 @@ func Ensure(agentName string, cfg *models.Config) (*EnsureResult, error) {
 	// Mandatory packs are always installed regardless of config
 	for _, packName := range MandatoryPacks {
 		if !installer.IsInstalled(packName, agentName) {
-			_, installErr := installer.Install(packName, agentName, false)
+			_, installErr := installer.Install(packName, agentName, opts.Global)
 			if installErr != nil {
 				result.Warnings = append(result.Warnings,
 					fmt.Sprintf("Failed to install mandatory pack %s: %v", packName, installErr))
@@ -158,7 +195,7 @@ func Ensure(agentName string, cfg *models.Config) (*EnsureResult, error) {
 	agentCfg := config.GetAgentConfig(cfg, agentName)
 	for _, packName := range agentCfg.SkillPacks {
 		if !installer.IsInstalled(packName, agentName) {
-			_, installErr := installer.Install(packName, agentName, false)
+			_, installErr := installer.Install(packName, agentName, opts.Global)
 			if installErr != nil {
 				result.Warnings = append(result.Warnings,
 					fmt.Sprintf("Failed to install pack %s: %v", packName, installErr))
@@ -208,4 +245,37 @@ func FormatEnsureResult(r *EnsureResult) string {
 	}
 
 	return b.String()
+}
+
+// FormatEnsureResultCompact returns a compressed single-line summary of what ensure did.
+func FormatEnsureResultCompact(r *EnsureResult) string {
+	var items []string
+
+	if r.AgentRulesSet {
+		items = append(items, "AGENT_RULES")
+	}
+	if r.ToolRulesSet {
+		items = append(items, fmt.Sprintf("%s-rules", strings.ToLower(r.Agent)))
+	}
+	if r.RulesGenerated {
+		items = append(items, "rules")
+	}
+	if r.DriftFixed {
+		items = append(items, "drift-fixed")
+	}
+	if len(r.PacksInstalled) > 0 {
+		items = append(items, fmt.Sprintf("%d-packs", len(r.PacksInstalled)))
+	}
+
+	if len(items) == 0 {
+		return "✓ up-to-date"
+	}
+
+	result := fmt.Sprintf("✓ %s", strings.Join(items, " + "))
+
+	if len(r.Warnings) > 0 {
+		result += fmt.Sprintf(" ⚠️ %d warnings", len(r.Warnings))
+	}
+
+	return result
 }

@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 )
 
+const CanonicalGlobalSkillDir = "~/.agentic/skills"
+
 // EnsureSymlink ensures dst is a symlink pointing to src.
 // If dst is a regular file (legacy copy), it is removed and replaced.
 // If dst is a symlink with the wrong target, it is re-created.
