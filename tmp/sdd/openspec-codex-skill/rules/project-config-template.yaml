@@ -1,0 +1,24 @@
+# Example OpenSpec project config template
+schema: spec-driven
+
+context: |
+  Tech stack: TypeScript, React, Node.js
+  Testing: Vitest and Playwright
+  API style: REST with JSON responses
+  Code quality: strict TypeScript, ESLint, Prettier
+  Compatibility: public APIs must remain backward compatible unless explicitly approved
+  Documentation language: English
+
+rules:
+  proposal:
+    - Include scope boundaries and non-goals.
+    - Include rollback or mitigation notes for risky changes.
+  specs:
+    - Use Given/When/Then scenarios.
+    - Describe user-visible behavior, not implementation details.
+  design:
+    - Include affected services, interfaces, and data flows.
+    - Include tradeoffs for non-trivial technical choices.
+  tasks:
+    - Break work into verifiable implementation steps.
+    - Include validation or test updates where relevant.

@@ -1,0 +1,26 @@
+platform:
+  id: "<platform-id>"
+  repo: "<platform-repo-url>"
+  version: "<yyyy.mm>"
+  baseline_ref: "<platform-baseline-ref>"
+
+component:
+  name: "<component-name>"
+  repo: "<component-repo-url>"
+  owner_team: "<team-name>"
+
+change:
+  change_package_id: "<change-package-id>"
+  alignment_type: "component-only" # component-only | shared-change | platform-rule-adoption
+  requires_platform_change: false
+  platform_change_package_id: ""
+
+platform_refs:
+  principles: []
+  capabilities: []
+  contracts: []
+
+alignment_notes:
+  summary: "<short alignment summary>"
+  risks: []
+  open_questions: []

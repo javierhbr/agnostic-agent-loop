@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "platform-truth": {
+      "command": "/absolute/path/to/platform-truth-mcp",
+      "args": [
+        "serve",
+        "--config",
+        "/absolute/path/to/platform-mcp-config.yaml"
+      ],
+      "env": {
+        "PLATFORM_REPO_PATH": "/absolute/path/to/platform-repo",
+        "DEFAULT_PLATFORM_REF_MODE": "pinned"
+      }
+    }
+  }
+}

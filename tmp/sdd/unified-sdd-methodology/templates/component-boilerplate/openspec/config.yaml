@@ -1,0 +1,14 @@
+project:
+  name: "<component-name>"
+  description: "<short component description>"
+
+context:
+  platform_version: "<yyyy.mm>"
+  platform_refs:
+    - "<capability-ref>"
+    - "<contract-ref>"
+
+rules:
+  - "keep local specs aligned to platform refs"
+  - "do not weaken shared contracts silently"
+  - "use reviewable slices and traceable tasks"

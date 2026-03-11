@@ -1,0 +1,27 @@
+platform_issue:
+  key: "<platform-key>"
+  issue_type: "Epic" # Initiative | Epic
+  summary: "<platform issue summary>"
+  platform_version: "<yyyy.mm>"
+  platform_change_package_id: "<platform-change-id>"
+
+component_epic:
+  key: "<component-epic-key>"
+  issue_type: "Epic"
+  component: "<component-name>"
+  repo: "<component-repo-url>"
+  change_package_id: "<change-package-id>"
+  linked_platform_issue: "<platform-key>"
+
+stories: []
+
+delivery_rules:
+  one_story_per_reviewable_slice: true
+  pr_must_reference_story: true
+  story_must_reference_task: true
+  epic_must_reference_change_package: true
+
+traceability_notes:
+  summary: "<short traceability summary>"
+  blockers: []
+  dependencies: []

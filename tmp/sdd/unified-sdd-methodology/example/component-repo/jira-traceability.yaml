@@ -1,0 +1,41 @@
+platform_issue:
+  key: "PLAT-123"
+  issue_type: "Initiative"
+  summary: "Support validated customer email updates across the platform"
+  platform_version: "2026.03"
+  platform_change_package_id: "plat-email-validation"
+
+component_epic:
+  key: "PROF-456"
+  issue_type: "Epic"
+  component: "profile-service"
+  repo: "git@example.com:components/profile-service.git"
+  change_package_id: "chg-profile-email-validation"
+  linked_platform_issue: "PLAT-123"
+
+stories:
+  - key: "PROF-789"
+    summary: "Add API validation for email updates"
+    task_ref: "tasks.md#task-1"
+    spec_ref: "specs/validated-email-updates/spec.md#added-email-validation"
+    pr_ref: "PR-1024"
+    status: "In Review"
+
+  - key: "PROF-790"
+    summary: "Update profile event mapping and tests"
+    task_ref: "tasks.md#task-2"
+    spec_ref: "specs/validated-email-updates/spec.md#modified-profile-event-contract"
+    pr_ref: ""
+    status: "To Do"
+
+delivery_rules:
+  one_story_per_reviewable_slice: true
+  pr_must_reference_story: true
+  story_must_reference_task: true
+  epic_must_reference_change_package: true
+
+traceability_notes:
+  summary: "Stories are derived from the approved plan and remain linked to the same platform issue."
+  blockers: []
+  dependencies:
+    - "AUTH-234"

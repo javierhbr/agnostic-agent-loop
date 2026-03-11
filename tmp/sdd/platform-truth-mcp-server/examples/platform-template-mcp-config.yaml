@@ -1,0 +1,29 @@
+server:
+  name: platform-truth-mcp
+  mode: local-read-only
+  language_hint: go
+
+platform_repo:
+  path: ../../unified-sdd-methodology/templates/platform-template
+  default_ref_mode: pinned
+  allow_latest_queries: true
+
+component_alignment:
+  platform_ref_file: platform-ref.yaml
+  jira_traceability_file: jira-traceability.yaml
+
+inputs:
+  specs_dir: .
+  contracts_dir: contracts
+  adrs_dir: adrs
+  refs_index: sample-platform-baseline.md
+  jira_mapping_file: jira-conventions.md
+
+cache:
+  enabled: false
+  directory: .cache/platform-mcp
+
+safety:
+  read_only: true
+  allow_repo_writes: false
+  allow_component_writes: false

@@ -1,0 +1,43 @@
+# Template: platform-ref.yaml
+#
+# Purpose:
+# Record which platform truth this component change aligns to.
+
+platform:
+  id: "customer-platform"
+  repo: "git@example.com:platform/master-repo.git"
+  version: "2026.03"
+  baseline_ref: "platform-baseline/2026.03"
+
+component:
+  name: "profile-service"
+  repo: "git@example.com:components/profile-service.git"
+  owner_team: "identity-team"
+
+change:
+  change_package_id: "chg-profile-email-validation"
+  alignment_type: "component-only" # component-only | shared-change | platform-rule-adoption
+  requires_platform_change: false
+  platform_change_package_id: ""
+
+platform_refs:
+  principles:
+    - id: "principles.api-versioning"
+      reason: "This component publishes and consumes versioned APIs."
+    - id: "principles.observability"
+      reason: "This component must emit standard logs and metrics."
+
+  capabilities:
+    - id: "capabilities.customer-identity"
+      reason: "This change extends identity-related behavior."
+
+  contracts:
+    - id: "contracts.customer-profile.v2"
+      reason: "This component reads and writes the shared customer profile contract."
+
+alignment_notes:
+  summary: "Component spec aligns to platform version 2026.03 and does not change shared platform truth."
+  risks:
+    - "Downstream consumers may assume stricter validation than the current contract requires."
+  open_questions:
+    - "Confirm whether the profile event remains backward compatible for all consumers."

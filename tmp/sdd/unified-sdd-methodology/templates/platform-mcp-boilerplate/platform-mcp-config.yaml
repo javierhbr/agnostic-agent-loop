@@ -1,0 +1,29 @@
+server:
+  name: platform-truth-mcp
+  mode: local-read-only
+  language_hint: go
+
+platform_repo:
+  path: /absolute/path/to/platform-repo
+  default_ref_mode: pinned
+  allow_latest_queries: true
+
+component_alignment:
+  platform_ref_file: platform-ref.yaml
+  jira_traceability_file: jira-traceability.yaml
+
+inputs:
+  specs_dir: docs/platform
+  contracts_dir: docs/contracts
+  adrs_dir: docs/adrs
+  refs_index: docs/platform/refs-index.md
+  jira_mapping_file: docs/platform/jira-mapping.yaml
+
+cache:
+  enabled: true
+  directory: .cache/platform-mcp
+
+safety:
+  read_only: true
+  allow_repo_writes: false
+  allow_component_writes: false

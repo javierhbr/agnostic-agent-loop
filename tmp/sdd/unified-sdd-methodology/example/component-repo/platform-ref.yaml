@@ -1,0 +1,38 @@
+platform:
+  id: "customer-platform"
+  repo: "git@example.com:platform/master-repo.git"
+  version: "2026.03"
+  baseline_ref: "platform-baseline/2026.03"
+
+component:
+  name: "profile-service"
+  repo: "git@example.com:components/profile-service.git"
+  owner_team: "identity-team"
+
+change:
+  change_package_id: "chg-profile-email-validation"
+  alignment_type: "shared-change"
+  requires_platform_change: true
+  platform_change_package_id: "plat-email-validation"
+
+platform_refs:
+  principles:
+    - id: "principles.api-versioning"
+      reason: "Profile service must stay compatible with versioned API behavior."
+    - id: "principles.observability"
+      reason: "Validation and failure paths must emit standard logs and metrics."
+
+  capabilities:
+    - id: "capabilities.customer-identity"
+      reason: "The feature changes identity-related customer behavior."
+
+  contracts:
+    - id: "contracts.customer-profile.v2"
+      reason: "Profile service reads and writes the shared customer profile contract."
+
+alignment_notes:
+  summary: "This component change aligns to platform version 2026.03 and participates in the shared email validation change."
+  risks:
+    - "Existing consumers may assume weaker validation than the new flow enforces."
+  open_questions:
+    - "Confirm whether notification-service needs a follow-up epic for user messaging changes."
