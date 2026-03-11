@@ -91,7 +91,7 @@ POST /api/v1/auth/login:
 ## Key Commands
 
 - `agentic-agent task create --title "Feature: ..."` — create task from spec
-- `agentic-agent sdd gate-check <spec-id>` — validate spec soundness (run this BEFORE handing off to TechLead)
+- `agentic-agent specifyify gate-check <spec-id>` — validate spec soundness (run this BEFORE handing off to TechLead)
 - `agentic-agent context build --task <ID>` — understand implementation progress
 - `Agent(tech-lead)` — spawn TechLead to coordinate backend/frontend/mobile
 - `agentic-agent task complete <ID>` — mark task done

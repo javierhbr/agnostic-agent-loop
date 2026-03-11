@@ -88,27 +88,27 @@ agentic-agent openspec archive <change-id>
 ### FULL SDD (High/Critical Risk) — Phase by Phase
 ```bash
 # Phase 0: Initiative + Risk Classification
-agentic-agent sdd start "<name>" --risk critical
-agentic-agent sdd workflow show <initiative-id>
+agentic-agent specifyify start "<name>" --risk critical
+agentic-agent specifyify workflow show <initiative-id>
 
 # Phase 1: Architecture (Analyst + Architect)
-agentic-agent sdd gate-check <spec-id>  # checks all 5 gates
+agentic-agent specifyify gate-check <spec-id>  # checks all 5 gates
 # If blocked by ADR:
-agentic-agent sdd adr list --blocked
-agentic-agent sdd adr create --title "<decision>"
-agentic-agent sdd adr resolve <ADR-ID>
+agentic-agent specifyify adr list --blocked
+agentic-agent specifyify adr create --title "<decision>"
+agentic-agent specifyify adr resolve <ADR-ID>
 
 # Phase 2: Development (parallel per component)
 agentic-agent task claim <ID>
 agentic-agent context build --task <ID>
 # ... implement, observability, edge cases ...
-agentic-agent sdd gate-check <component-spec-id>
+agentic-agent specifyify gate-check <component-spec-id>
 agentic-agent task complete <ID>
 
 # Phase 3: Verification
 agentic-agent validate
-agentic-agent sdd gate-check <spec-id>   # final check
-agentic-agent sdd sync-graph
+agentic-agent specifyify gate-check <spec-id>   # final check
+agentic-agent specifyify sync-graph
 
 # Phase 4: Deploy (progressive rollout with feature flags)
 ```

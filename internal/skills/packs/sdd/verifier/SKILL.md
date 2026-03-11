@@ -42,7 +42,7 @@ Hard stop before merge. Verify implementation matches spec acceptance criteria w
 
 5. **Write verify.md** — File: `.agentic/specs/[component-spec-id]/verify.md`. See resources for full template and examples.
 
-6. **Update Spec Graph** — `agentic-agent sdd sync-graph`, then `agentic-agent openspec complete [change-id]`.
+6. **Update Spec Graph** — `agentic-agent specifyify sync-graph`, then `agentic-agent openspec complete [change-id]`.
 
 ---
 

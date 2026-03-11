@@ -43,22 +43,22 @@ Walks a team through the full **SDD v3.0 lifecycle** — from problem statement 
 
 ```bash
 # Phase 0
-agentic-agent sdd start "Feature Name" --risk [low|medium|high|critical]
-agentic-agent sdd workflow show [initiative-id]
+agentic-agent specifyify start "Feature Name" --risk [low|medium|high|critical]
+agentic-agent specifyify workflow show [initiative-id]
 
 # Phase 1
-agentic-agent sdd gate-check SPEC-[ID]
+agentic-agent specifyify gate-check SPEC-[ID]
 agentic-agent task create --title "Implement [Service]"
 
 # Phase 2
 agentic-agent task claim [TASK-ID]
-agentic-agent sdd gate-check SPEC-[SERVICE]-IMPL
+agentic-agent specifyify gate-check SPEC-[SERVICE]-IMPL
 agentic-agent task complete [TASK-ID]
 
 # Phase 3
 agentic-agent validate
-agentic-agent sdd gate-check SPEC-[ID]
-agentic-agent sdd sync-graph
+agentic-agent specifyify gate-check SPEC-[ID]
+agentic-agent specifyify sync-graph
 
 # Phase 4
 agentic-agent deploy --environment staging --feature-flags-all-off

@@ -18,7 +18,7 @@ See: `.agentic/skills/openclaw/resources/reviewer.md` for full playbook.
 1. Load context: `agentic-agent context build --task <ID>`
 2. Read spec files (component-spec.md or feature-spec.md)
 3. Read code: files created by builder worker
-4. Run: `agentic-agent sdd gate-check <spec-id>`
+4. Run: `agentic-agent specifyify gate-check <spec-id>`
 5. Run: `agentic-agent validate`
 6. Check for crash risks: nil pointers, race conditions, panics, hardcoded secrets
 7. Score 0-10:

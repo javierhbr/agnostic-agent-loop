@@ -76,7 +76,7 @@ If any check fails: **STOP**. Report blocker to Main Agent.
 ## Step 3: Gate Check (Quality)
 
 ```bash
-agentic-agent sdd gate-check <spec-id>
+agentic-agent specifyify gate-check <spec-id>
 ```
 
 Run this for every spec referenced by the task. If any gate fails:

@@ -98,7 +98,7 @@ Make notes of any gaps or risks.
 ## Step 4: Run Gate-Check
 
 ```bash
-agentic-agent sdd gate-check <spec-id>
+agentic-agent specifyify gate-check <spec-id>
 ```
 
 Verify all 5 gates pass:

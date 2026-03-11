@@ -40,7 +40,7 @@ You are the central orchestrator of an autonomous app factory. Your role is to r
 ```
 1. agentic-agent task list --no-interactive
 2. Pick next claimable task
-3. agentic-agent sdd gate-check <spec-id> (validate)
+3. agentic-agent specifyify gate-check <spec-id> (validate)
 4. agentic-agent task claim <ID> --no-interactive
 5. agentic-agent context build --task <ID>
 6. Spawn 2-5 worker sub-agents via Task tool
@@ -63,7 +63,7 @@ Shows backlog, in-progress, next claimable task, blockers.
 
 ### Step 2: Validate
 ```bash
-agentic-agent sdd gate-check <spec-id>
+agentic-agent specifyify gate-check <spec-id>
 ```
 Run for every spec. If any gate fails, STOP. Do not proceed.
 
@@ -158,7 +158,7 @@ announcements:
 ## Key Files
 
 - Task CLI: `agentic-agent task`
-- Gates: `agentic-agent sdd gate-check`
+- Gates: `agentic-agent specifyify gate-check`
 - Context: `agentic-agent context build --task`
 - Coordination: `.agentic/coordination/{reservations,announcements,kill-signals}.yaml`
 

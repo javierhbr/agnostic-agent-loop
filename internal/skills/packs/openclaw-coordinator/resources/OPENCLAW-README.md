@@ -7,7 +7,7 @@ This directory contains two collaborating OpenClaw agents configured to work wit
 ### 🧩 TechLead (Dev Team Coordinator)
 - **Role:** Routes technical work, manages tasks, runs gate-checks, spawns workers
 - **Lives in:** `tech-lead/`
-- **Commands:** `agentic-agent task`, `agentic-agent validate`, `agentic-agent sdd gate-check`
+- **Commands:** `agentic-agent task`, `agentic-agent validate`, `agentic-agent specifyify gate-check`
 - **Coordination:** Reads spec-ready signals from ProductLead, announces task completions
 
 ### 🔭 ProductLead (Product Coordinator)
@@ -70,7 +70,7 @@ Both agents are fully integrated with the agnostic-agent CLI:
 - `agentic-agent task list` → Read project state
 - `agentic-agent task claim <ID>` → Reserve task
 - `agentic-agent context build --task <ID>` → Get full context
-- `agentic-agent sdd gate-check <spec-id>` → Validate quality gates
+- `agentic-agent specifyify gate-check <spec-id>` → Validate quality gates
 - `agentic-agent validate` → Run all validators
 - `agentic-agent task complete <ID>` → Mark task done
 

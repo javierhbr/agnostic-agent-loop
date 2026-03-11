@@ -182,28 +182,28 @@ agentic-agent openspec complete payment-accounting-change-001
 
 ```bash
 # Phase 0: Initiative + Risk Assessment
-agentic-agent sdd start "<name>" --risk critical
-agentic-agent sdd workflow show <id>
+agentic-agent specifyify start "<name>" --risk critical
+agentic-agent specifyify workflow show <id>
 
 # Phase 1: Architecture + Specs
-agentic-agent sdd gate-check <spec-id>
+agentic-agent specifyify gate-check <spec-id>
 
 # If blocked by ADR:
-agentic-agent sdd adr list --blocked
-agentic-agent sdd adr create --title "<decision>"
-agentic-agent sdd adr resolve <ADR-ID>
+agentic-agent specifyify adr list --blocked
+agentic-agent specifyify adr create --title "<decision>"
+agentic-agent specifyify adr resolve <ADR-ID>
 
 # Phase 2: Development (parallel per component)
 agentic-agent task claim <ID>
 agentic-agent context build --task <ID>
 # ... code, observability, edge cases, tests ...
-agentic-agent sdd gate-check <component-spec-id>
+agentic-agent specifyify gate-check <component-spec-id>
 agentic-agent task complete <ID>
 
 # Phase 3: Verification
 agentic-agent validate
-agentic-agent sdd gate-check <spec-id>
-agentic-agent sdd sync-graph
+agentic-agent specifyify gate-check <spec-id>
+agentic-agent specifyify sync-graph
 
 # Phase 4: Deploy (feature flags, progressive rollout)
 # ... deployment strategy ...
@@ -219,42 +219,42 @@ agentic-agent sdd sync-graph
 
 **Run gate checks frequently:**
 ```bash
-agentic-agent sdd gate-check <spec-id>  # Before fan-out, before implementation
-agentic-agent sdd gate-check <component-spec-id>  # After component implementation
+agentic-agent specifyify gate-check <spec-id>  # Before fan-out, before implementation
+agentic-agent specifyify gate-check <component-spec-id>  # After component implementation
 ```
 
 ### Example: Critical Payment Flow
 
 ```bash
-agentic-agent sdd start "subscription-billing" --risk critical
-agentic-agent sdd workflow show id-001
+agentic-agent specifyify start "subscription-billing" --risk critical
+agentic-agent specifyify workflow show id-001
 
 # Architecture phase
-agentic-agent sdd gate-check SPEC-PAY-001
+agentic-agent specifyify gate-check SPEC-PAY-001
 
 # Hit Gate 5 failure: ADR needed on idempotency
-agentic-agent sdd adr list --blocked
+agentic-agent specifyify adr list --blocked
 # Shows: ADR-219 blocks SPEC-PAY-001
 
-agentic-agent sdd adr create --title "Idempotency strategy for payment retries"
-agentic-agent sdd adr resolve ADR-219
+agentic-agent specifyify adr create --title "Idempotency strategy for payment retries"
+agentic-agent specifyify adr resolve ADR-219
 
 # Re-check gate
-agentic-agent sdd gate-check SPEC-PAY-001  # Now PASS
+agentic-agent specifyify gate-check SPEC-PAY-001  # Now PASS
 
 # Development phase (parallel)
 agentic-agent task claim TASK-1  # Billing service
 agentic-agent context build --task TASK-1
 # ... implement with observability, edge cases ...
-agentic-agent sdd gate-check SPEC-PAY-001-BILLING  # Component-level gate check
+agentic-agent specifyify gate-check SPEC-PAY-001-BILLING  # Component-level gate check
 agentic-agent task complete TASK-1
 
 # ... repeat for other components ...
 
 # Verification phase
 agentic-agent validate
-agentic-agent sdd gate-check SPEC-PAY-001
-agentic-agent sdd sync-graph
+agentic-agent specifyify gate-check SPEC-PAY-001
+agentic-agent specifyify sync-graph
 
 # Deploy with feature flags
 ```
@@ -273,7 +273,7 @@ agentic-agent sdd sync-graph
 # Edit spec file, add: Source: Platform MCP v2.1
 
 # 2. Re-run gate
-agentic-agent sdd gate-check <spec-id>
+agentic-agent specifyify gate-check <spec-id>
 ```
 
 ### Blocked By Non-Empty ADR
@@ -283,13 +283,13 @@ agentic-agent sdd gate-check <spec-id>
 **Fix:**
 ```bash
 # 1. Check ADR status
-agentic-agent sdd adr list --blocked
+agentic-agent specifyify adr list --blocked
 
 # 2. Resolve the ADR
-agentic-agent sdd adr resolve ADR-219
+agentic-agent specifyify adr resolve ADR-219
 
 # 3. Re-check gate
-agentic-agent sdd gate-check <spec-id>
+agentic-agent specifyify gate-check <spec-id>
 ```
 
 ### Validation Fails
@@ -326,13 +326,13 @@ agentic-agent openspec complete <change-id>
 agentic-agent openspec archive <change-id>
 
 # SDD (Critical risk)
-agentic-agent sdd start "<name>" --risk critical
-agentic-agent sdd workflow show <id>
-agentic-agent sdd gate-check <spec-id>
-agentic-agent sdd adr create --title "..."
-agentic-agent sdd adr resolve <ADR-ID>
-agentic-agent sdd adr list --blocked
-agentic-agent sdd sync-graph
+agentic-agent specifyify start "<name>" --risk critical
+agentic-agent specifyify workflow show <id>
+agentic-agent specifyify gate-check <spec-id>
+agentic-agent specifyify adr create --title "..."
+agentic-agent specifyify adr resolve <ADR-ID>
+agentic-agent specifyify adr list --blocked
+agentic-agent specifyify sync-graph
 
 # Context and validation
 agentic-agent context generate <DIR>

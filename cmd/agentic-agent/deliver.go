@@ -16,7 +16,7 @@ import (
 
 var deliverCmd = &cobra.Command{
 	Use:   "deliver",
-	Short: "Interactive workflow: claim task → work → complete",
+	Short: "Interactive workflow: claim task → deliver → complete",
 	Long: `Complete interactive workflow for working on tasks.
 
 This command guides you through the entire workflow:

@@ -10,7 +10,7 @@ import (
 
 var (
 	// Version information (set via ldflags at build time)
-	Version   = "2.3.0"
+	Version   = "2.4.0"
 	Commit    = "none"
 	BuildDate = "unknown"
 
@@ -43,7 +43,12 @@ var rootCmd = &cobra.Command{
 development with token management, context isolation, and multi-tool support.
 
 It orchestrates AI coding agents (Claude Code, Cursor, Windsurf, etc.) through
-a unified task and context management system.`,
+a unified task and context management system.
+
+Most commands support an interactive TUI (Terminal User Interface).
+To force interactive mode (even if an agent is detected), use:
+  agentic-agent [command] -i
+  agentic-agent [command] --interactive`,
 	Version:      Version,
 	SilenceUsage: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
