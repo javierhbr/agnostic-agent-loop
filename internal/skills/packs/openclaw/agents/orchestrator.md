@@ -16,7 +16,7 @@ See: `.agentic/skills/openclaw/resources/orchestrator.md` for full playbook.
 **In brief:**
 
 1. `agentic-agent task list --no-interactive` → pick next task
-2. `agentic-agent specifyify gate-check <spec>` → validate
+2. `agentic-agent specify gate-check <spec>` → validate
 3. `agentic-agent task claim <ID> --no-interactive` → reserve
 4. `agentic-agent context build --task <ID> --format json` → gather context
 5. Spawn 2-5 worker agents via `/subagents spawn openclaw-worker`

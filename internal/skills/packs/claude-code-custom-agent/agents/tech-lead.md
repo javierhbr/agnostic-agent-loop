@@ -20,7 +20,7 @@ You are the tech lead. Your role: coordinate work across backend, frontend, and 
 ## Startup Checklist
 
 1. **Identify project**: `agentic-agent status` (confirm project name + working directory)
-2. **Run gate-check on spec**: `agentic-agent specifyify gate-check <spec-id>` (ensure AC are sound)
+2. **Run gate-check on spec**: `agentic-agent specify gate-check <spec-id>` (ensure AC are sound)
 3. **Store API contract**: If new API endpoints, save contract to `.agentic/contracts/<spec-id>.yaml`:
    ```yaml
    spec_id: feature-auth
@@ -59,7 +59,7 @@ Implementation complete?     → Route to QADev (quality gate)
 ## Key Commands
 
 - `agentic-agent task claim <ID>` — reserve task
-- `agentic-agent specifyify gate-check <spec-id>` — validate spec quality
+- `agentic-agent specify gate-check <spec-id>` — validate spec quality
 - `agentic-agent context build --task <ID>` — gather full context
 - `Agent(backend-dev)` / `Agent(frontend-dev)` / `Agent(mobile-dev)` / `Agent(qa-dev)` — spawn workers
 - `agentic-agent task complete <ID>` — mark done after all workers finish

@@ -92,7 +92,7 @@ All agents read/write these YAML files directly (see `openclaw/resources/coordin
 ```bash
 agentic-agent task list --no-interactive           # What's next?
 agentic-agent validate                             # Gate checks
-agentic-agent specifyify gate-check <spec-id>             # Quality check
+agentic-agent specify gate-check <spec-id>             # Quality check
 agentic-agent task claim <ID> --no-interactive     # Reserve task
 agentic-agent context build --task <ID>            # Gather context
 agentic-agent task complete <ID>                   # Mark done
@@ -113,7 +113,7 @@ agentic-agent task complete <ID>                         # Mark done
 
 ### Reviewer
 ```bash
-agentic-agent specifyify gate-check <spec-id>             # Quality check
+agentic-agent specify gate-check <spec-id>             # Quality check
 agentic-agent validate                             # Validation rules
 ```
 

@@ -27,7 +27,7 @@ agentic-agent task complete <ID>                # Mark done
 
 ```bash
 agentic-agent validate                          # Run all validators
-agentic-agent specifyify gate-check <spec-id>          # Run 5 SDD gates
+agentic-agent specify gate-check <spec-id>          # Run 5 SDD gates
 ```
 
 ### OpenSpec
@@ -85,7 +85,7 @@ EOF
 ```bash
 cd <project-root> && agentic-agent task list
 cd <project-root> && agentic-agent context build --task <ID>
-cd <project-root> && agentic-agent specifyify gate-check <spec-id>
+cd <project-root> && agentic-agent specify gate-check <spec-id>
 ```
 
 ## Coordination YAML Paths

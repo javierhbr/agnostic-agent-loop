@@ -61,23 +61,23 @@ Does this change involve:
 
 ```bash
 # Determine risk level (interactive prompt or config)
-agentic-agent specifyify start "Feature Name" --risk medium
+agentic-agent specify start "Feature Name" --risk medium
 
 # Show current workflow progress
-agentic-agent specifyify workflow show <initiative-id>
+agentic-agent specify workflow show <initiative-id>
 
 # Run gate checks on a spec
-agentic-agent specifyify gate-check <spec-id>
+agentic-agent specify gate-check <spec-id>
 
 # Create ADRs to resolve blockers
-agentic-agent specifyify adr create --title "Idempotency Strategy" --scope local
-agentic-agent specifyify adr resolve ADR-001
+agentic-agent specify adr create --title "Idempotency Strategy" --scope local
+agentic-agent specify adr resolve ADR-001
 
 # Sync spec graph to platform repo
-agentic-agent specifyify sync-graph
+agentic-agent specify sync-graph
 
 # Install agent Markdown files
-agentic-agent specifyify agents install
+agentic-agent specify agents install
 ```
 
 ## Per-Workflow Agent Sequence

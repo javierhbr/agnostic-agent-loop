@@ -37,7 +37,7 @@ Responsibilities:
 agentic-agent task list              # View backlog
 agentic-agent task claim <ID>        # Reserve task
 agentic-agent context build          # Get full context
-agentic-agent specifyify gate-check <ID>    # Validate quality
+agentic-agent specify gate-check <ID>    # Validate quality
 agentic-agent task complete <ID>     # Mark done
 ```
 
@@ -194,7 +194,7 @@ Then announce in `.agentic/coordination/announcements.yaml` with `project_id`.
 cd ~/projects/project-1
 agentic-agent task list
 agentic-agent task claim <task-id>
-agentic-agent specifyify gate-check <spec-id>
+agentic-agent specify gate-check <spec-id>
 ```
 
 Then announce completion with `project_id`.

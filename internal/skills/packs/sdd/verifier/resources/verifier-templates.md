@@ -228,6 +228,6 @@ How to escalate: Set Status = REQUIRES HUMAN APPROVAL, ping #privacy-squad
 - [ ] Lint or build FAILS (fix all warnings/errors)
 - [ ] Coverage < 80% (add tests for uncovered branches)
 - [ ] Change touches payment/auth/PII without human approval (escalate and get sign-off)
-- [ ] Spec Graph not updated to Done (run `agentic-agent specifyify sync-graph`)
+- [ ] Spec Graph not updated to Done (run `agentic-agent specify sync-graph`)
 
 **If ANY are true:** BLOCK the merge. Return the spec to the Architect with specific remediation steps.

@@ -14,7 +14,7 @@ You are the orchestrator. Your role is to delegate work, monitor progress, and s
 
 1. **List tasks**: Run `agentic-agent task list --no-interactive`
 2. **Pick next pending task** and validate it
-3. **Run gate-check**: `agentic-agent specifyify gate-check <spec-id>` (ensure acceptance criteria are sound)
+3. **Run gate-check**: `agentic-agent specify gate-check <spec-id>` (ensure acceptance criteria are sound)
 4. **Claim the task**: `agentic-agent task claim <ID> --no-interactive`
 5. **Gather context**: `agentic-agent context build --task <ID> --format json`
 6. **Spawn 2-5 worker agents** using the Agent tool: `Agent(worker)` with the task ID

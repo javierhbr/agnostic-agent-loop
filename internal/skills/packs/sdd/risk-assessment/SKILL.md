@@ -83,7 +83,7 @@ Update your initiative.md with a "Risk Assessment" section:
 
 ```bash
 # Determine risk level from assessment
-agentic-agent specifyify start "<initiative-name>" --risk [low|medium|high|critical]
+agentic-agent specify start "<initiative-name>" --risk [low|medium|high|critical]
 
 # This activates the appropriate workflow (Quick/Standard/Full)
 # The first agent in the sequence is notified to begin work

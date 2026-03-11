@@ -28,7 +28,7 @@ You are the reviewer. Your role: **independently validate code against specs and
    - Check for crashes: nil dereference, race conditions, panics, hardcoded secrets, SQL injection
 
 4. **Run gate checks**:
-   - `agentic-agent specifyify gate-check <spec-id>` (validates spec structure)
+   - `agentic-agent specify gate-check <spec-id>` (validates spec structure)
    - `agentic-agent validate` (checks code quality rules)
 
 5. **Verify each acceptance criterion** (1-by-1):
