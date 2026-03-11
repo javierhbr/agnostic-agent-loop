@@ -252,7 +252,7 @@ The complete SDD methodology with four agent roles running in sequence:
 
 ```bash
 # Start an SDD initiative
-agentic-agent sdd start "Subscription Billing" --risk critical
+agentic-agent specifyify start "Subscription Billing" --risk critical
 
 # This creates:
 # - .agentic/initiatives/<id>/ (workflow state)
@@ -260,19 +260,19 @@ agentic-agent sdd start "Subscription Billing" --risk critical
 # - Next agent: Analyst
 
 # Show workflow progress
-agentic-agent sdd workflow show <initiative-id>
+agentic-agent specifyify workflow show <initiative-id>
 
 # Install agent skills
-agentic-agent sdd agents install
+agentic-agent specifyify agents install
 
 # Create ADR for blocking decisions
-agentic-agent sdd adr create --title "Where to store card tokens?"
+agentic-agent specifyify adr create --title "Where to store card tokens?"
 
 # Resolve ADR when decision made
-agentic-agent sdd adr resolve ADR-001
+agentic-agent specifyify adr resolve ADR-001
 
 # Sync spec graph
-agentic-agent sdd sync-graph
+agentic-agent specifyify sync-graph
 
 # Complete initiative
 agentic-agent openspec complete <change-id>
@@ -348,7 +348,7 @@ See [`examples/sdd-ecommerce-payments/`](../../examples/sdd-ecommerce-payments/)
 
 ```bash
 # Start SDD
-agentic-agent sdd start "Subscription Billing" --risk critical
+agentic-agent specifyify start "Subscription Billing" --risk critical
 
 # Phase 1: Analyst interviews team
 # Produces: discovery.md (evidence of 43 support tickets, 8 lost deals)
@@ -494,13 +494,13 @@ agentic-agent platform change-priority --initiative "..." --priority "..."
 ### SDD Commands
 
 ```bash
-agentic-agent sdd start <name> --risk low|medium|high|critical
-agentic-agent sdd workflow show <id>
-agentic-agent sdd agents install
-agentic-agent sdd gate-check <spec-id>
-agentic-agent sdd adr create --title "..."
-agentic-agent sdd adr resolve <adr-id>
-agentic-agent sdd sync-graph
+agentic-agent specifyify start <name> --risk low|medium|high|critical
+agentic-agent specifyify workflow show <id>
+agentic-agent specifyify agents install
+agentic-agent specifyify gate-check <spec-id>
+agentic-agent specifyify adr create --title "..."
+agentic-agent specifyify adr resolve <adr-id>
+agentic-agent specifyify sync-graph
 ```
 
 ---

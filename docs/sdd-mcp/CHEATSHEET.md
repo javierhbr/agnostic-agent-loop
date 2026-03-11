@@ -63,15 +63,15 @@ agentic-agent openspec archive <id>          # Archive
 ### SDD Full (High-Risk Only)
 
 ```bash
-agentic-agent sdd start "Name" \
+agentic-agent specifyify start "Name" \
   --risk critical                            # Create initiative
 
-agentic-agent sdd workflow show <id>         # View phase
-agentic-agent sdd gate-check <id>            # Verify gates
-agentic-agent sdd adr create \
+agentic-agent specifyify workflow show <id>         # View phase
+agentic-agent specifyify gate-check <id>            # Verify gates
+agentic-agent specifyify adr create \
   --title "Decision" --scope global          # Create decision
-agentic-agent sdd adr list                   # View decisions
-agentic-agent sdd adr resolve <id>           # Approve decision
+agentic-agent specifyify adr list                   # View decisions
+agentic-agent specifyify adr resolve <id>           # Approve decision
 ```
 
 ---
@@ -386,11 +386,11 @@ Current: Using tasks only
 
 Current: Using OpenSpec
 ├─ Scale up if: High risk (payment/auth/PII)
-└─ Next: Full SDD (agentic-agent sdd start)
+└─ Next: Full SDD (agentic-agent specifyify start)
 
 Current: Using SDD
 ├─ Add gates if: Regulatory/critical
-└─ Command: agentic-agent sdd gate-check
+└─ Command: agentic-agent specifyify gate-check
 ```
 
 ---
@@ -518,7 +518,7 @@ agentic-agent openspec complete oauth-ui
 agentic-agent --help                    # Top-level help
 agentic-agent task --help               # Task commands
 agentic-agent openspec --help           # OpenSpec commands
-agentic-agent sdd --help                # SDD commands
+agentic-agent specifyify --help                # SDD commands
 agentic-agent [command] --help          # Help for specific command
 ```
 

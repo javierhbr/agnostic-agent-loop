@@ -174,11 +174,11 @@ Every skill's exit criteria includes gate checks. The five gates are:
 
 | Gate | Name | Checks For | Run Via |
 |------|------|-----------|---------|
-| **1** | Context Completeness | Metadata fields present (implements, context_pack, status) | `agentic-agent sdd gate-check` |
-| **2** | Domain Validity | Domain invariants respected, no cross-domain DB access | `agentic-agent sdd gate-check` |
-| **3** | Integration Safety | Contract changes declared, consumers identified | `agentic-agent sdd gate-check` |
-| **4** | NFR Compliance | Observability, security, performance declared | `agentic-agent sdd gate-check` |
-| **5** | Ready to Implement | No blocking ADRs, all ACs in GWT format, unambiguous | `agentic-agent sdd gate-check` |
+| **1** | Context Completeness | Metadata fields present (implements, context_pack, status) | `agentic-agent specifyify gate-check` |
+| **2** | Domain Validity | Domain invariants respected, no cross-domain DB access | `agentic-agent specifyify gate-check` |
+| **3** | Integration Safety | Contract changes declared, consumers identified | `agentic-agent specifyify gate-check` |
+| **4** | NFR Compliance | Observability, security, performance declared | `agentic-agent specifyify gate-check` |
+| **5** | Ready to Implement | No blocking ADRs, all ACs in GWT format, unambiguous | `agentic-agent specifyify gate-check` |
 
 ---
 
@@ -214,7 +214,7 @@ All skills available at:
 ```bash
 1. Read: .claude/skills/sdd/initiative-definition/SKILL.md
 2. Read: .claude/skills/sdd/risk-assessment/SKILL.md
-3. Run: agentic-agent sdd start "Feature Name" --risk [level]
+3. Run: agentic-agent specifyify start "Feature Name" --risk [level]
 4. Reference: .claude/skills/sdd/stakeholder-communication/SKILL.md for updates
 ```
 
@@ -224,7 +224,7 @@ All skills available at:
 1. Read: .claude/skills/sdd/process-guide/SKILL.md (Phase 1)
 2. Read: .claude/skills/sdd/architect/SKILL.md
 3. Create: feature-spec.md + component-spec.md
-4. Run: agentic-agent sdd gate-check SPEC-[ID]
+4. Run: agentic-agent specifyify gate-check SPEC-[ID]
 5. When all gates PASS: Create parallel dev tasks
 ```
 
@@ -236,7 +236,7 @@ All skills available at:
 3. Read: Your assigned component-spec.md (from architect)
 4. Reference: .claude/skills/sdd/developer/SKILL.md
 5. Produce: impl-spec.md + code + tests
-6. Run: agentic-agent sdd gate-check SPEC-[SERVICE]-IMPL
+6. Run: agentic-agent specifyify gate-check SPEC-[SERVICE]-IMPL
 ```
 
 ### If You're a Verifier/QA
@@ -246,8 +246,8 @@ All skills available at:
 2. Reference: .claude/skills/sdd/verifier/SKILL.md
 3. Run: agentic-agent validate (all tests)
 4. Create: verify.md with evidence
-5. Run: agentic-agent sdd gate-check SPEC-[ID] (final check)
-6. Run: agentic-agent sdd sync-graph
+5. Run: agentic-agent specifyify gate-check SPEC-[ID] (final check)
+6. Run: agentic-agent specifyify sync-graph
 ```
 
 ### If You're Confused
@@ -263,12 +263,12 @@ All skills available at:
 
 ```bash
 # Phase 0: PM uses process-guide + initiative-definition + risk-assessment
-agentic-agent sdd start "Guest Checkout" --risk medium
+agentic-agent specifyify start "Guest Checkout" --risk medium
 # Initiative created ✓
 
 # Phase 1: Architect uses process-guide + architect
 # (Reads initiative, Platform Constitution, creates specs)
-agentic-agent sdd gate-check SPEC-CHECKOUT-GUEST
+agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
 # All gates PASS ✓
 
 # Phase 2: 4 Developers use process-guide + developer (parallel)
@@ -280,8 +280,8 @@ agentic-agent task complete TASK-001
 # Phase 3: Verifier uses process-guide + verifier
 # (Verifies every AC, creates verify.md)
 agentic-agent validate
-agentic-agent sdd gate-check SPEC-CHECKOUT-GUEST
-agentic-agent sdd sync-graph
+agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
+agentic-agent specifyify sync-graph
 # Merged to main ✓
 
 # Phase 4: Deploy using process-guide (Phase 4)

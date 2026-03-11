@@ -89,7 +89,7 @@ Created task TASK-1738900000: Implement user authentication
 Verify the spec reference resolves:
 
 ```bash
-agentic-agent spec resolve .agentic/spec/04-architecture.md
+agentic-agent specify resolve .agentic/spec/04-architecture.md
 ```
 
 ### 2. Decompose into subtasks

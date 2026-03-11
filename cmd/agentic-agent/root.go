@@ -108,17 +108,13 @@ func init() {
 	rootCmd.AddCommand(tokenCmd)
 	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(learningsCmd)
-	rootCmd.AddCommand(specCmd)
 	rootCmd.AddCommand(autopilotCmd)
 	rootCmd.AddCommand(statusCmd)
-	rootCmd.AddCommand(trackCmd)
+	rootCmd.AddCommand(routeCmd)
+	rootCmd.AddCommand(specifyCmd)
 	rootCmd.AddCommand(planCmd)
 	rootCmd.AddCommand(simplifyCmd)
 	rootCmd.AddCommand(openspecCmd)
 	rootCmd.AddCommand(promptsCmd)
 	rootCmd.AddCommand(platformCmd)
-	rootCmd.AddCommand(sddCmd)
-
-	// Initialize SDD subcommands
-	initSDDCmd()
 }

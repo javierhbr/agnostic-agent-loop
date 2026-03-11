@@ -77,10 +77,10 @@ Includes:
 Use full SDD methodology with gates, ADRs, verification:
 
 ```bash
-agentic-agent sdd start "Feature" --risk critical
-agentic-agent sdd workflow show <id>
+agentic-agent specifyify start "Feature" --risk critical
+agentic-agent specifyify workflow show <id>
 # ... runs through Analyst → Architect → Developer → Verifier phases ...
-agentic-agent sdd gate-check <id>  # Verify before moving forward
+agentic-agent specifyify gate-check <id>  # Verify before moving forward
 ```
 
 → See: [SDD-FULL.md](./SDD-FULL.md) (if available) or main SDD docs
@@ -155,18 +155,18 @@ agentic-agent openspec archive <id>
 
 ```bash
 # Start risk-classified initiative
-agentic-agent sdd start "Name" --risk low|medium|high|critical
+agentic-agent specifyify start "Name" --risk low|medium|high|critical
 
 # View workflow state
-agentic-agent sdd workflow show <id>
+agentic-agent specifyify workflow show <id>
 
 # Create architectural decisions
-agentic-agent sdd adr create --title "Decision" --scope global|local
-agentic-agent sdd adr list
-agentic-agent sdd adr resolve <id>
+agentic-agent specifyify adr create --title "Decision" --scope global|local
+agentic-agent specifyify adr list
+agentic-agent specifyify adr resolve <id>
 
 # Gate checks before moving forward
-agentic-agent sdd gate-check <spec-id>
+agentic-agent specifyify gate-check <spec-id>
 ```
 
 ---

@@ -7,6 +7,8 @@ type Config struct {
 	Paths       PathsConfig       `yaml:"paths"`
 	Checkpoint  CheckpointConfig  `yaml:"checkpoint,omitempty"`
 	SDD         SDDConfig         `yaml:"sdd,omitempty"`
+	Planner     PlannerConfig     `yaml:"planner,omitempty"`
+	Tools       ToolsConfig       `yaml:"tools,omitempty"`
 	ActiveAgent string            `yaml:"-"` // Runtime-only: detected agent name
 }
 
@@ -62,4 +64,17 @@ type SDDConfig struct {
 	AgentsDir      string `yaml:"agents_dir,omitempty"`
 	ADRDir         string `yaml:"adr_dir,omitempty"`
 	InitiativesDir string `yaml:"initiatives_dir,omitempty"`
+}
+
+type PlannerConfig struct {
+	Provider string `yaml:"provider,omitempty"` // e.g., "jira", "linear"
+	URL      string `yaml:"url,omitempty"`
+	Token    string `yaml:"token,omitempty"`
+	Project  string `yaml:"project,omitempty"`
+}
+
+type ToolsConfig struct {
+	BMAD    string `yaml:"bmad,omitempty"`    // Path to BMAD CLI
+	SpecKit string `yaml:"speckit,omitempty"` // Path to SpecKit CLI
+	OpenSpec string `yaml:"openspec,omitempty"` // Path to OpenSpec CLI
 }

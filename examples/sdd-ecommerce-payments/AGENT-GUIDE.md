@@ -223,7 +223,7 @@ For AI agents operating autonomously, this guide provides concise step-by-step i
 
 **Output:**
 - `06-verifier/verify.md`
-- `agentic-agent sdd sync-graph` (update spec-graph)
+- `agentic-agent specify sync-graph` (update spec-graph)
 - `agentic-agent openspec complete <change-id>` (mark Done)
 
 **Time:** 2-3 days
@@ -318,7 +318,7 @@ Each agent self-checks gates before handing off:
 **Developer** → Gate 1-5 on impl-specs
 **Verifier** → Verify all ACs with evidence
 
-Run: `agentic-agent sdd gate-check <spec-id> --format text`
+Run: `agentic-agent specify gate-check <spec-id> --format text`
 
 ---
 
@@ -343,25 +343,25 @@ Run: `agentic-agent sdd gate-check <spec-id> --format text`
 
 ```bash
 # Setup
-agentic-agent sdd agents install
+agentic-agent specify agents install
 
 # Start initiative
-agentic-agent sdd start "Subscription Billing" --risk critical
+agentic-agent specify start "Subscription Billing" --risk critical
 
 # View workflow
-agentic-agent sdd workflow show <initiative-id>
+agentic-agent specify workflow show <initiative-id>
 
 # Gate check
-agentic-agent sdd gate-check SBL-2025-Q1 --format text
+agentic-agent specify gate-check SBL-2025-Q1 --format text
 
 # List ADRs
-agentic-agent sdd adr list
+agentic-agent specify adr list
 
 # Resolve ADR
-agentic-agent sdd adr resolve ADR-001
+agentic-agent specify adr resolve ADR-001
 
 # Sync graph
-agentic-agent sdd sync-graph
+agentic-agent specify sync-graph
 
 # Complete initiative
 agentic-agent openspec complete SBL-2025-Q1

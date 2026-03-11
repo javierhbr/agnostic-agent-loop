@@ -76,7 +76,7 @@ Configure the project:
 
 ```bash
 # Install SDD agent skills
-agentic-agent sdd agents install --dir .claude/agents
+agentic-agent specify agents install --dir .claude/agents
 
 # View config (see 00-setup/agnostic-agent.yaml)
 cat agnostic-agent.yaml
@@ -113,7 +113,7 @@ cat agnostic-agent.yaml
 - Team answers 5 questions: Payment? PII? Multiple services? Rollback hard? Observability clear?
 - Answers → Payment: YES, Multiple services: YES, Rollback: HARD → Risk = CRITICAL
 - Risk = CRITICAL → Workflow = FULL (Analyst → Architect → Developer(s) → Verifier)
-- CLI command: `agentic-agent sdd start "Subscription Billing" --risk critical`
+- CLI command: `agentic-agent specify start "Subscription Billing" --risk critical`
 
 **Read:** [02-risk-assessment/risk-classification.md](./02-risk-assessment/risk-classification.md)
 
@@ -251,11 +251,11 @@ All blocked until ADR-001 resolved. All unblocked simultaneously. All deliver in
 **What Happens:**
 ```bash
 # Run gate check on feature spec
-agentic-agent sdd gate-check SBL-2025-Q1 --format text
+agentic-agent specify gate-check SBL-2025-Q1 --format text
 
 # Run gate check on component specs
-agentic-agent sdd gate-check SBL-BILLING-001
-agentic-agent sdd gate-check SBL-PAYMENTS-001
+agentic-agent specify gate-check SBL-BILLING-001
+agentic-agent specify gate-check SBL-PAYMENTS-001
 ...
 
 # Result: All gates pass (or specific failures shown with remediation)
@@ -315,7 +315,7 @@ agentic-agent sdd gate-check SBL-PAYMENTS-001
 **What Happens:**
 ```bash
 # Update spec graph
-agentic-agent sdd sync-graph
+agentic-agent specify sync-graph
 
 # Mark complete
 agentic-agent openspec complete SBL-2025-Q1
@@ -379,7 +379,7 @@ cp -r examples/sdd-ecommerce-payments/ my-project/
 
 # 2. Update initiative.md with your problem
 # 3. Run risk assessment
-agentic-agent sdd start "Your Feature" --risk critical
+agentic-agent specify start "Your Feature" --risk critical
 
 # 4. Run analyst agent with your team
 # (Use 03-analyst/prompts.md as template)

@@ -79,9 +79,9 @@ agentic-agent openspec complete <change-id>
 
 ### Full SDD Workflow (High/Critical Risk)
 ```bash
-agentic-agent sdd start "<name>" --risk critical
-agentic-agent sdd workflow show <id>
-agentic-agent sdd gate-check <spec-id>
+agentic-agent specifyify start "<name>" --risk critical
+agentic-agent specifyify workflow show <id>
+agentic-agent specifyify gate-check <spec-id>
 # ... phases 0-4 with gates ...
 ```
 

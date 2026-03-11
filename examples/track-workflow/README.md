@@ -38,13 +38,13 @@ A track groups a spec, plan, and tasks into a single work unit. Start with a nam
 
 ```bash
 # Flag mode
-./agentic-agent track init "Search Feature" \
+./agentic-agent route init "Search Feature" \
   --type feature \
   --purpose "Let users search books by title, author, or genre" \
   --success "Users can search and get results within 200ms"
 
 # Or interactive mode (no flags)
-./agentic-agent track init
+./agentic-agent route init
 ```
 
 Output:
@@ -58,7 +58,7 @@ Output:
   → Status:     ideation
 
 → Use brainstorm.md as a dialogue script with your AI agent.
-→ Then run: agentic-agent track refine search-feature
+→ Then run: agentic-agent route refine search-feature
 ```
 
 Three files are scaffolded:
@@ -99,7 +99,7 @@ As the conversation progresses, the agent fills in the "Answers Captured" sectio
 After brainstorming, check that the spec has all required sections:
 
 ```bash
-./agentic-agent track refine search-feature
+./agentic-agent route refine search-feature
 ```
 
 Output:
@@ -120,8 +120,8 @@ Spec Completeness: Search Feature
 Fill in the missing sections (with your agent or manually), then re-run until complete:
 
 ```bash
-./agentic-agent track refine search-feature
-# ✓ Spec is complete. Run: agentic-agent track activate search-feature
+./agentic-agent route refine search-feature
+# ✓ Spec is complete. Run: agentic-agent route activate search-feature
 ```
 
 ---
@@ -132,7 +132,7 @@ Activation validates the spec, generates a phased plan from it, and optionally d
 
 ```bash
 # Generate plan + create tasks in one step
-./agentic-agent track activate search-feature --decompose
+./agentic-agent route activate search-feature --decompose
 ```
 
 Output:
@@ -247,7 +247,7 @@ Work on the first task:
 Or use the interactive workflow:
 
 ```bash
-./agentic-agent work
+./agentic-agent deliver
 ```
 
 The TUI guides you through: select task, claim, generate context, implement, validate, complete.
@@ -284,10 +284,10 @@ Once all tasks are done:
 ./agentic-agent status
 
 # View the track
-./agentic-agent track show search-feature
+./agentic-agent route show search-feature
 
 # Archive the track
-./agentic-agent track archive search-feature
+./agentic-agent route archive search-feature
 ```
 
 ---

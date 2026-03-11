@@ -109,7 +109,7 @@ You can initialize in two ways:
 #### Option A: Interactive Mode (Recommended for Beginners)
 
 ```bash
-agentic-agent start
+agentic-agent init
 ```
 
 This launches an interactive wizard that guides you through:
@@ -1389,7 +1389,7 @@ Some tests create multiple tasks with time-based IDs. If tests fail randomly, it
 ```bash
 # Project
 agentic-agent init --name "Project"
-agentic-agent start                    # Interactive wizard
+agentic-agent init                     # Interactive wizard
 
 # Tasks
 agentic-agent task create              # Interactive
@@ -1419,10 +1419,10 @@ agentic-agent simplify --task TASK-ID        # Review task scope dirs
 agentic-agent simplify . --format json       # JSON output
 
 # Tracks (feature/bug work units)
-agentic-agent track create                   # Create track with brainstorm, spec, plan
-agentic-agent track list                     # List all tracks
-agentic-agent track show TRACK-ID            # Display track details
-agentic-agent track archive TRACK-ID         # Archive completed track
+agentic-agent route create                   # Create track with brainstorm, spec, plan
+agentic-agent route list                     # List all tracks
+agentic-agent route show TRACK-ID            # Display track details
+agentic-agent route archive TRACK-ID         # Archive completed track
 
 # Plans (markdown plan management)
 agentic-agent plan show                      # Display parsed plan.md
@@ -1433,8 +1433,8 @@ agentic-agent plan mark LINE STATUS          # Update checkbox in plan.md
 agentic-agent status                         # Project dashboard: counts, blockers, next ready
 
 # Specs
-agentic-agent spec list                      # List specs across configured directories
-agentic-agent spec resolve REF               # Resolve a spec ref and print content
+agentic-agent specify list                      # List specs across configured directories
+agentic-agent specify resolve REF               # Resolve a spec ref and print content
 
 # OpenSpec (change lifecycle)
 agentic-agent openspec init "Name" --from FILE  # Create change from requirements

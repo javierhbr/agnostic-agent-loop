@@ -22,7 +22,7 @@ A product manager wants to reduce cart abandonment by enabling guest checkout.
 #
 # Result: MEDIUM risk → STANDARD workflow
 
-agentic-agent sdd start "Enable Guest Checkout" --risk medium
+agentic-agent specifyify start "Enable Guest Checkout" --risk medium
 ```
 
 **Output:**
@@ -96,7 +96,7 @@ Each component spec includes:
 
 ```bash
 # Architect validates their design passes all 5 gates before handing to developers
-agentic-agent sdd gate-check SPEC-CHECKOUT-GUEST
+agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
 
 ✓ Gate 1: Context Completeness PASS
   - feature-spec.md has implements, context_pack, status fields
@@ -181,7 +181,7 @@ metrics.Increment("guest_checkout_total")
 
 **Gate Check:**
 ```bash
-agentic-agent sdd gate-check SPEC-CHECKOUT-GUEST-IMPL
+agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST-IMPL
 
 ✓ Gate 4: NFR Compliance PASS
   - Logging: "guest_checkout_attempt" emitted with request_id
@@ -255,7 +255,7 @@ After all developers commit their code, the verifier uses the **verifier/SKILL.m
 
 ```bash
 # Mark initiative as Done in spec-graph.json
-agentic-agent sdd sync-graph
+agentic-agent specifyify sync-graph
 
 # This creates/updates .agentic/spec-graph.json:
 {
@@ -365,24 +365,24 @@ agentic-agent flags set GuestCheckoutEnabled=100pct
 
 ```bash
 # PM: Define and classify risk
-agentic-agent sdd start "Enable Guest Checkout" --risk medium
+agentic-agent specifyify start "Enable Guest Checkout" --risk medium
 
 # PM: View progress
-agentic-agent sdd workflow show enable-guest-checkout
+agentic-agent specifyify workflow show enable-guest-checkout
 
 # Architect: Gate check design
-agentic-agent sdd gate-check SPEC-CHECKOUT-GUEST
+agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
 
 # Developers: Claim component task
 agentic-agent task claim TASK-001
 agentic-agent task complete TASK-001
 
 # Verifier: Run all gates before merge
-agentic-agent sdd gate-check SPEC-CHECKOUT-GUEST
+agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
 agentic-agent validate
 
 # All: Sync traceability to platform repo
-agentic-agent sdd sync-graph
+agentic-agent specifyify sync-graph
 
 # Deploy when verified
 git merge feature/guest-checkout

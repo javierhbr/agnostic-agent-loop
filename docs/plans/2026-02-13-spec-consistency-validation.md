@@ -504,12 +504,12 @@ func FormatReadinessResult(r *ReadinessResult) string {
 		}
 		b.WriteString("\n📋 RECOMMENDED ACTIONS FOR AGENTS:\n\n")
 		b.WriteString(fmt.Sprintf("  Option 1: Auto-generate specs (recommended)\n"))
-		b.WriteString(fmt.Sprintf("  → agentic-agent spec generate %s --auto\n\n", r.TaskID))
+		b.WriteString(fmt.Sprintf("  → agentic-agent specify generate %s --auto\n\n", r.TaskID))
 		b.WriteString(fmt.Sprintf("  Option 2: Generate with user interaction\n"))
-		b.WriteString(fmt.Sprintf("  → agentic-agent spec generate %s --interactive\n\n", r.TaskID))
+		b.WriteString(fmt.Sprintf("  → agentic-agent specify generate %s --interactive\n\n", r.TaskID))
 		b.WriteString(fmt.Sprintf("  Option 3: Create specs manually\n"))
 		for _, spec := range missingSpecs {
-			b.WriteString(fmt.Sprintf("  → agentic-agent spec create %s\n", spec))
+			b.WriteString(fmt.Sprintf("  → agentic-agent specify create %s\n", spec))
 		}
 		b.WriteString(fmt.Sprintf("\n  Option 4: Skip validation and proceed\n"))
 		b.WriteString(fmt.Sprintf("  → agentic-agent task claim %s --skip-validation\n\n", r.TaskID))
@@ -611,16 +611,16 @@ var specGenerateCmd = &cobra.Command{
 	Long: `Generate missing specification files for a task using smart context detection.
 
 Auto Mode (detects best source):
-  agentic-agent spec generate TASK-123 --auto
+  agentic-agent specify generate TASK-123 --auto
 
 Interactive Mode (prompts for requirements):
-  agentic-agent spec generate TASK-123 --interactive
+  agentic-agent specify generate TASK-123 --interactive
 
 From PRD (use specific PRD file):
-  agentic-agent spec generate TASK-123 --from-prd path/to/prd.md
+  agentic-agent specify generate TASK-123 --from-prd path/to/prd.md
 
 Generate All (for all tasks with missing specs):
-  agentic-agent spec generate --all`,
+  agentic-agent specify generate --all`,
 	Run: func(cmd *cobra.Command, args []string) {
 		auto, _ := cmd.Flags().GetBool("auto")
 		interactive, _ := cmd.Flags().GetBool("interactive")
@@ -648,8 +648,8 @@ var specCreateCmd = &cobra.Command{
 	Long: `Create a new specification file using a template.
 
 Examples:
-  agentic-agent spec create todo-app/proposal.md
-  agentic-agent spec create todo-app/tasks/01-setup.md --template task`,
+  agentic-agent specify create todo-app/proposal.md
+  agentic-agent specify create todo-app/tasks/01-setup.md --template task`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("Error: SPEC_REF required")
@@ -668,10 +668,10 @@ var specValidateCmd = &cobra.Command{
 	Long: `Validate that all tasks have their required specification files.
 
 Validate all tasks:
-  agentic-agent spec validate
+  agentic-agent specify validate
 
 Validate specific task:
-  agentic-agent spec validate TASK-123`,
+  agentic-agent specify validate TASK-123`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			runValidateAllSpecs()
@@ -904,7 +904,7 @@ if len(task.SpecRefs) > 0 {
 			fmt.Printf("  - %s\n", spec)
 		}
 		fmt.Printf("\n💡 TIP: Generate specs with:\n")
-		fmt.Printf("   → agentic-agent spec generate %s --auto\n", task.ID)
+		fmt.Printf("   → agentic-agent specify generate %s --auto\n", task.ID)
 	}
 }
 ```
@@ -955,7 +955,7 @@ if len(tasksWithMissingSpecs) > 0 {
 	fmt.Printf("  These tasks reference granular spec files that weren't part of the proposal.\n\n")
 	fmt.Printf("  You have 3 options:\n\n")
 	fmt.Printf("  A) Generate all missing specs from proposal\n")
-	fmt.Printf("     → agentic-agent spec generate --all --from-proposal\n\n")
+	fmt.Printf("     → agentic-agent specify generate --all --from-proposal\n\n")
 	fmt.Printf("  B) Generate them on-demand when claiming each task\n")
 	fmt.Printf("     → Tasks will auto-prompt during claim if validate_specs_on_claim is enabled\n\n")
 	fmt.Printf("  C) Work without detailed specs\n")
@@ -1020,10 +1020,10 @@ The CLI will guide you with messages prefixed with 🤖 AGENT.
 
 ## Spec Management Commands
 
-- `agentic-agent spec generate <TASK_ID> --auto` — Auto-generate missing specs
-- `agentic-agent spec generate <TASK_ID> --interactive` — Generate with prompts
-- `agentic-agent spec create <SPEC_REF>` — Create single spec manually
-- `agentic-agent spec validate` — Check all tasks for missing specs
+- `agentic-agent specify generate <TASK_ID> --auto` — Auto-generate missing specs
+- `agentic-agent specify generate <TASK_ID> --interactive` — Generate with prompts
+- `agentic-agent specify create <SPEC_REF>` — Create single spec manually
+- `agentic-agent specify validate` — Check all tasks for missing specs
 ```
 
 **Step 3: Regenerate CLAUDE.md**
@@ -1212,41 +1212,41 @@ workflow:
 
 Auto-detect best source:
 ```bash
-agentic-agent spec generate TASK-123 --auto
+agentic-agent specify generate TASK-123 --auto
 ```
 
 Interactive prompts:
 ```bash
-agentic-agent spec generate TASK-123 --interactive
+agentic-agent specify generate TASK-123 --interactive
 ```
 
 From specific PRD:
 ```bash
-agentic-agent spec generate TASK-123 --from-prd path/to/prd.md
+agentic-agent specify generate TASK-123 --from-prd path/to/prd.md
 ```
 
 Generate all missing specs:
 ```bash
-agentic-agent spec generate --all
+agentic-agent specify generate --all
 ```
 
 ### Create Specs Manually
 
 ```bash
-agentic-agent spec create todo-app/proposal.md
-agentic-agent spec create todo-app/tasks/01-setup.md --template task
+agentic-agent specify create todo-app/proposal.md
+agentic-agent specify create todo-app/tasks/01-setup.md --template task
 ```
 
 ### Validate Specs
 
 Check all tasks:
 ```bash
-agentic-agent spec validate
+agentic-agent specify validate
 ```
 
 Check specific task:
 ```bash
-agentic-agent spec validate TASK-123
+agentic-agent specify validate TASK-123
 ```
 
 ### Skip Validation
@@ -1269,7 +1269,7 @@ Example output:
 ⚠️  MISSING SPECS DETECTED
 📋 RECOMMENDED ACTIONS FOR AGENTS:
   Option 1: Auto-generate specs (recommended)
-  → agentic-agent spec generate TASK-123 --auto
+  → agentic-agent specify generate TASK-123 --auto
   ...
 ```
 
@@ -1292,10 +1292,10 @@ Tasks can reference specification files that provide detailed requirements. The 
 
 ```bash
 # Generate missing specs automatically
-agentic-agent spec generate TASK-123 --auto
+agentic-agent specify generate TASK-123 --auto
 
 # Validate all tasks
-agentic-agent spec validate
+agentic-agent specify validate
 ```
 
 See [Spec Validation Guide](docs/spec-validation.md) for details.
@@ -1343,7 +1343,7 @@ agentic-agent task claim TASK-XXX
 # Should see validation warnings with guidance
 
 # Generate specs
-agentic-agent spec generate TASK-XXX --auto
+agentic-agent specify generate TASK-XXX --auto
 # Should create spec files
 
 # Claim again

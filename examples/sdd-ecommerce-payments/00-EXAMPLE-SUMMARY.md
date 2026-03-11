@@ -202,16 +202,16 @@ cp -r examples/sdd-ecommerce-payments/ my-project/example-subscription-feature
 ```bash
 # Setup
 cd examples/sdd-ecommerce-payments
-agentic-agent sdd agents install
+agentic-agent specify agents install
 
 # View project config
 cat 00-setup/agnostic-agent.yaml
 
 # Start the initiative
-agentic-agent sdd start "Subscription Billing" --risk critical
+agentic-agent specify start "Subscription Billing" --risk critical
 
 # Check a gate
-agentic-agent sdd gate-check SBL-2025-Q1 --format text
+agentic-agent specify gate-check SBL-2025-Q1 --format text
 
 # Read the narrative
 cat README.md

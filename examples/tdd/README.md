@@ -79,7 +79,7 @@ Note the task ID from the output (e.g., `TASK-1738000001`).
 ## 3. Run with TDD
 
 ```bash
-./agentic-agent work --task TASK-1738000001 --follow-tdd
+./agentic-agent deliver --task TASK-1738000001 --follow-tdd
 ```
 
 Output:

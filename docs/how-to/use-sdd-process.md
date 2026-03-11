@@ -25,7 +25,7 @@ The skill walks through **4 complete phases**:
 - Run risk assessment interview (5 questions)
 - Create initiative with success criteria
 
-**CLI:** `agentic-agent sdd start "Name" --risk [level]`
+**CLI:** `agentic-agent specifyify start "Name" --risk [level]`
 
 ### Phase 1: Architecture Design (Solution Architect)
 - Read initiative and Platform Constitution
@@ -33,7 +33,7 @@ The skill walks through **4 complete phases**:
 - Run all 5 gate checks
 - Create parallel development tasks
 
-**CLI:** `agentic-agent sdd gate-check SPEC-[ID]`
+**CLI:** `agentic-agent specifyify gate-check SPEC-[ID]`
 
 ### Phase 2: Implementation (Developers, Parallel)
 - Claim component task
@@ -50,7 +50,7 @@ The skill walks through **4 complete phases**:
 - Sync spec graph
 - Merge to main
 
-**CLI:** `agentic-agent validate` → `agentic-agent sdd sync-graph`
+**CLI:** `agentic-agent validate` → `agentic-agent specifyify sync-graph`
 
 ### Phase 4: Deployment & Success Metrics
 - Deploy with feature flag OFF (safe)
@@ -75,7 +75,7 @@ The skill walks through **4 complete phases**:
 #    - Run risk assessment (5 questions in skill)
 #    - Create initiative
 
-agentic-agent sdd start "Your Feature" --risk medium
+agentic-agent specifyify start "Your Feature" --risk medium
 
 # 3. Refer to Phase 4 when feature is ready to deploy
 ```
@@ -93,7 +93,7 @@ agentic-agent sdd start "Your Feature" --risk medium
 #    - Gate check design
 #    - Create dev tasks
 
-agentic-agent sdd gate-check SPEC-[ID]
+agentic-agent specifyify gate-check SPEC-[ID]
 ```
 
 ### For Developers
@@ -110,7 +110,7 @@ agentic-agent sdd gate-check SPEC-[ID]
 #    - Gate check implementation
 
 agentic-agent task claim [TASK-ID]
-agentic-agent sdd gate-check SPEC-[SERVICE]-IMPL
+agentic-agent specifyify gate-check SPEC-[SERVICE]-IMPL
 agentic-agent task complete [TASK-ID]
 ```
 
@@ -130,8 +130,8 @@ agentic-agent task complete [TASK-ID]
 #    - Merge to main
 
 agentic-agent validate
-agentic-agent sdd gate-check SPEC-[ID]
-agentic-agent sdd sync-graph
+agentic-agent specifyify gate-check SPEC-[ID]
+agentic-agent specifyify sync-graph
 ```
 
 ---
@@ -151,11 +151,11 @@ agentic-agent sdd sync-graph
 
 ```bash
 # Phase 0: PM defines initiative
-agentic-agent sdd start "Enable Guest Checkout" --risk medium
+agentic-agent specifyify start "Enable Guest Checkout" --risk medium
 
 # Phase 1: Architect designs
 # (Follow process-guide steps 1.1-1.6)
-agentic-agent sdd gate-check SPEC-CHECKOUT-GUEST
+agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
 
 # Phase 2: 4 Developers implement in parallel
 # Developer 1: Checkout Service
@@ -166,7 +166,7 @@ agentic-agent task complete TASK-001
 # Phase 3: Verifier proves it works
 # (Follow process-guide steps 3.1-3.7)
 agentic-agent validate
-agentic-agent sdd sync-graph
+agentic-agent specifyify sync-graph
 
 # Phase 4: Deploy safely
 agentic-agent deploy --environment production --feature-flags-all-off
@@ -215,10 +215,10 @@ Once you finish Phase 4 (deployment), you can:
 
 ```bash
 # See all completed initiatives
-agentic-agent sdd workflow show [initiative-id]
+agentic-agent specifyify workflow show [initiative-id]
 
 # Start next feature
-agentic-agent sdd start "Next Feature Name" --risk [level]
+agentic-agent specifyify start "Next Feature Name" --risk [level]
 ```
 
 ---
@@ -226,7 +226,7 @@ agentic-agent sdd start "Next Feature Name" --risk [level]
 ## Questions?
 
 - **"Where's my initiative?"** → `.agentic/sdd/initiatives/[name].yaml`
-- **"Which gate failed?"** → `agentic-agent sdd gate-check SPEC-ID --format json | jq .`
+- **"Which gate failed?"** → `agentic-agent specifyify gate-check SPEC-ID --format json | jq .`
 - **"What should I implement?"** → Read the component-spec.md from your task
 - **"How do I know it works?"** → Process guide Phase 3 (verification steps)
 

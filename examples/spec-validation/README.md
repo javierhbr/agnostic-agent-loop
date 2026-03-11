@@ -40,7 +40,7 @@ Created task TASK-991363-1: [todo-app] Project setup: scaffold repo, package.jso
   - todo-app/tasks/01-project-setup.md
 
 💡 TIP: Generate specs with:
-   → agentic-agent spec generate TASK-991363-1 --auto
+   → agentic-agent specify generate TASK-991363-1 --auto
 ```
 
 ### Step 2: Try to Claim the Task
@@ -64,14 +64,14 @@ The following spec files are referenced but don't exist:
 📋 RECOMMENDED ACTIONS FOR AGENTS:
 
   Option 1: Auto-generate specs (recommended)
-  → agentic-agent spec generate TASK-991363-1 --auto
+  → agentic-agent specify generate TASK-991363-1 --auto
 
   Option 2: Generate with user interaction
-  → agentic-agent spec generate TASK-991363-1 --interactive
+  → agentic-agent specify generate TASK-991363-1 --interactive
 
   Option 3: Create specs manually
-  → agentic-agent spec create todo-app/proposal.md
-  → agentic-agent spec create todo-app/tasks/01-project-setup.md
+  → agentic-agent specify create todo-app/proposal.md
+  → agentic-agent specify create todo-app/tasks/01-project-setup.md
 
   Option 4: Skip validation and proceed
   → agentic-agent task claim TASK-991363-1 --skip-validation
@@ -88,7 +88,7 @@ Claimed task TASK-991363-1
 ### Step 3: Auto-Generate Missing Specs
 
 ```bash
-agentic-agent spec generate TASK-991363-1 --auto
+agentic-agent specify generate TASK-991363-1 --auto
 ```
 
 **Output:**
@@ -146,7 +146,7 @@ Claimed task TASK-991363-1
 For tasks where you need to provide detailed requirements:
 
 ```bash
-agentic-agent spec generate TASK-991363-1 --interactive
+agentic-agent specify generate TASK-991363-1 --interactive
 ```
 
 This will prompt you for:
@@ -175,7 +175,7 @@ Build a progressive web app for task management...
 EOF
 
 # Generate specs from PRD
-agentic-agent spec generate TASK-991363-1 --from-prd .agentic/spec/todo-app-prd.md
+agentic-agent specify generate TASK-991363-1 --from-prd .agentic/spec/todo-app-prd.md
 ```
 
 ### Manual Creation
@@ -183,7 +183,7 @@ agentic-agent spec generate TASK-991363-1 --from-prd .agentic/spec/todo-app-prd.
 For complete control:
 
 ```bash
-agentic-agent spec create todo-app/proposal.md --template proposal
+agentic-agent specify create todo-app/proposal.md --template proposal
 ```
 
 This creates a template you can fill in manually.
@@ -228,7 +228,7 @@ workflow:
 
 1. **Use the full pipeline** when starting new features
 2. **Generate specs early** during task creation
-3. **Validate regularly** with `agentic-agent spec validate`
+3. **Validate regularly** with `agentic-agent specify validate`
 4. **Keep specs up to date** as requirements change
 
 ## Bulk Operations
@@ -240,14 +240,14 @@ workflow:
 agentic-agent openspec init "todo-app" --from todo-app-prd.md
 
 # Generate all missing specs at once
-agentic-agent spec generate --all
+agentic-agent specify generate --all
 ```
 
 ### Validate All Tasks
 
 ```bash
 # Check which tasks have missing specs
-agentic-agent spec validate
+agentic-agent specify validate
 
 # Output:
 # ✓ TASK-001: All specs present (2/2)
@@ -276,7 +276,7 @@ agentic-agent autopilot start --max-iterations 5
 ```bash
 # Full pipeline with spec generation
 agentic-agent openspec init "feature-name" --from requirements.md
-agentic-agent spec generate --all  # Generate missing task specs
+agentic-agent specify generate --all  # Generate missing task specs
 agentic-agent openspec import feature-name
 agentic-agent task claim TASK-XXX  # Validated automatically
 ```
@@ -285,9 +285,9 @@ agentic-agent task claim TASK-XXX  # Validated automatically
 
 ```bash
 # Track workflow includes spec validation
-agentic-agent track init "User Auth" --type feature
+agentic-agent route init "User Auth" --type feature
 # ... brainstorm and refine spec ...
-agentic-agent track activate user-auth --decompose
+agentic-agent route activate user-auth --decompose
 # Tasks created with spec refs automatically validated
 ```
 
@@ -299,16 +299,16 @@ agentic-agent track activate user-auth --decompose
 cat agnostic-agent.yaml | grep -A 5 "specDirs"
 
 # Verify spec path matches exactly
-agentic-agent spec list
+agentic-agent specify list
 ```
 
 **Q: Auto-generation creates wrong content**
 ```bash
 # Use interactive mode instead
-agentic-agent spec generate TASK-123 --interactive
+agentic-agent specify generate TASK-123 --interactive
 
 # Or generate from specific PRD
-agentic-agent spec generate TASK-123 --from-prd path/to/prd.md
+agentic-agent specify generate TASK-123 --from-prd path/to/prd.md
 ```
 
 **Q: Want to disable validation temporarily**
@@ -348,10 +348,10 @@ agentic-agent openspec init "todo-app" --from .agentic/spec/todo-app-prd.md
 #
 # 🤖 AGENT GUIDANCE:
 #   Option A) Generate all missing specs from proposal
-#   → agentic-agent spec generate --all --from-proposal
+#   → agentic-agent specify generate --all --from-proposal
 
 # 4. Generate all missing specs
-agentic-agent spec generate --all
+agentic-agent specify generate --all
 
 # 5. Import tasks and start working
 agentic-agent openspec import todo-app

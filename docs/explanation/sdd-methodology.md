@@ -10,7 +10,7 @@ Welcome to the complete SDD (Spec-Driven Development) v3.0 documentation for you
 1. Read: [**USING-SDD-PROCESS-GUIDE.md**](USING-SDD-PROCESS-GUIDE.md) — Quick orientation
 2. Then: Install skills — `agentic-agent skills ensure`
 3. Then: Open the process guide — `cat .claude/skills/sdd/process-guide/SKILL.md`
-4. Finally: Start your first feature — `agentic-agent sdd start "Name" --risk low`
+4. Finally: Start your first feature — `agentic-agent specifyify start "Name" --risk low`
 
 ---
 
@@ -91,10 +91,10 @@ Each phase has 5-9 numbered steps. Each step shows:
 
 ```bash
 # Phase 0 (PM)
-agentic-agent sdd start "Feature Name" --risk [low|medium|high|critical]
+agentic-agent specifyify start "Feature Name" --risk [low|medium|high|critical]
 
 # Phase 1 (Architect)
-agentic-agent sdd gate-check SPEC-[ID]
+agentic-agent specifyify gate-check SPEC-[ID]
 
 # Phase 2 (Developers)
 agentic-agent task claim [TASK-ID]
@@ -102,7 +102,7 @@ agentic-agent task complete [TASK-ID]
 
 # Phase 3 (Verifier)
 agentic-agent validate
-agentic-agent sdd sync-graph
+agentic-agent specifyify sync-graph
 
 # Phase 4 (DevOps)
 agentic-agent deploy --feature-flags-all-off
@@ -173,7 +173,7 @@ All installed via: `agentic-agent skills ensure`
 You know SDD is working right when:
 
 - ✅ Every initiative starts with Phase 0 (definition)
-- ✅ Every phase ends with gate checks (`agentic-agent sdd gate-check`)
+- ✅ Every phase ends with gate checks (`agentic-agent specifyify gate-check`)
 - ✅ No phase skipped (gates enforce this)
 - ✅ Acceptance criteria in GWT format (Given/When/Then)
 - ✅ Observability (logging + metrics + tracing) working in staging
@@ -195,7 +195,7 @@ agentic-agent skills ensure
 ls .claude/skills/sdd/process-guide/
 
 # 3. Start your first feature
-agentic-agent sdd start "Your Feature Name" --risk low
+agentic-agent specifyify start "Your Feature Name" --risk low
 
 # 4. Open the process guide
 cat .claude/skills/sdd/process-guide/SKILL.md
@@ -262,7 +262,7 @@ openclaw-specs/
 2. **Pick your role** (PM, Architect, Developer, Verifier, DevOps)
 3. **Follow the "By Role" section** above
 4. **Install skills**: `agentic-agent skills ensure`
-5. **Start your first feature**: `agentic-agent sdd start "Name" --risk low`
+5. **Start your first feature**: `agentic-agent specifyify start "Name" --risk low`
 6. **Open the process guide**: `cat .claude/skills/sdd/process-guide/SKILL.md`
 7. **Follow Phase 0 steps**: numbered 0.1 through 0.5
 8. **Share docs with your team**: reference this README

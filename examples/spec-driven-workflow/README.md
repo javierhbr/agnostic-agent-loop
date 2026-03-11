@@ -53,7 +53,7 @@ The spec ref `001-auth/spec.md` resolves to `.specify/specs/001-auth/spec.md` be
 
 ```bash
 # List all specs across configured directories
-agentic-agent spec list
+agentic-agent specify list
 ```
 
 ```
@@ -65,7 +65,7 @@ auth/spec.md          /path/to/openspec/specs/auth/spec.md
 
 ```bash
 # Resolve and read a specific spec
-agentic-agent spec resolve "001-auth/spec.md"
+agentic-agent specify resolve "001-auth/spec.md"
 ```
 
 Outputs the full content of the Spec Kit spec.
@@ -143,7 +143,7 @@ The ref `auth/spec.md` resolves to `openspec/specs/auth/spec.md`.
 
 ```bash
 # Verify the spec resolves
-agentic-agent spec resolve "auth/spec.md"
+agentic-agent specify resolve "auth/spec.md"
 
 # Claim with readiness checks
 agentic-agent task claim TASK-001

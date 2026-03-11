@@ -384,10 +384,10 @@ agentic-agent openspec archive product-search
 
 ```bash
 # Skip these for small projects:
-agentic-agent sdd start ...          # (full SDD only)
+agentic-agent specifyify start ...          # (full SDD only)
 agentic-agent platform init ...      # (only if multi-service)
-agentic-agent sdd adr create ...     # (only if blocking decision)
-agentic-agent sdd gate-check ...     # (only if high-risk)
+agentic-agent specifyify adr create ...     # (only if blocking decision)
+agentic-agent specifyify gate-check ...     # (only if high-risk)
 ```
 
 ### Do Use These (Useful)

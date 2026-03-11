@@ -265,7 +265,7 @@ agentic-agent pr review --task TASK-123 --pr-url https://github.com/.../42
     │ Output step-by-step reviewer instructions:     │
     │  1. agentic-agent task claim REVIEW-42         │
     │  2. agentic-agent context build --task         │
-    │  3. agentic-agent sdd gate-check <spec>        │
+    │  3. agentic-agent specifyify gate-check <spec>        │
     │  4. agentic-agent validate                     │
     │  5. Review code, score quality                 │
     │  6. agentic-agent task complete REVIEW-42      │

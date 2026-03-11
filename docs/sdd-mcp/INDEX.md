@@ -173,9 +173,9 @@ agentic-agent task complete <id>
 ### 💳 "This is critical/high-risk" → **Payments, auth, regulatory**
 ```
 SDD workflow:
-agentic-agent sdd start "Feature" --risk critical
-agentic-agent sdd workflow show <id>
-agentic-agent sdd gate-check <id>
+agentic-agent specifyify start "Feature" --risk critical
+agentic-agent specifyify workflow show <id>
+agentic-agent specifyify gate-check <id>
 [implementation with gates]
 ```
 

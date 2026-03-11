@@ -14,8 +14,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var workCmd = &cobra.Command{
-	Use:   "work",
+var deliverCmd = &cobra.Command{
+	Use:   "deliver",
 	Short: "Interactive workflow: claim task → work → complete",
 	Long: `Complete interactive workflow for working on tasks.
 
@@ -29,10 +29,10 @@ This command guides you through the entire workflow:
 7. Move to done
 
 Interactive Mode:
-  agentic-agent work
+  agentic-agent deliver
 
 Flag Mode:
-  agentic-agent work --task <task-id> [--skip-context-gen] [--follow-tdd]`,
+  agentic-agent deliver --task <task-id> [--skip-context-gen] [--follow-tdd]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		taskID, _ := cmd.Flags().GetString("task")
 		skipContextGen, _ := cmd.Flags().GetBool("skip-context-gen")
@@ -154,9 +154,9 @@ func runWorkWorkflow() {
 }
 
 func init() {
-	workCmd.Flags().String("task", "", "Task ID to work on")
-	workCmd.Flags().Bool("skip-context-gen", false, "Skip context generation for scope directories")
-	workCmd.Flags().Bool("follow-tdd", false, "Follow TDD workflow: decompose task into RED/GREEN/REFACTOR phases")
+	deliverCmd.Flags().String("task", "", "Task ID to work on")
+	deliverCmd.Flags().Bool("skip-context-gen", false, "Skip context generation for scope directories")
+	deliverCmd.Flags().Bool("follow-tdd", false, "Follow TDD workflow: decompose task into RED/GREEN/REFACTOR phases")
 
-	rootCmd.AddCommand(workCmd)
+	rootCmd.AddCommand(deliverCmd)
 }

@@ -173,7 +173,7 @@ $ agentic-agent pr review --task TASK-000123 \
 🔍 Next steps for reviewer:
   1. agentic-agent task claim REVIEW-42
   2. agentic-agent context build --task REVIEW-42
-  3. agentic-agent sdd gate-check auth-feature
+  3. agentic-agent specifyify gate-check auth-feature
   4. agentic-agent validate
   5. Review code, score quality, announce verdict
   6. agentic-agent task complete REVIEW-42
@@ -196,7 +196,7 @@ $ agentic-agent task claim REVIEW-42
 $ agentic-agent context build --task REVIEW-42 | head -50
 
 # Reviewer runs quality gates
-$ agentic-agent sdd gate-check auth-feature
+$ agentic-agent specifyify gate-check auth-feature
 
 ✅ Gate 1 (Context): PASS — all spec sections have Source
 ✅ Gate 2 (Domain): PASS — JWT expiry enforced
@@ -579,7 +579,7 @@ $ agentic-agent pr review --task TASK-500 --pr-url https://.../pull/999
 $ agentic-agent task claim REVIEW-999
 
 # Quick review (5 min)
-$ agentic-agent sdd gate-check cache-fix
+$ agentic-agent specifyify gate-check cache-fix
 ✅ All gates PASS
 
 $ agentic-agent validate

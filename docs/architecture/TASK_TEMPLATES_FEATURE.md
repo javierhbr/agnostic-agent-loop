@@ -93,7 +93,7 @@ agentic-agent task from-template
 
 ## Integration with Start Command
 
-The `agentic-agent start` command now includes an interactive menu after project initialization:
+The `agentic-agent init` command now includes an interactive menu after project initialization:
 
 ```
 What would you like to do next?
@@ -212,7 +212,7 @@ Potential future features:
 
 ```
 ┌─────────────────────────────────────┐
-│   agentic-agent start               │
+│   agentic-agent init                │
 │   (Initialize project)              │
 └──────────────┬──────────────────────┘
                │

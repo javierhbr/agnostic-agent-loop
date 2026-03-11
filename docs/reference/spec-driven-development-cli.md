@@ -156,10 +156,10 @@ Checks performed:
 
 ```bash
 # List all specs across configured directories
-agentic-agent spec list
+agentic-agent specify list
 
 # Resolve a spec ref and print its content
-agentic-agent spec resolve "001-auth/spec.md"
+agentic-agent specify resolve "001-auth/spec.md"
 ```
 
 ---
@@ -182,8 +182,8 @@ agentic-agent task create \
   --outputs "internal/models/user.go"
 
 # 3. Verify spec resolution
-agentic-agent spec list
-agentic-agent spec resolve "001-auth/spec.md"
+agentic-agent specify list
+agentic-agent specify resolve "001-auth/spec.md"
 
 # 4. Execute
 agentic-agent task claim TASK-001

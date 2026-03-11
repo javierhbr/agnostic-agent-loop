@@ -81,7 +81,7 @@ Reviewer: agentic-agent task claim REVIEW-42
   ↓
 Reviewer:
   - agentic-agent context build --task REVIEW-42
-  - agentic-agent sdd gate-check <spec-id>
+  - agentic-agent specifyify gate-check <spec-id>
   - agentic-agent validate
   - Review code, score 0-10
   - agentic-agent task complete REVIEW-42 --learnings "Verdict: APPROVE, 1 HIGH risk"
@@ -214,7 +214,7 @@ $ agentic-agent pr review --task TASK-123 --pr-url https://github.com/myorg/myap
 🔍 Next steps for reviewer:
   1. agentic-agent task claim REVIEW-42
   2. agentic-agent context build --task REVIEW-42
-  3. agentic-agent sdd gate-check auth-feature
+  3. agentic-agent specifyify gate-check auth-feature
   4. agentic-agent validate
   5. Review code, score quality, announce verdict
   6. agentic-agent task complete REVIEW-42
@@ -238,7 +238,7 @@ $ agentic-agent task claim REVIEW-42
 $ agentic-agent context build --task REVIEW-42 | jq . > context.json
 
 # Reviewer runs quality checks
-$ agentic-agent sdd gate-check auth-feature
+$ agentic-agent specifyify gate-check auth-feature
 ✅ Gate 1 (Context): PASS
 ✅ Gate 2 (Domain): PASS
 ✅ Gate 3 (Integration): PASS

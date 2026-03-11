@@ -403,7 +403,7 @@ Include example test output and log excerpts.
 
 ```bash
 # Start SDD workflow
-agentic-agent sdd start "Subscription Billing" --risk critical
+agentic-agent specifyify start "Subscription Billing" --risk critical
 
 # Analyst phase
 # Use Prompt 1 to generate interview guide
@@ -416,13 +416,13 @@ mkdir -p .agentic/specs/subscription-billing
 # (Paste AI-generated component-spec-*.md)
 
 # Check gates
-agentic-agent sdd gate-check subscription-billing --format text
+agentic-agent specifyify gate-check subscription-billing --format text
 
 # If ADR needed, create it
-agentic-agent sdd adr create --title "Where to store card tokens?"
+agentic-agent specifyify adr create --title "Where to store card tokens?"
 
 # Resolve when decision made
-agentic-agent sdd adr resolve ADR-001
+agentic-agent specifyify adr resolve ADR-001
 
 # Developer phase (parallel)
 # Use Prompt 3 to generate impl-specs + tasks

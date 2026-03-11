@@ -50,7 +50,7 @@ Create a `.feature` file in the appropriate directory under `features/`:
 Feature: Task Creation
   As a developer
   I want to create tasks
-  So that I can track work
+  So that I can route work
 
   Scenario: Create a simple task
     Given a clean test environment

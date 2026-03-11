@@ -1,6 +1,6 @@
 # Gate Check Results: Subscription Billing Feature
 
-**Command Executed:** `agentic-agent sdd gate-check SBL-2025-Q1 --format text`
+**Command Executed:** `agentic-agent specify gate-check SBL-2025-Q1 --format text`
 
 **Date:** 2025-03-10
 
@@ -181,7 +181,7 @@ Remediation Required:
 
 AFTER FIX:
 
-$ agentic-agent sdd gate-check SBL-BILLING-001
+$ agentic-agent specify gate-check SBL-BILLING-001
 
 ✓ Gate 1: Context Completeness — PASS
 ✓ Gate 2: Domain Validity — PASS
@@ -200,17 +200,17 @@ Now component-spec-billing is unblocked for developer handoff.
 
 ```bash
 # Check a single spec
-agentic-agent sdd gate-check SBL-2025-Q1
+agentic-agent specify gate-check SBL-2025-Q1
 
 # Check specific format
-agentic-agent sdd gate-check SBL-BILLING-001 --format text    # readable
-agentic-agent sdd gate-check SBL-BILLING-001 --format json    # machine-readable
+agentic-agent specify gate-check SBL-BILLING-001 --format text    # readable
+agentic-agent specify gate-check SBL-BILLING-001 --format json    # machine-readable
 
 # Check all specs in a project
-agentic-agent sdd gate-check --all
+agentic-agent specify gate-check --all
 
 # With verbose output (shows all checks, not just failures)
-agentic-agent sdd gate-check SBL-2025-Q1 --verbose
+agentic-agent specify gate-check SBL-2025-Q1 --verbose
 ```
 
 ---
@@ -233,7 +233,7 @@ Architect writes spec
         ↓
 Architect self-checks gates
         ↓
-Run: agentic-agent sdd gate-check
+Run: agentic-agent specify gate-check
         ↓
 All gates pass?
         ├─ YES → Hand off to Developer

@@ -358,7 +358,7 @@ Read: .agentic/project-state.md
 1. Check current phase
 2. List backlog tasks for that phase
 3. For each task:
-   - Validate gates: agentic-agent sdd gate-check <spec>
+   - Validate gates: agentic-agent specify gate-check <spec>
    - Claim: agentic-agent task claim <ID>
    - Build context: agentic-agent context build --task <ID>
    - Spawn 2-4 workers (Builder, Reviewer, QC, Packager)
@@ -595,7 +595,7 @@ Verify:
 2. No crash risks (nil checks, error handling)
 3. Edge cases handled (app killed, network down, user interrupts)
 4. Observability (logging, metrics, tracing)
-5. Gates pass: agentic-agent sdd gate-check trailmate-feature
+5. Gates pass: agentic-agent specify gate-check trailmate-feature
 
 Score quality (0-10):
 - Completeness: all sections implemented?

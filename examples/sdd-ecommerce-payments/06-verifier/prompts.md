@@ -29,7 +29,7 @@ YOUR JOB:
    - Coverage < 80%? BLOCK
    - Payment/PII touched without REQUIRES HUMAN APPROVAL? BLOCK
 6. If all pass, run:
-   agentic-agent sdd sync-graph
+   agentic-agent specify sync-graph
    agentic-agent openspec complete <change-id>
 
 OUTPUTS:

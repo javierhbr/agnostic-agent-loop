@@ -95,7 +95,7 @@ agentic-agent pr review --task TASK-123 \
 🔍 Next steps for reviewer:
   1. agentic-agent task claim REVIEW-42
   2. agentic-agent context build --task REVIEW-42
-  3. agentic-agent sdd gate-check <spec-id>
+  3. agentic-agent specifyify gate-check <spec-id>
   4. agentic-agent validate
   5. Review code, score quality
   6. agentic-agent task complete REVIEW-42
@@ -117,7 +117,7 @@ agentic-agent task claim REVIEW-42
 agentic-agent context build --task REVIEW-42
 
 # Reviewer runs quality checks
-agentic-agent sdd gate-check auth-feature
+agentic-agent specifyify gate-check auth-feature
 agentic-agent validate
 
 # Reviewer reads code, scores 0-10
@@ -161,7 +161,7 @@ agentic-agent task complete TASK-123 \
 | `agentic-agent pr review --task ID --pr-url URL` | Spawn reviewer task |
 | `agentic-agent pr status --pr-url URL` | Check PR status |
 | `agentic-agent context build --task TASK-ID` | Load context for review |
-| `agentic-agent sdd gate-check SPEC-ID` | Run quality gates |
+| `agentic-agent specifyify gate-check SPEC-ID` | Run quality gates |
 | `agentic-agent validate` | Run validation rules |
 | `agentic-agent task list` | See all tasks |
 
