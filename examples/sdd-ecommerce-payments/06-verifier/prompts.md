@@ -30,7 +30,7 @@ YOUR JOB:
    - Payment/PII touched without REQUIRES HUMAN APPROVAL? BLOCK
 6. If all pass, run:
    agentic-agent specify sync-graph
-   agentic-agent openspec complete <change-id>
+   agentic-agent validate complete <change-id>
 
 OUTPUTS:
 - verify.md (3000+ words, every AC with evidence)

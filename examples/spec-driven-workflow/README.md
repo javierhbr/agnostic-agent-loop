@@ -1,6 +1,6 @@
-# Spec-Driven Workflow: Spec Kit, OpenSpec & Autopilot
+# Spec-Driven Workflow: Sdd-Speckit, Sdd-OpenSpec & Autopilot
 
-This example demonstrates how to use specification files from Spec Kit, OpenSpec, or native agentic specs — all resolved automatically through multi-directory configuration. It also shows autopilot mode for sequential task processing.
+This example demonstrates how to use specification files from Sdd-Speckit, Sdd-OpenSpec, or native agentic specs — all resolved automatically through multi-directory configuration. It also shows autopilot mode for sequential task processing.
 
 ---
 
@@ -12,32 +12,32 @@ The key insight: **you don't import specs — you reference them.** Configure `s
 # agnostic-agent.yaml
 paths:
   specDirs:
-    - .specify/specs       # Spec Kit
-    - openspec/specs        # OpenSpec
-    - .agentic/spec         # Agentic native (fallback)
+    - .sdd-spec/specs       # Sdd-OpenSpec (Mutable)
+    - vendor/platform/specs  # Platform Source (Read-only)
+    - .agentic/spec         # Fallback
 ```
 
 When a task references `auth-requirements.md`, the resolver searches:
-1. `.specify/specs/auth-requirements.md`
-2. `openspec/specs/auth-requirements.md`
+1. `.sdd-spec/specs/auth-requirements.md`
+2. `vendor/platform/specs/auth-requirements.md`
 3. `.agentic/spec/auth-requirements.md` — found here
 
 ---
 
-## Part A: Spec Kit Integration
+## Part A: Sdd-Speckit Integration
 
-### 1. Plan with Spec Kit
+### 1. Plan with Sdd-Speckit
 
-Spec Kit generates specs in `.specify/specs/`. After planning:
+Sdd-Speckit generates specs in `.sdd-spec/specs/`. After planning:
 
 ```
-.specify/
+.sdd-spec/
 └── specs/
     └── 001-auth/
         └── spec.md       # Feature spec with requirements and scenarios
 ```
 
-### 2. Create tasks referencing Spec Kit specs
+### 2. Create tasks referencing Sdd-Speckit specs
 
 ```bash
 agentic-agent task create \
@@ -47,7 +47,7 @@ agentic-agent task create \
   --acceptance "Token generation works,Validation rejects expired tokens"
 ```
 
-The spec ref `001-auth/spec.md` resolves to `.specify/specs/001-auth/spec.md` because `.specify/specs` is first in `specDirs`.
+The spec ref `001-auth/spec.md` resolves to `.sdd-spec/specs/001-auth/spec.md` because `.sdd-spec/specs` is first in `specDirs`.
 
 ### 3. Verify spec resolution
 
@@ -59,8 +59,8 @@ agentic-agent specify list
 ```
 auth-requirements.md  /path/to/.agentic/spec/auth-requirements.md
 api-design.md         /path/to/.agentic/spec/api-design.md
-001-auth/spec.md      /path/to/.specify/specs/001-auth/spec.md
-auth/spec.md          /path/to/openspec/specs/auth/spec.md
+001-auth/spec.md      /path/to/.sdd-spec/specs/001-auth/spec.md
+auth/spec.md          /path/to/.sdd-spec/specs/auth/spec.md
 ```
 
 ```bash
@@ -68,7 +68,7 @@ auth/spec.md          /path/to/openspec/specs/auth/spec.md
 agentic-agent specify resolve "001-auth/spec.md"
 ```
 
-Outputs the full content of the Spec Kit spec.
+Outputs the full content of the Sdd-Speckit spec.
 
 ### 4. Claim task with readiness checks
 
@@ -103,32 +103,32 @@ agentic-agent task complete SPEC-001
 
 ---
 
-## Part B: OpenSpec Integration
+## Part B: Sdd-OpenSpec Integration
 
-### 1. Plan with OpenSpec
+### 1. Plan with Sdd-OpenSpec
 
-OpenSpec generates specs in `openspec/specs/`. After running `/opsx:new add-auth` and `/opsx:ff`:
+Sdd-OpenSpec generates specs in `.sdd-spec/specs/`. After running `/opsx:new add-auth` and `/opsx:ff`:
 
 ```
-openspec/
+.sdd-spec/
 └── specs/
     └── auth/
-        └── spec.md       # OpenSpec spec with proposal, design, tasks
+        └── spec.md       # Sdd-OpenSpec spec with proposal, design, tasks
 ```
 
-### 2. Add OpenSpec directory to config
+### 2. Add Sdd-OpenSpec directory to config
 
 Already configured in `agnostic-agent.yaml`:
 
 ```yaml
 paths:
   specDirs:
-    - .specify/specs       # Spec Kit
-    - openspec/specs        # OpenSpec ← specs found here
+    - .sdd-spec/specs       # Sdd-Speckit
+    - .sdd-spec/specs        # Sdd-OpenSpec ← specs found here
     - .agentic/spec         # Fallback
 ```
 
-### 3. Create tasks referencing OpenSpec specs
+### 3. Create tasks referencing Sdd-OpenSpec specs
 
 ```bash
 agentic-agent task create \
@@ -137,7 +137,7 @@ agentic-agent task create \
   --outputs "internal/models/user.go,internal/repository/user_repo.go"
 ```
 
-The ref `auth/spec.md` resolves to `openspec/specs/auth/spec.md`.
+The ref `auth/spec.md` resolves to `.sdd-spec/specs/auth/spec.md`.
 
 ### 4. Execute the same way
 
@@ -148,7 +148,7 @@ agentic-agent specify resolve "auth/spec.md"
 # Claim with readiness checks
 agentic-agent task claim TASK-001
 
-# Build context (includes OpenSpec content)
+# Build context (includes Sdd-OpenSpec content)
 agentic-agent context build --task TASK-001
 
 # Work, validate, complete
@@ -156,40 +156,40 @@ agentic-agent validate
 agentic-agent task complete TASK-001
 ```
 
-### 5. Verify with OpenSpec after completion
+### 5. Verify with Sdd-OpenSpec after completion
 
 ```
-/opsx:verify    # OpenSpec validates against its specs
-/opsx:archive   # Archive the completed change
+agentic-agent validate    # Sdd-OpenSpec validates against its specs
+/openspec-archive   # Archive the completed change
 ```
 
 For the full spec-driven development guide, see [docs/SPEC_DRIVEN_DEVELOPMENT.md](../../docs/SPEC_DRIVEN_DEVELOPMENT.md).
 
 ---
 
-## Part C: OpenSpec CLI (End-to-End)
+## Part C: Sdd-OpenSpec CLI (End-to-End)
 
-The `openspec` command group handles the full change lifecycle — from a requirements file to archived implementation. Tell your agent:
+The `sdd-openspec` command group handles the full change lifecycle — from a requirements file to archived implementation. Tell your agent:
 
-> "Start a project from .agentic/spec/auth-requirements.md following openspec"
+> "Start a project from .agentic/spec/auth-requirements.md following sdd-openspec"
 
-The agent uses the `openspec` skill to run these commands automatically:
+The agent uses the `sdd-openspec` skill to run these commands automatically:
 
 ### 1. Initialize a change from requirements
 
 ```bash
-agentic-agent openspec init "Auth Feature" --from .agentic/spec/auth-requirements.md
+/openspec-proposal "Auth Feature" --from .agentic/spec/auth-requirements.md
 ```
 
 ```
 Created change: auth-feature
-  → Proposal:  .agentic/openspec/changes/auth-feature/proposal.md
-  → Tasks:     .agentic/openspec/changes/auth-feature/tasks.md
-  → Specs:     .agentic/openspec/changes/auth-feature/specs/
+  → Proposal:  .agentic/.sdd-spec/changes/auth-feature/proposal.md
+  → Tasks:     .agentic/.sdd-spec/changes/auth-feature/tasks.md
+  → Specs:     .agentic/.sdd-spec/changes/auth-feature/specs/
   → Status:    draft
 
 → Fill in proposal.md, then write tasks in tasks.md.
-→ Then run: agentic-agent openspec import auth-feature
+→ Then run: agentic-agent task list auth-feature
 ```
 
 The agent reads the generated proposal template, fills in Problem/Approach/Scope/Acceptance, then writes `tasks.md` with a numbered implementation plan.
@@ -197,7 +197,7 @@ The agent reads the generated proposal template, fills in Problem/Approach/Scope
 ### 2. Import tasks into the backlog
 
 ```bash
-agentic-agent openspec import auth-feature
+agentic-agent task list auth-feature
 ```
 
 ```
@@ -214,7 +214,7 @@ Imported 4 tasks from auth-feature
 
 ```bash
 # Check progress at any time
-agentic-agent openspec status auth-feature
+agentic-agent task list auth-feature
 
 # Work through each task
 agentic-agent task claim TASK-1739000001
@@ -231,19 +231,19 @@ agentic-agent task complete TASK-1739000002
 
 ```bash
 # Validates all tasks are done, writes IMPLEMENTED marker
-agentic-agent openspec complete auth-feature
+agentic-agent validate auth-feature
 
 # Moves to archive
-agentic-agent openspec archive auth-feature
+/openspec-archive auth-feature
 ```
 
 ### Example prompts for your agent
 
 | Prompt | What happens |
 | ------ | ------------ |
-| "Start a project from requirements.md following openspec" | Full lifecycle: init → fill proposal → write tasks → import → execute → complete |
-| "Implement the features in docs/payment-spec.md using openspec" | Same flow, different source file |
-| "openspec status auth-feature" | Shows task progress for an existing change |
+| "Start a project from requirements.md following sdd-openspec" | Full lifecycle: init → fill proposal → write tasks → import → execute → complete |
+| "Implement the features in docs/payment-spec.md using sdd-openspec" | Same flow, different source file |
+| "sdd-openspec status auth-feature" | Shows task progress for an existing change |
 | "Continue implementing change auth-feature" | Resumes at the next unclaimed task |
 
 ---
@@ -314,14 +314,14 @@ spec-driven-workflow/
 │   └── context/
 │       ├── global-context.md
 │       └── rolling-summary.md
-├── .specify/
+├── .sdd-spec/
 │   └── specs/
 │       └── 001-auth/
-│           └── spec.md               # Spec Kit sample spec
-└── openspec/
+│           └── spec.md               # Sdd-Speckit sample spec
+└── .sdd-spec/
     └── specs/
         └── auth/
-            └── spec.md               # OpenSpec sample spec
+            └── spec.md               # Sdd-OpenSpec sample spec
 ```
 
 ## Quick Reference
@@ -344,17 +344,17 @@ This section covers the workflow for developers working in an **established proj
 
 ---
 
-### Decision: When to Use OpenSpec vs Direct Edit
+### Decision: When to Use Sdd-OpenSpec vs Direct Edit
 
-**Quick Rule:** If you'd need more than 2 sentences to describe the change, use OpenSpec.
+**Quick Rule:** If you'd need more than 2 sentences to describe the change, use Sdd-OpenSpec.
 
 | Situation | Approach | Time | Example |
 | --------- | -------- | ---- | ------- |
 | Bug fix, typo, single file | Direct edit | 5-30 min | Fix button color, typo in error message |
 | Small feature (1–3 files, no breaking changes) | Direct edit | 15-60 min | Add notification icon, new button |
-| New feature (4+ files, cross-layer) | **OpenSpec** | 2-4 hours | CSV export, new payment method |
-| Modify existing behavior (breaking change) | **OpenSpec** | 3-8 hours | Change filtering logic, new permission system |
-| Have PRD/spec ready | **OpenSpec init** | 1-3 hours | Start from requirements file |
+| New feature (4+ files, cross-layer) | **Sdd-OpenSpec** | 2-4 hours | CSV export, new payment method |
+| Modify existing behavior (breaking change) | **Sdd-OpenSpec** | 3-8 hours | Change filtering logic, new permission system |
+| Have PRD/spec ready | **Sdd-OpenSpec init** | 1-3 hours | Start from requirements file |
 
 ---
 
@@ -396,12 +396,12 @@ The PRD should include:
 
 The AI generates a production-ready PRD.
 
-#### Phase 3: Structure with OpenSpec (15 min)
+#### Phase 3: Structure with Sdd-OpenSpec (15 min)
 
 Once you have a PRD:
 
 ```bash
-agentic-agent openspec init "Feature Name" --from path/to/prd.md
+/openspec-proposal "Feature Name" --from path/to/prd.md
 ```
 
 This creates:
@@ -441,13 +441,13 @@ Repeat for all tasks.
 
 ```bash
 # Verify all tasks are done
-agentic-agent openspec status feature-name
+agentic-agent task list feature-name
 
 # Close
-agentic-agent openspec complete feature-name
+agentic-agent validate feature-name
 
 # Archive
-agentic-agent openspec archive feature-name
+/openspec-archive feature-name
 ```
 
 ---
@@ -491,7 +491,7 @@ Include:
 **Initialize change from PRD:**
 
 ```bash
-agentic-agent openspec init "CSV Export" --from .agentic/spec/prd-csv-export.md
+/openspec-proposal "CSV Export" --from .agentic/spec/prd-csv-export.md
 ```
 
 **Resume in-progress work:**
@@ -515,11 +515,11 @@ agentic-agent prompts list
 # Show the full idea-to-code pipeline
 agentic-agent prompts show recipe-idea-to-code
 
-# Show openspec lifecycle
-agentic-agent prompts show cli-openspec-lifecycle
+# Show sdd-openspec lifecycle
+agentic-agent prompts show cli-sdd-openspec-lifecycle
 
 # Show specific workflow examples
-agentic-agent prompts show openspec-execute
+agentic-agent prompts show sdd-openspec-execute
 agentic-agent prompts show claim-and-implement
 ```
 
@@ -569,10 +569,10 @@ Success: 60% of power users use it in first month
 ✅ Scope: MVP doesn't include filters, custom columns, scheduling
 ```
 
-**Step 5: I initialize OpenSpec**
+**Step 5: I initialize Sdd-OpenSpec**
 
 ```bash
-agentic-agent openspec init "CSV Export" --from prd.md
+/openspec-proposal "CSV Export" --from prd.md
 ```
 
 Tasks created:
@@ -597,8 +597,8 @@ agentic-agent task claim TASK-002
 **Step 7: All done**
 
 ```bash
-agentic-agent openspec complete csv-export
-agentic-agent openspec archive csv-export
+agentic-agent validate csv-export
+/openspec-archive csv-export
 ```
 
 **Result:** Feature is implemented, tested, tracked, ready to merge.
@@ -624,7 +624,7 @@ agentic-agent openspec archive csv-export
    - Catches issues early
    - Verifies tests pass
 
-4. **Use OpenSpec even for "small" features**
+4. **Use Sdd-OpenSpec even for "small" features**
    - 4 files becomes 6 once you start
    - Better to have structure than regret later
 
@@ -646,16 +646,16 @@ agentic-agent openspec archive csv-export
 
 ### Getting Unstuck
 
-#### "I'm not sure if I need OpenSpec for this"
+#### "I'm not sure if I need Sdd-OpenSpec for this"
 
 Answer these questions:
 
-- How many files? (4+ → OpenSpec)
-- Is it a breaking change? (Yes → OpenSpec)
-- Does it affect other systems? (Yes → OpenSpec)
-- Would I explain this in >2 sentences? (Yes → OpenSpec)
+- How many files? (4+ → Sdd-OpenSpec)
+- Is it a breaking change? (Yes → Sdd-OpenSpec)
+- Does it affect other systems? (Yes → Sdd-OpenSpec)
+- Would I explain this in >2 sentences? (Yes → Sdd-OpenSpec)
 
-If any answer is yes, use OpenSpec.
+If any answer is yes, use Sdd-OpenSpec.
 
 #### "I started but the scope grew"
 

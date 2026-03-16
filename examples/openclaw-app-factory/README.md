@@ -217,14 +217,14 @@ cat > product-lead-init.md << 'EOF'
 
 ```bash
 cd ~/app-factory/trailmate
-agentic-agent openspec init "GPS Recording Feature" --risk high
+/openspec-proposal init "GPS Recording Feature" --risk high
 ```
 
 ## Example: Create FitHub Spec
 
 ```bash
 cd ~/app-factory/fithub
-agentic-agent openspec init "Social Sharing" --risk medium
+/openspec-proposal init "Social Sharing" --risk medium
 ```
 
 ## Announcement with project_id

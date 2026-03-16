@@ -357,7 +357,7 @@ All acceptance criteria verified with observable evidence. Code quality checks p
 1. ✓ Verify.md complete
 2. → Human approval (3-5 days)
 3. → `agentic-agent specify sync-graph` (update status = Done)
-4. → `agentic-agent openspec complete SBL-2025-Q1`
+4. → `agentic-agent validate SBL-2025-Q1`
 5. → Deploy to production
 6. → Monitor metrics for first week
 7. → Update Component MCP with patterns/decisions for Phase 2

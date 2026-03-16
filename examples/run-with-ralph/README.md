@@ -17,7 +17,7 @@ Execute tasks using the Ralph Wiggum iterative loop methodology. Works in **any 
 ## 0. Prerequisites
 
 - Agentic Agent CLI installed and configured
-- Tasks in `.agentic/tasks/backlog.yaml` (can be from openspec or manual)
+- Tasks in `.agentic/tasks/backlog.yaml` (can be from sdd-openspec or manual)
 - AI chat tool with skill support (Claude Code, Cursor, etc.)
 - **Optional:** Ralph Wiggum plugin (provides advanced `/run-with-ralph` features)
 
@@ -85,8 +85,8 @@ Template — fill from `task show` output:
 You are implementing TASK-936281-2: Configure TypeScript and ESLint.
 
 ## Context — read these files first:
-- .agentic/openspec/changes/todo-pwa/proposal.md
-- .agentic/openspec/changes/todo-pwa/tasks/02-typescript-eslint.md
+- .sdd-spec/changes/todo-pwa/proposal.md
+- .sdd-spec/changes/todo-pwa/tasks/02-typescript-eslint.md
 - .agentic/context/tech-stack.md
 
 ## Acceptance Criteria — ALL must pass:
@@ -144,8 +144,8 @@ Acceptance criteria:
 Specs: todo-pwa/proposal.md, todo-pwa/tasks/02-typescript-eslint.md
 
 ─── Step 2: Read Specs ───
-Reading .agentic/openspec/changes/todo-pwa/proposal.md...
-Reading .agentic/openspec/changes/todo-pwa/tasks/02-typescript-eslint.md...
+Reading .sdd-spec/changes/todo-pwa/proposal.md...
+Reading .sdd-spec/changes/todo-pwa/tasks/02-typescript-eslint.md...
 
 ─── Iteration 1 ───
 Creating tsconfig.json with strict mode...
@@ -292,7 +292,7 @@ Next task: [TASK-936281-2] Configure TypeScript and ESLint
 
 ```bash
 agentic-agent task complete TASK-936281-2
-agentic-agent openspec status todo-pwa
+agentic-agent task list todo-pwa
 ```
 
 ```text
@@ -324,10 +324,10 @@ For each task:
     ├── task show TASK-ID → extract criteria + spec refs
     ├── /run-with-ralph "prompt" --max-iterations 10
     ├── task complete TASK-ID
-    └── openspec status CHANGE-ID
+    └── sdd-openspec status CHANGE-ID
     ↓
-agentic-agent openspec complete CHANGE-ID
-agentic-agent openspec archive CHANGE-ID
+agentic-agent validate CHANGE-ID
+/openspec-archive CHANGE-ID
 ```
 
 ---
@@ -824,7 +824,7 @@ Status: Coverage criteria not met, continuing...
 | **Start ralph-loop** | `/run-with-ralph` (in AI chat) |
 | Cancel ralph | `/cancel-ralph` (if using Ralph Wiggum plugin) |
 | Complete task | `agentic-agent task complete TASK-ID` |
-| Check progress | `agentic-agent openspec status CHANGE-ID` |
+| Check progress | `agentic-agent task list CHANGE-ID` |
 
 ### Terminal Commands (Batch/CI)
 
@@ -844,7 +844,7 @@ Status: Coverage criteria not met, continuing...
 | `.agentic/tasks/backlog.yaml` | Available tasks |
 | `.agentic/tasks/in-progress.yaml` | Currently claimed tasks |
 | `.agentic/checkpoints/` | Checkpoint storage (auto-managed) |
-| `.agentic/openspec/changes/` | OpenSpec proposals and tasks |
+| `.sdd-spec/changes/` | Sdd-OpenSpec proposals and tasks |
 
 ## Critical Rules
 
@@ -948,7 +948,7 @@ $ agentic-agent task list
 [TASK-936281-4] Create layout components
 ...
 
-$ agentic-agent openspec status todo-pwa
+$ agentic-agent task list todo-pwa
 
 Change: todo-pwa
   Total: 22  Done: 2  In Progress: 0  Pending: 20
@@ -1073,6 +1073,6 @@ Task remains in-progress
 ## What's Next?
 
 - **Learn about Tracks:** [track-based-workflow](../track-based-workflow/README.md)
-- **Explore OpenSpec:** [spec-driven-workflow](../spec-driven-workflow/README.md)
+- **Explore Sdd-OpenSpec:** [spec-driven-workflow](../spec-driven-workflow/README.md)
 - **Deep dive on Checkpoints:** [checkpoint-resume.md](../../docs/checkpoint-resume.md)
 - **Compare approaches:** [autopilot-vs-ralph-loop.md](../../docs/autopilot-vs-ralph-loop.md)

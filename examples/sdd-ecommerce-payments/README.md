@@ -318,7 +318,7 @@ agentic-agent specify gate-check SBL-PAYMENTS-001
 agentic-agent specify sync-graph
 
 # Mark complete
-agentic-agent openspec complete SBL-2025-Q1
+agentic-agent validate SBL-2025-Q1
 
 # Result: Spec status = Done, spec-graph updated
 ```

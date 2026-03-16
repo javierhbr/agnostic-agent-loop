@@ -10,7 +10,7 @@ Generate production-grade Product Requirements Documents from vague ideas. Suppo
 - Choose the right PRD format for your scope
 - Walk through the discovery → analysis → drafting → validation workflow
 - Validate PRDs with the bundled validation script
-- Feed PRDs into the openspec pipeline
+- Feed PRDs into the sdd-openspec pipeline
 
 ---
 
@@ -141,12 +141,12 @@ bash .claude/skills/product-wizard/validate_prd.sh docs/todo-pwa-prd.md
 
 ---
 
-## 4. Feed PRD into OpenSpec
+## 4. Feed PRD into Sdd-OpenSpec
 
-Once the PRD is approved, use it as the source for an openspec change:
+Once the PRD is approved, use it as the source for an sdd-openspec change:
 
 ```bash
-agentic-agent openspec init "Todo PWA" --from docs/todo-pwa-prd.md
+/openspec-proposal "Todo PWA" --from docs/todo-pwa-prd.md
 ```
 
 This creates the change directory with proposal and tasks templates seeded from the PRD content. Fill in the tasks, and they auto-import into the backlog.
@@ -168,11 +168,11 @@ This creates the change directory with proposal and tasks templates seeded from 
 ## End-to-End Pipeline
 
 ```text
-product-wizard (PRD) → openspec (tasks) → atdd (tests) → run-with-ralph (implementation)
+product-wizard (PRD) → sdd-openspec (tasks) → atdd (tests) → run-with-ralph (implementation)
 ```
 
 1. **product-wizard** generates the PRD with measurable criteria
-2. **openspec** breaks it into scoped tasks with acceptance criteria
+2. **sdd-openspec** breaks it into scoped tasks with acceptance criteria
 3. **atdd** writes executable tests from acceptance criteria
 4. **run-with-ralph** iterates until tests pass
 
@@ -184,6 +184,6 @@ product-wizard (PRD) → openspec (tasks) → atdd (tests) → run-with-ralph (i
 |--------|-----------------|
 | Generate PRD | Tell agent: "Write a [format] PRD for [topic]" |
 | Validate PRD | `bash .claude/skills/product-wizard/validate_prd.sh <file>` |
-| Feed to OpenSpec | `openspec init "Name" --from <prd-file>` |
+| Feed to Sdd-OpenSpec | `/openspec-proposal "Name" --from <prd-file>` |
 | Install skill | `skills install product-wizard --tool claude-code` |
 | Check drift | `skills check` |

@@ -145,8 +145,8 @@ Read `learnings.md` for key takeaways you can apply to your own work.
 After creating a PRD using the product-wizard skill, you can feed it into the agnostic agent workflow:
 
 ```bash
-# Create an openspec proposal and tasks from your PRD
-agentic-agent openspec init "<feature-name>" --from .agentic/spec/prd-<feature>.md
+# Create an sdd-openspec proposal and tasks from your PRD
+/openspec-proposal "<feature-name>" --from .agentic/spec/prd-<feature>.md
 
 # This generates:
 # - Proposal document
@@ -158,7 +158,7 @@ agentic-agent openspec init "<feature-name>" --from .agentic/spec/prd-<feature>.
 The workflow becomes:
 1. **Brainstorm** (optional) - Refine your idea
 2. **product-wizard** → Create PRD
-3. **agentic-agent openspec init** → Generate tasks
+3. **/openspec-proposal** → Generate tasks
 4. **dev-plans** → Break down into phases
 5. **atdd** → Create acceptance tests for each task
 

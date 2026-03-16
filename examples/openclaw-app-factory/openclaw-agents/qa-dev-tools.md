@@ -4,10 +4,10 @@
 
 - `agentic-agent task list` — view backlog and in-progress tasks
 - `agentic-agent task claim <ID>` — claim task (records branch + timestamp)
-- `agentic-agent context build --task <ID>` — load context bundle (includes openspec + tech-stack)
+- `agentic-agent context build --task <ID>` — load context bundle (includes sdd-openspec + tech-stack)
 - `agentic-agent validate` — run all quality validators before completing
 - `agentic-agent task complete <ID>` — mark done (auto-captures commits)
-- `agentic-agent openspec check <spec-id>` — verify all ACs have test coverage before scoring
+- `agentic-agent sdd-openspec check <spec-id>` — verify all ACs have test coverage before scoring
 
 ## Language Test Runners & Coverage
 
@@ -97,7 +97,7 @@ agent-browser install
 
 ## Key Paths
 
-- `.agentic/spec/` — openspec proposals with acceptance criteria
+- `.agentic/spec/` — sdd-openspec proposals with acceptance criteria
 - `.agentic/context/` — tech-stack.md (test framework, coverage tool), global-context.md
 - `.agentic/coordination/` — announcements.yaml, reservations.yaml
 - Coverage reports: `coverage/`, `coverage.out`, `coverage/lcov.info`
@@ -108,7 +108,7 @@ agent-browser install
 
 Before announcing QA results, verify:
 
-- [ ] **1. AC Coverage** — all openspec ACs have passing tests
+- [ ] **1. AC Coverage** — all sdd-openspec ACs have passing tests
 - [ ] **2. Unit Tests** — core functions tested, ≥80% line coverage
 - [ ] **3. Integration** — API contract matches spec, service boundaries tested, no deviations
 - [ ] **4. E2E/Visual** — at least one happy-path E2E test with screenshots

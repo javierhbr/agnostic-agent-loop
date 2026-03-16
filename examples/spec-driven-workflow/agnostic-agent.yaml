@@ -13,12 +13,13 @@ agents:
 # Specs are searched in order — first match wins.
 paths:
   specDirs:
-    - .specify/specs       # Spec Kit specs (if using Spec Kit)
-    - openspec/specs        # OpenSpec specs (if using OpenSpec)
+    - .sdd-spec/specs       # Sdd-OpenSpec (Mutable, working directory)
+    - vendor/platform/specs  # Platform Source (Read-only reference)
     - .agentic/spec         # Agentic native specs (fallback)
-  openSpecDir: .agentic/openspec/changes  # OpenSpec change lifecycle
+  openSpecDir: .sdd-spec/changes  # Sdd-OpenSpec change lifecycle
   contextDirs:
-    - .agentic/context
+    - .sdd-spec/context
+    - vendor/platform/context
 
 workflow:
   validators:

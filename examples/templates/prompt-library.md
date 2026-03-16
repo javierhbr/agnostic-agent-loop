@@ -345,11 +345,11 @@ What are the dependencies for this project?
 
 ## Integration with Agnostic Agent
 
-### Creating OpenSpec from PRD
+### Creating Sdd-OpenSpec from PRD
 
 ```bash
 # After PRD is created, use CLI to generate tasks
-agentic-agent openspec init "<feature-name>" --from .agentic/spec/prd-<feature>.md
+/openspec-proposal "<feature-name>" --from .agentic/spec/prd-<feature>.md
 ```
 
 ### Building Context for Task

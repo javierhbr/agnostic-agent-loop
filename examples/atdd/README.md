@@ -1,12 +1,12 @@
 # ATDD Workflow: Acceptance Criteria → Executable Tests → Implementation
 
-Write acceptance tests from openspec task criteria before implementation. Every acceptance criterion becomes a failing test; implementation makes them pass.
+Write acceptance tests from sdd-openspec task criteria before implementation. Every acceptance criterion becomes a failing test; implementation makes them pass.
 
 ---
 
 ## What You'll Learn
 
-- Extract acceptance criteria from openspec tasks
+- Extract acceptance criteria from sdd-openspec tasks
 - Translate criteria into executable test cases
 - Follow the ATDD cycle: criteria → failing tests → implementation → green
 - Combine ATDD with TDD for full test coverage
@@ -31,11 +31,11 @@ rm -rf .agentic agnostic-agent.yaml
 
 ---
 
-## 1. Create an OpenSpec Change with Tasks
+## 1. Create an Sdd-OpenSpec Change with Tasks
 
 ```bash
 # Initialize a change from requirements
-./agentic-agent openspec init "User Auth" --from requirements.md
+/openspec-proposal "User Auth" --from requirements.md
 ```
 
 Fill in `proposal.md` and `tasks.md`, then the tasks auto-import:
@@ -84,7 +84,7 @@ These four criteria become your test cases.
 Tell your agent:
 
 ```text
-Read the acceptance criteria from .agentic/openspec/changes/user-auth/tasks/01-login-endpoint.md.
+Read the acceptance criteria from .sdd-spec/changes/user-auth/tasks/01-login-endpoint.md.
 Write one test per criterion. All tests must fail. Do NOT implement any production code.
 ```
 
@@ -163,7 +163,7 @@ npm test
 
 ```bash
 ./agentic-agent task complete TASK-001
-./agentic-agent openspec status user-auth
+./agentic-agent task list user-auth
 ```
 
 Repeat the ATDD cycle for TASK-002, TASK-003, etc.
@@ -201,7 +201,7 @@ Use ATDD tests as Ralph's convergence signal:
 ```
 /ralph-loop "Implement TASK-001: Login endpoint.
 
-Read: .agentic/openspec/changes/user-auth/tasks/01-login-endpoint.md
+Read: .sdd-spec/changes/user-auth/tasks/01-login-endpoint.md
 
 Acceptance tests already written in tests/auth.test.ts.
 Run npm test each iteration.

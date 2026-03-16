@@ -224,7 +224,7 @@ For AI agents operating autonomously, this guide provides concise step-by-step i
 **Output:**
 - `06-verifier/verify.md`
 - `agentic-agent specify sync-graph` (update spec-graph)
-- `agentic-agent openspec complete <change-id>` (mark Done)
+- `agentic-agent validate <change-id>` (mark Done)
 
 **Time:** 2-3 days
 
@@ -364,7 +364,7 @@ agentic-agent specify adr resolve ADR-001
 agentic-agent specify sync-graph
 
 # Complete initiative
-agentic-agent openspec complete SBL-2025-Q1
+agentic-agent validate SBL-2025-Q1
 ```
 
 ---
