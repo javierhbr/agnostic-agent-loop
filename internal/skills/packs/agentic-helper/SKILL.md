@@ -1,88 +1,60 @@
 ---
 name: agentic-helper
-description: "CLI guide, executor, and automator. Use when asking about agentic-agent commands, workflow selection, task management, SDD methodology, or how to start/continue/complete work."
+description: "Master guide and orchestrator for the agentic-agent CLI and all SDD methodologies. Use when asking about workflow selection, tools, how to use the SDD skills, or how to chain commands."
 ---
 
 # skill:agentic-helper
 
-## Does exactly this
+## The Unified Workflow Consultant
 
-Guides you through agentic-agent CLI commands, helps select the right workflow (Tiny/Small/OpenSpec+/Full SDD) based on risk, and automates context generation and validation.
-
----
-
-## Use this skill when
-
-- You're unsure which workflow to use (Tiny vs Small vs SDD)
-- You want to start, claim, or complete a task
-- You want to generate context or run gate checks
-- You're asking about agentic-agent CLI commands
-- You need to understand SDD or OpenSpec methodology
+Guides you through agentic-agent CLI commands and helps you select the correct methodology framework for your task. Whether you are doing a quick fix, starting a new project, or managing a large brownfield platform, this skill directs you to the right tools.
 
 ---
 
-## Step 1 — Assess Risk (Workflow Decision Tree)
+## 1. Methodology Routing Matrix
 
-Ask: **"What are you building and how risky is it?"**
+Before starting, assess your project scale (Platform vs. Component) and goal:
 
-| Signal | Workflow | Setup | Key Commands |
+| Your Goal | Scope | Recommended Skill | What it Does |
 |---|---|---|---|
-| Bug fix, < 1 day, 1 file | **Tiny** | 5 min | `task create`, `claim`, `complete` |
-| Feature, 1-2 weeks, 1 service | **Small** | 10 min | `openspec init`, tasks |
-| Multi-package, monorepo | **OpenSpec+** | 20 min | `openspec init` per package |
-| Payment/auth/PII/contract | **Full SDD** | 1+ hour | `sdd start --risk critical` |
-
-**Risk escalators** (each one = increase tier):
-- Touches payment, auth, or PII → **Critical**
-- Breaks an API/contract → **High or Critical**
-- 4+ services involved → **High**
-- No rollback strategy → **increase one level**
+| **Multi-team, existing platform?** | **Platform** | `unified-sdd` & `platform-contextualizer` | Platform-scale approach combining Sdd-Bmad, Sdd-OpenSpec, and Sdd-Speckit. |
+| **New feature or service?** | **Platform/Component** | `sdd-speckit` | Turns ideas into executable specs, plans, and task lists. |
+| **Defined change package?** | **Component** | `sdd-openspec` (or `op`) | Spec-driven changes using proposals and delta specs. |
+| **Progressive planning & roles?** | **Platform/Component** | `sdd-bmad` | Routes work by scale, roles (Analyst/Architect/Dev), and artifacts. |
+| **Understand architecture?** | **Platform/Component** | `explain-code` | Visual diagrams and analogies for codebase architecture. |
+| **Isolated bug fix?** | **Component** | Tiny Workflow (No skill) | Direct execution with basic CLI commands. |
 
 ---
 
-## Step 2 — Execute by Tier
+## 2. CLI Integration Guide
 
-See `resources/workflow-commands.md` for full command sequences for each tier (TINY, SMALL, OpenSpec+, Full SDD) with examples.
+Methodologies provide the plan; the CLI provides the physical execution across both platform and component levels.
 
----
+1. **Setup & Context (Platform/Component):**
+   - `agentic-agent init` - Initializes the `.agentic` directory for the platform.
+   - `agentic-agent context generate <DIR>` - Generates `AGENTS.md` context for a specific component or directory. **Mandatory before editing.**
 
-## Step 3 — Proactive Automation
+2. **Execution (Component Level):**
+   - `task create` - Converts your component-level plan into an executable task.
+   - `task claim <ID>` - **Mandatory.** Locks the task to your branch and starts traceability.
+   - Implement using `run-with-ralph` or manual execution.
 
-**Before editing any directory:**
-- Check for and read `AGENTS.md` (Read-Before-Write rule)
-- If missing: `agentic-agent context generate <DIR>`
-
-**Before completing any task:**
-```bash
-agentic-agent validate
-```
-
-**After architectural changes:**
-- Update affected `AGENTS.md` files immediately
-- Respect hexagonal boundaries: Core/Domain → nothing; Core/App → Domain only; Infra → Domain+App
+3. **Finalization:**
+   - `agentic-agent validate` - Run gate checks to ensure scope was not violated at the component or platform level.
+   - `task complete <ID>` - Captures commits and prepares the component for PR.
 
 ---
 
-## Hard Stops (Never Break These)
+## 3. Hard Stops (Never Break These)
 
-- Never implement when `blocked_by` is non-empty
-- Never skip `task claim` (loses traceability)
-- Never edit `.agentic/` YAML files directly
-- Never merge without verify.md from Verifier
-
----
-
-## Error Recovery
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| Gate fails | Missing Source or empty section | Fix spec, re-run gate-check |
-| `blocked_by` non-empty | Unresolved ADR | `sdd adr resolve <id>` |
-| Validation fails | Context stale or scope violated | Run context generate, validate again |
-| "Which workflow?" | Risk not assessed | Walk the decision tree above |
+- Never implement when `blocked_by` is non-empty.
+- Never skip `task claim <ID>` (loses traceability).
+- Never edit `.agentic/` YAML files directly.
+- Never merge without running `agentic-agent validate`.
 
 ---
 
 ## If you need more detail
 
-→ `resources/workflow-commands.md` — Full command sequences for each tier with examples, error recovery details, and workflow selection flow
+→ `resources/workflow-cheatsheet.md` — Visual map of the relationships between Sdd-Bmad, Sdd-OpenSpec, and Sdd-Speckit under the Unified SDD umbrella.
+→ `resources/workflow-commands.md` — Full command sequences for traditional tiers (TINY, SMALL, OpenSpec+, Full SDD).

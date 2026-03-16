@@ -41,7 +41,7 @@ START: New feature request
 ├─ Do you have a formal PRD?  NO  → /product-wizard skill
 │                            YES → Continue
 ├─ Have you broken down tasks? NO  → superpowers:writing-plans OR dev-plans
-│                              YES → agentic-agent openspec init
+│                              YES → /openspec-proposal
 └─ Ready to implement?
    ├─ Critical logic        → TDD (superpowers or in-house)
    ├─ Parallel components   → superpowers:using-git-worktrees

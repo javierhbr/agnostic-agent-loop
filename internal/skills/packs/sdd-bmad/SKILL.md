@@ -1,5 +1,5 @@
 ---
-name: bmad-method
+name: sdd-bmad
 summary: Use for spec-driven software planning and implementation using the BMAD Method. Routes work by project scale, brownfield/new-build context, planning phase, agent role, and artifact maturity.
 triggers:
   - bmad

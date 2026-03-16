@@ -15,7 +15,7 @@ One trigger. One skill. One output. Load nothing else.
 
 | Trigger | Maps To | Purpose |
 |---|---|---|
-| `openspec` | `./openspec/SKILL.md` | Spec-driven development from requirements |
+| `sdd-openspec` | `./sdd-openspec/SKILL.md` | Spec-driven development from requirements (Unified SDD) |
 | `api-docs` | `./api-docs/SKILL.md` | Generate comprehensive API documentation |
 | `tdd` | `./tdd/SKILL.md` | Test-driven development orchestrator |
 | `atdd` | `./atdd/SKILL.md` | Acceptance test-driven development |
@@ -31,6 +31,11 @@ One trigger. One skill. One output. Load nothing else.
 | `tier-check` | `./tier-enforcer/SKILL.md` | Audit, create, or fix skill files for 3-tier compliance |
 | `tier-enforcer` | `./tier-enforcer/SKILL.md` | Audit, create, or fix skill files for 3-tier compliance |
 | `sdd:*` | `./sdd/SKILLS.md` | SDD v3.0 sub-router (15 role-specific skills) |
+| `sdd-bmad` | `./sdd-bmad/SKILL.md` | Progressive planning and role-based execution (Unified SDD) |
+| `explain-code` | `./explain-code-skill/SKILL.md` | Visual diagrams and analogies for codebase architecture |
+| `platform-contextualizer` | `./platform-contextualizer-skill/SKILL.md` | Documenting existing platforms |
+| `sdd-speckit` | `./sdd-speckit/SKILL.md` | Turning ideas into executable specs and task lists (Unified SDD) |
+| `unified-sdd` | `./unified-sdd-skill/SKILL.md` | Platform-scale approach combining Sdd-Bmad, Sdd-OpenSpec, and Sdd-Speckit |
 
 ---
 

@@ -30,7 +30,8 @@ mkdir -p .agentic/spec
 .agentic/spec/prd-<feature-name>.md
 ```
 
-Then use with openspec:
+Then use with sdd-openspec:
+
 ```bash
 agentic-agent openspec init "<feature-name>" --from .agentic/spec/prd-<feature-name>.md
 ```

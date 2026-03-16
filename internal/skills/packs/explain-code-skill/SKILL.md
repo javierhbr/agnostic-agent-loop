@@ -8,7 +8,7 @@ description: Explains code with visual diagrams and analogies. Use when explaini
 Use this skill when the task is not to change code first, but to make code,
 architecture, or runtime behavior understandable to humans.
 
-This skill is a support skill. It works well with BMAD, OpenSpec, and Speckit
+This skill is a support skill. It works well with BMAD, Sdd-OpenSpec, and Speckit
 when teams need to explain existing code, planned changes, pull requests, or
 implementation behavior across roles.
 

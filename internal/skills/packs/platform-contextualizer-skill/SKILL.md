@@ -44,9 +44,9 @@ Use this skill to:
 
 The skill combines:
 
-- BMAD for brownfield context, role framing, and project-context thinking
-- OpenSpec for durable context, reusable configuration, and artifact structure
-- Speckit for explicit principles and quality guardrails
+- Sdd-Bmad for brownfield context, role framing, and project-context thinking
+- Sdd-OpenSpec for durable context, reusable configuration, and artifact structure
+- Sdd-Speckit for explicit principles and quality guardrails
 
 ## Workflow
 
@@ -80,26 +80,26 @@ Ready for Platform phase
 
 ## Default skill mix
 
-### 1. Start with BMAD
+### 1. Start with Sdd-Bmad
 
-Use `bmad-codex-skill` first to:
+Use `sdd-bmad` first to:
 
 - treat the platform as brownfield
 - inspect existing conventions before proposing new ones
 - identify integration points and role boundaries
 - frame project-context style outputs
 
-### 2. Use OpenSpec second
+### 2. Use Sdd-OpenSpec second
 
-Use `openspec-codex-skill` to:
+Use `sdd-openspec` to:
 
 - encode stable context
 - structure reusable configuration
 - separate durable context from temporary change detail
 
-### 3. Use Speckit third
+### 3. Use Sdd-Speckit third
 
-Use `speckit-codex-skill` to:
+Use `sdd-speckit` to:
 
 - turn vague values into explicit principles
 - define quality and testing guardrails
@@ -147,8 +147,8 @@ When using this skill, structure the output as:
 
 ## Related skills
 
-- `../bmad-codex-skill/SKILL.md`
-- `../openspec-codex-skill/SKILL.md`
-- `../speckit-codex-skill/SKILL.md`
+- `../sdd-bmad/SKILL.md`
+- `../sdd-openspec/SKILL.md`
+- `../sdd-speckit/SKILL.md`
 - `../platform-truth-mcp-codex-skill/SKILL.md`
-- `../unified-sdd-codex-skill/SKILL.md`
+- `../unified-sdd-skill/SKILL.md`

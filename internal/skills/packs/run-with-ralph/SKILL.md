@@ -1,19 +1,19 @@
 ---
 name: run-with-ralph
-description: 'Use when implementing openspec tasks with Ralph Wiggum iterative loops, or when asked to "ralph my tasks", "iterate on openspec tasks", "run tasks with ralph", or "implement change with ralph". Also use when you have openspec tasks in backlog and want automated iterative implementation with convergence guarantees.'
+description: 'Use when implementing sdd-openspec tasks with Ralph Wiggum iterative loops, or when asked to "ralph my tasks", "iterate on sdd-openspec tasks", "run tasks with ralph", or "implement change with ralph". Also use when you have sdd-openspec tasks in backlog and want automated iterative implementation with convergence guarantees.'
 ---
 
 # Run with Ralph
 
-Execute openspec tasks using Ralph Wiggum iterative loops. One task per loop, acceptance criteria as the completion signal.
+Execute sdd-openspec tasks using Ralph Wiggum iterative loops. One task per loop, acceptance criteria as the completion signal.
 
 ## When to Use
 
-- Openspec tasks exist in backlog and you want iterative implementation
+- Sdd-openspec tasks exist in backlog and you want iterative implementation
 - User asks to "ralph my tasks", "run with ralph", "iterate on tasks"
 - You need automated convergence: Ralph reads specs, checks criteria, loops until done
 
-**Not for:** Planning (use openspec). Manual one-shot implementation. Tasks without acceptance criteria.
+**Not for:** Planning (use sdd-openspec). Manual one-shot implementation. Tasks without acceptance criteria.
 
 ## The Loop
 
@@ -24,9 +24,9 @@ digraph ralph_openspec {
   "Show task details" [shape=box];
   "Build ralph prompt" [shape=box];
   "Run /ralph-loop" [shape=box];
-  "Complete task" [shape=box];
+  "Done — run\n/openspec-archive" [shape=box];
   "More tasks?" [shape=diamond];
-  "Done — run\nopenspec complete" [shape=box];
+  "Done — run\n/openspec-archive" [shape=box];
 
   "List tasks" -> "Claim task";
   "Claim task" -> "Show task details";
@@ -35,7 +35,7 @@ digraph ralph_openspec {
   "Run /ralph-loop" -> "Complete task";
   "Complete task" -> "More tasks?";
   "More tasks?" -> "Claim task" [label="yes"];
-  "More tasks?" -> "Done — run\nopenspec complete" [label="no"];
+  "More tasks?" -> "Done — run\n/openspec-archive" [label="no"];
 }
 ```
 
@@ -115,12 +115,11 @@ Or use in-house debugging skill.
 
 ```bash
 agentic-agent task complete TASK-ID
-agentic-agent openspec status CHANGE-ID
 ```
 
 ### 7. Repeat for next task
 
-Go back to step 1. One task per ralph loop.
+Once all tasks are finished, run `/openspec-archive` to merge.
 
 ## Critical Rules
 
@@ -173,5 +172,5 @@ When all pass: <promise>TASK COMPLETE</promise>" --max-iterations 10 --completio
 
 # 4. Complete
 agentic-agent task complete TASK-936281-2
-agentic-agent openspec status todo-pwa
+/openspec-archive
 ```

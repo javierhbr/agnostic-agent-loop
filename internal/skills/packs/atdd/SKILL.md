@@ -1,17 +1,17 @@
 ---
 name: atdd
-description: 'Use when openspec tasks have acceptance criteria that should become executable tests before implementation. Also use when asked to "write acceptance tests", "ATDD", "test from acceptance criteria", or when bridging product requirements to automated verification.'
+description: 'Use when sdd-openspec tasks have acceptance criteria that should become executable tests before implementation. Also use when asked to "write acceptance tests", "ATDD", "test from acceptance criteria", or when bridging product requirements to automated verification.'
 ---
 
 # Acceptance Test-Driven Development
 
-Write executable acceptance tests from openspec task criteria BEFORE implementation. Acceptance criteria become the test suite; implementation makes them pass.
+Write executable acceptance tests from sdd-openspec task criteria BEFORE implementation. Acceptance criteria become the test suite; implementation makes them pass.
 
 ## When to Use
 
-- Openspec task has acceptance criteria in `task show` output
+- Sdd-openspec task has acceptance criteria in `task show` output
 - User asks for "ATDD", "acceptance tests first", "test the criteria"
-- Bridging product requirements (PRD/openspec) to automated tests
+- Bridging product requirements (PRD/sdd-openspec) to automated tests
 - You want proof that acceptance criteria are met, not just "it works"
 
 **Not for:** Unit-level TDD (use tdd skill). Exploratory testing. Tasks without acceptance criteria.
@@ -102,7 +102,7 @@ Every acceptance criterion from `task show` must have at least one passing test.
 
 **ATDD + run-with-ralph:** Build ATDD tests into the ralph prompt's verification step. Ralph runs `npm test` each iteration and checks acceptance criteria.
 
-**ATDD + openspec:** Openspec provides the criteria. ATDD makes them executable. The loop: openspec defines → ATDD verifies → implementation satisfies.
+**ATDD + sdd-openspec:** Sdd-openspec provides the criteria. ATDD makes them executable. The loop: sdd-openspec defines → ATDD verifies → implementation satisfies.
 
 ## Common Mistakes
 

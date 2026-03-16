@@ -1,6 +1,6 @@
 ---
 name: component-spec
-description: "Guides component team engineers through creating an OpenSpec Component Implementation Spec. Trigger when receiving a fan-out task, writing local 'how' for a service, or creating local ADRs."
+description: "Guides component team engineers through creating an Sdd-OpenSpec Component Implementation Spec. Trigger when receiving a fan-out task, writing local 'how' for a service, or creating local ADRs."
 ---
 
 # skill:component-spec

@@ -1,6 +1,6 @@
 ---
 name: unified-sdd-orchestrator
-summary: Use for platform-scale spec-driven development that combines BMAD's progressive planning and roles, OpenSpec's change package and artifact flow, and Speckit's executable specification discipline.
+summary: Use for platform-scale spec-driven development that combines Sdd-Bmad's progressive planning and roles, Sdd-OpenSpec's change package and artifact flow, and Sdd-Speckit's executable specification discipline.
 triggers:
   - unified sdd
   - platform sdd
@@ -17,8 +17,8 @@ triggers:
 # Unified SDD Orchestrator
 
 Use this skill when the team wants one practical workflow across multiple
-teams, artifacts, and delivery phases without losing the strengths of BMAD,
-OpenSpec, and Speckit. Use `../explain-code-codex-skill/SKILL.md` as a support
+teams, artifacts, and delivery phases without losing the strengths of Sdd-Bmad,
+Sdd-OpenSpec, and Sdd-Speckit. Use `../explain-code-skill/SKILL.md` as a support
 skill when roles need to explain existing code, planned behavior, or PR impact.
 
 This skill is phase-first, not artifact-first.
@@ -76,7 +76,7 @@ The change package is the canonical execution unit for:
 When the platform uses one master repository plus many component repositories:
 
 - keep shared platform truth upstream in the platform repo
-- keep local OpenSpec artifacts in the component repo
+- keep local Sdd-OpenSpec artifacts in the component repo
 - pin platform version and platform refs in each affected component repo
 - use JIRA for issue hierarchy and delivery status, not as the full spec store
 
@@ -174,33 +174,33 @@ actually implemented.
 
 ### Platform
 
-- Speckit first
-- OpenSpec second
-- BMAD third
+- Sdd-Speckit first
+- Sdd-OpenSpec second
+- Sdd-Bmad third
 
 ### Route
 
-- BMAD first
-- OpenSpec second
-- Speckit only when ambiguity blocks routing
+- Sdd-Bmad first
+- Sdd-OpenSpec second
+- Sdd-Speckit only when ambiguity blocks routing
 
 ### Specify
 
-- OpenSpec first
-- Speckit second
-- BMAD third
+- Sdd-OpenSpec first
+- Sdd-Speckit second
+- Sdd-Bmad third
 
 ### Plan
 
-- BMAD first
-- OpenSpec second
-- Speckit third
+- Sdd-Bmad first
+- Sdd-OpenSpec second
+- Sdd-Speckit third
 
 ### Deliver
 
-- BMAD for implementation and review support
-- OpenSpec for apply and archive
-- Speckit for task discipline and phased execution
+- Sdd-Bmad for implementation and review support
+- Sdd-OpenSpec for apply and archive
+- Sdd-Speckit for task discipline and phased execution
 
 ## Output structure when applying this skill
 
@@ -244,9 +244,9 @@ When using this skill in a response, structure the output as:
 - `references/platform-component-alignment.md`
 - `references/agent-interaction-model.md`
 - `references/sources.md`
-- `../platform-contextualizer-codex-skill/SKILL.md`
+- `../platform-contextualizer-skill/SKILL.md`
 - `../platform-truth-mcp-codex-skill/SKILL.md`
-- `../explain-code-codex-skill/SKILL.md`
+- `../explain-code-skill/SKILL.md`
 
 ### Role agents
 
@@ -258,6 +258,6 @@ When using this skill in a response, structure the output as:
 
 ### Source skills
 
-- `../bmad-codex-skill/SKILL.md`
-- `../openspec-codex-skill/SKILL.md`
-- `../speckit-codex-skill/SKILL.md`
+- `../sdd-bmad/SKILL.md`
+- `../sdd-openspec/SKILL.md`
+- `../sdd-speckit/SKILL.md`

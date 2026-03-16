@@ -60,9 +60,8 @@ This installs six agents to `.claude/agents/`:
 3. Load both agents in Claude Code / Cursor
 
 4. Start coordinating:
-   - ProductLead: `agentic-agent openspec init "Feature Name"`
-   - TechLead: `agentic-agent task claim <ID>`
-
+   - ProductLead: `/openspec-proposal` to define the feature
+   - TechLead: `agentic-agent task claim <ID>` to start work
 ## Key Files
 
 After installation, you'll have six agents in `.claude/agents/`:

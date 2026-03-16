@@ -1,5 +1,5 @@
 ---
-name: speckit-spec-driven-development
+name: sdd-speckit
 description: Use for turning product ideas into executable specifications, plans, task lists, and implementation workflows using Spec Kit / Speckit. Triggers on spec-driven development, requirements, constitution, clarify, plan, tasks, implement, brownfield/greenfield workflows, and agent-guided delivery.
 ---
 

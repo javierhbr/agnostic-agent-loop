@@ -78,15 +78,9 @@ by cart abandonment rate dropping to < 15% within 30 days of launch."
 
 ## CLI Workflow
 
-```bash
-# Create the initiative
-agentic-agent openspec init "<Name>" --from requirements.md
-
-# Then run risk assessment
-# (see risk-assessment skill)
-
-# Hand off to architect with initiative.md
-```
+1. Trigger `/openspec-proposal` to initialize the change.
+2. (Optional) Run risk assessment (see risk-assessment skill).
+3. Hand off to architect with `proposal.md`.
 
 ## Anti-Patterns
 
