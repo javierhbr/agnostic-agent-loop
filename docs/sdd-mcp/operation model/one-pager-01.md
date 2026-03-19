@@ -1,13 +1,13 @@
 # One Pager
-## Spec-Driven Development (SDD) v3.0
-**Two MCPs · Four Agents · Zero Overhead Services**
+## Spec-Driven Development (SDD) v4.0
+**Five Phases · Governed Knowledge · Zero Overhead Services**
 
-> *Version 3.0 — February 2026*
+> *Version 4.0 — March 2026*
 > *"Nothing is implemented without a validated spec backed by governed context."*
 
 ---
 
-## 🎯 Problem
+## Problem
 
 Modern distributed platforms have a **knowledge problem**, not just a code problem:
 
@@ -19,20 +19,21 @@ Modern distributed platforms have a **knowledge problem**, not just a code probl
 
 ---
 
-## 💡 Solution
+## Solution
 
-Adopt **SDD v3.0** with two MCP server types, four Markdown agents, and zero overhead infrastructure:
+Adopt **SDD v4.0** with a 5-phase model, role-based ownership, and zero overhead infrastructure:
 
 | Component | What it does |
 |---|---|
-| **Platform MCP** (1 instance) | Serves context packs, templates, agent definitions, workflow configs |
-| **Component MCP** (N instances) | Same image, different config per component — serves contracts, invariants, patterns, ADRs |
-| **4 Agents** (Markdown files) | `analyst` · `architect` · `developer` · `verifier` — loaded from `.claude/agents/`, gates embedded as checklists |
-| **Spec Graph** | Traceable chain: Initiative → feature-spec → component-specs → verify.md → ADRs |
+| **5-Phase Model** | Platform --> Assess --> Specify --> Plan --> Deliver |
+| **Role Assignments** | Architect (Platform, Plan) · Team Lead (Assess, Deliver) · Product (Specify) |
+| **Change Package** | Canonical execution unit: versioned directory containing proposal, design, tasks, and evidence |
+| **Spec Graph** | Traceable chain: Initiative --> proposal --> design --> tasks --> verify.md --> ADRs |
+| **Ownership Artifacts** | `component-ownership.yaml` · `dependency-map.yaml` · `shared-glossary.yaml` |
 
 ---
 
-## 🧠 Core Principle
+## Core Principle
 
 > *"Nothing is implemented without a validated spec backed by governed context."*
 
@@ -40,9 +41,22 @@ Agents — human or AI — do not invent context. They **call MCP tools** to get
 
 ---
 
-## 🧬 Methodology Origins
+## Core Boundary Rule
 
-SDD v3.0 is a deliberate composition of proven ideas. Three frameworks provided the structural core — every practice listed here was adopted because it directly changes what an agent or engineer produces. Everything else was cut.
+The 5-phase model applies differently depending on repository scope.
+
+| Scope | Phases Available | Methodology Sources |
+|---|---|---|
+| **Platform-side** (specs repo, constitution, governance) | All 5 phases | BMAD + OpenSpec + SpecKit |
+| **Component repos** (system code, local specs) | Assess, Specify (delta only), Plan, Deliver | OpenSpec only |
+
+**Rule:** Component teams consume platform artifacts (constitution, templates, ownership, glossary) as read-only input. They contribute to them via PR to the platform repo, never by direct edit.
+
+---
+
+## Methodology Origins
+
+SDD v4.0 is a deliberate composition of proven ideas. Three frameworks provided the structural core -- every practice listed here was adopted because it directly changes what an agent or engineer produces. Everything else was cut.
 
 **BMAD — Breakthrough Method for Agile AI Development**
 The four-agent architecture (analyst → architect → developer → verifier) comes directly from BMAD. Each agent has a single bounded responsibility, produces one or two files, and enforces a self-checked exit gate before handing off. The parallel fan-out pattern — one Developer agent per component running simultaneously after the Architect completes the feature-spec — is also a BMAD practice. *Why we adopted it: role-scoped agents prevent context overreach. Parallel fan-out eliminates the bottleneck that makes large cross-domain features slow.*
@@ -55,15 +69,15 @@ The template-with-embedded-exit-gate pattern comes from SpecKit. Rather than wri
 
 ---
 
-## 🏗️ System Layers
+## System Layers
 
 ```mermaid
 flowchart TD
-    KL["🔶 KNOWLEDGE LAYER\nPlatform MCP · Component MCPs\nPolicies · Contracts · Invariants · Patterns · ADRs"]
+    KL["KNOWLEDGE LAYER\nPlatform MCP · Component MCPs\nPolicies · Contracts · Invariants · Patterns · ADRs"]
     CP["Context Pack — versioned snapshot\nassembled before any spec is written"]
-    SL["🔷 SPEC LAYER\nfeature-spec · component-spec · impl-spec · ADRs · verify.md"]
-    CL["🟢 CODE LAYER\nServices · APIs · Infrastructure"]
-    OL["⚪ OBSERVABILITY\nLogs · Metrics · Traces"]
+    SL["SPEC LAYER\nfeature-spec · component-spec · impl-spec · ADRs · verify.md"]
+    CL["CODE LAYER\nServices · APIs · Infrastructure"]
+    OL["OBSERVABILITY\nLogs · Metrics · Traces"]
 
     KL -->|"get_context_pack()"| CP
     CP --> SL
@@ -107,7 +121,34 @@ flowchart TD
 
 ---
 
-## 🧩 Two MCPs, Four Agents
+## 5-Phase Model
+
+```
+  Phase 1        Phase 2        Phase 3        Phase 4        Phase 5
+  PLATFORM  -->  ASSESS    -->  SPECIFY   -->  PLAN      -->  DELIVER
+  Architect      Team Lead      Product        Architect      Team Lead
+  (durable)      (per change)   (per change)   (per change)   (per change)
+```
+
+Each phase has a designated owner, specific inputs and outputs, and an exit gate that must pass before the next phase begins.
+
+### Change Package
+
+Every unit of work is a **change package** -- a versioned directory opened in Assess and archived in Deliver:
+
+```
+changes/CP-{ID}/
+  platform-ref.yaml        # pinned constitution version
+  jira-traceability.yaml   # external tracking links
+  proposal.md              # what and why (Specify output)
+  design.md                # how (Plan output)
+  tasks.md                 # execution plan (Plan output)
+  verify.md                # evidence (Deliver output)
+```
+
+---
+
+## Two MCPs, Four Agents
 
 ```mermaid
 graph LR
@@ -166,15 +207,15 @@ graph LR
 
 ---
 
-## 🔄 Three Workflows
+## Three Workflows
 
 ```mermaid
 flowchart LR
     RL{Risk Level?}
 
-    RL -->|"low · bug_fix"| Q["⚡ QUICK\nDeveloper → Verifier"]
-    RL -->|medium| S["🔷 STANDARD\nArchitect → Developer → Verifier"]
-    RL -->|"high · critical"| F["🔴 FULL\nAnalyst → Architect\n→ Developer → Verifier\n+ Human Approval"]
+    RL -->|"low · bug_fix"| Q["QUICK\nDeveloper --> Verifier"]
+    RL -->|medium| S["STANDARD\nArchitect --> Developer --> Verifier"]
+    RL -->|"high · critical"| F["FULL\nAnalyst --> Architect\n--> Developer --> Verifier\n+ Human Approval"]
 
     style Q fill:#fff3dc,stroke:#c47d0e,color:#1a1c2e
     style S fill:#eef0fa,stroke:#1e2d6b,color:#1a1c2e
@@ -209,21 +250,21 @@ Developers fan out **in parallel per component** once `feature-spec.md` is ready
 
 ---
 
-## 👥 Roles
+## Roles
 
-| Role | Responsibility |
-|---|---|
-| **Product Manager** | Initiative, business goals, UX intent |
-| **Platform Architect** | Constitution, templates, workflows, Spec Graph — content Platform MCP serves |
-| **Domain Owner** | Component invariants, contracts, patterns, ADRs — content Component MCP serves |
-| **Component Team** | Runs Developer + Verifier agents · produces impl-spec + code |
-| **AI Agents** | analyst · architect · developer · verifier — call MCPs, self-check gates, produce traceable outputs |
+| Role | Phase Ownership | Responsibility |
+|---|---|---|
+| **Architect** | Platform, Plan | Constitution, templates, workflows, Spec Graph, design.md, tasks.md, gate checks |
+| **Team Lead** | Assess, Deliver | Opens change package, classifies risk, coordinates build/verify/archive |
+| **Product** | Specify | Proposal.md, acceptance criteria, delta specs, glossary check |
+| **Domain Owner** | -- | Component invariants, contracts, patterns, ADRs |
+| **Component Team** | -- | Implementation, code, tests, local ADRs |
 
 ---
 
-## ⚖️ Comparison
+## Comparison
 
-| Without SDD | With SDD v3.0 |
+| Without SDD | With SDD v4.0 |
 |---|---|
 | Implicit, undocumented specs | Explicit versioned specs with ACs |
 | Integration bugs in QA or prod | Gates block bugs before implementation |
@@ -233,7 +274,7 @@ Developers fan out **in parallel per component** once `feature-spec.md` is ready
 
 ---
 
-## 🚀 Benefits
+## Benefits
 
 - Cross-domain consistency — all agents work from the same governed truth
 - Fewer integration bugs — contracts versioned, gate-checked before any code is written
@@ -245,10 +286,10 @@ Developers fan out **in parallel per component** once `feature-spec.md` is ready
 
 ---
 
-## 🔑 Final Insight
+## Final Insight
 
 > *"Software is no longer just built — it is specified, validated, and executed as a system of knowledge."*
 
 ---
 
-*Target Operating Model · SDD + MCP · v3.0 — February 2026*
+*Target Operating Model · SDD + MCP · v4.0 — March 2026*

@@ -28,7 +28,7 @@ The simplified model keeps the strengths of each source skill:
 The v1 methodology uses 5 phases:
 
 1. Platform
-2. Route
+2. Assess
 3. Specify
 4. Plan
 5. Deliver
@@ -45,7 +45,7 @@ We should adopt the 5-phase model in two iterations.
 Iteration 1 focuses on the front half of the workflow:
 
 - Platform
-- Route
+- Assess
 - Specify
 
 Iteration 2 focuses on the back half of the workflow:
@@ -54,19 +54,19 @@ Iteration 2 focuses on the back half of the workflow:
 - Deliver
 
 This rollout sequence makes adoption safer. Teams first learn how to define
-shared context, route work, and produce better specifications. Then they apply
+shared context, assess work, and produce better specifications. Then they apply
 those stronger inputs to planning and delivery.
 
 ```text
 TARGET MODEL
 
-  [Platform] -> [Route] -> [Specify] -> [Plan] -> [Deliver]
+  [Platform] -> [Assess] -> [Specify] -> [Plan] -> [Deliver]
 
 
 ADOPTION ITERATIONS
 
   Iteration 1
-  [Platform] -> [Route] -> [Specify]
+  [Platform] -> [Assess] -> [Specify]
 
   Iteration 2
                                    [Plan] -> [Deliver]
@@ -80,13 +80,13 @@ Detailed operational guide:
 - Iteration 1 playbook: [iteration-1-playbook.md](iteration-1-playbook.md)
 - Iteration 2 playbook: [iteration-2-playbook.md](iteration-2-playbook.md)
 - Platform/component alignment guide: [canonical-platform-truth-and-component-alignment.md](canonical-platform-truth-and-component-alignment.md)
-- Local platform MCP model: [local-platform-mcp-model.md](local-platform-mcp-model.md)
+- Local platform access model: [local-platform-mcp-model.md](local-platform-mcp-model.md)
 - Worked examples by phase, role, and skill: [example/README.md](example/README.md)
-- Unified agent/skill package: [../unified-sdd-codex-skill/SKILL.md](../unified-sdd-codex-skill/SKILL.md)
-- Role agents: [../unified-sdd-codex-skill/agents/README.md](../unified-sdd-codex-skill/agents/README.md)
-- Existing-platform starter skill: [../platform-contextualizer-codex-skill/SKILL.md](../platform-contextualizer-codex-skill/SKILL.md)
-- Local platform MCP skill: [../platform-truth-mcp-codex-skill/SKILL.md](../platform-truth-mcp-codex-skill/SKILL.md)
-- Go MCP server scaffold: [../platform-truth-mcp-server/README.md](../platform-truth-mcp-server/README.md)
+- Unified agent/skill package: [../uncle-sdd-agent/SKILL.md](../uncle-sdd-agent/SKILL.md)
+- Role agents: [../uncle-sdd-agent/agents/README.md](../uncle-sdd-agent/agents/README.md)
+- Existing-platform starter skill: [../platform-contextualizer-skill/SKILL.md](../platform-contextualizer-skill/SKILL.md)
+- Platform spec search skill: [../platform-spec/SKILL.md](../platform-spec/SKILL.md)
+- Agentic skills directory: `~/.agentic/skills/`
 - Templates:
   - [templates/README.md](templates/README.md)
   - [templates/platform-template/README.md](templates/platform-template/README.md)
@@ -104,7 +104,7 @@ Detailed operational guide:
   Support: Product, Team Lead
         |
         v
-[ROUTE]
+[ASSESS]
   open the change package, assess size and impact, select track
   Owner: Team Lead
   Support: Product, Architect, Engineering Manager
@@ -132,7 +132,7 @@ Detailed operational guide:
 
 The methodology uses agents as role-aligned helpers, not as isolated actors.
 Agents do not replace platform governance or team ownership. They help draft,
-route, refine, and verify the work inside each phase.
+assess, refine, and verify the work inside each phase.
 
 ```text
 [Platform stakeholders and team leads]
@@ -158,7 +158,7 @@ The basic interaction pattern is the same in every phase:
 
 - humans own intent, tradeoffs, and approval
 - agents produce structured drafts, comparisons, and checks
-- the phase owner decides when the work is ready to move on
+- the phase owner decides when work is ready to move on
 
 Inside component repositories, the local artifact chain stays OpenSpec-only even
 when the platform side used the combined methodology earlier in the flow.
@@ -230,8 +230,12 @@ Detailed reference:
 
 - [canonical-platform-truth-and-component-alignment.md](canonical-platform-truth-and-component-alignment.md)
 - [local-platform-mcp-model.md](local-platform-mcp-model.md)
+- [platform-ddd-spec.md](platform-ddd-spec.md)
 - [templates/platform-ref.yaml](templates/platform-ref.yaml)
 - [templates/jira-traceability.yaml](templates/jira-traceability.yaml)
+- [templates/platform-template/ownership/component-ownership-template.md](templates/platform-template/ownership/component-ownership-template.md)
+- [templates/platform-template/ownership/dependency-map-template.md](templates/platform-template/ownership/dependency-map-template.md)
+- [templates/platform-template/ownership/glossary-template.md](templates/platform-template/ownership/glossary-template.md)
 - [templates/platform-mcp-boilerplate/README.md](templates/platform-mcp-boilerplate/README.md)
 - [example/08-platform-plan-to-component-openspec.md](example/08-platform-plan-to-component-openspec.md)
 
@@ -315,17 +319,18 @@ Current v1 implementation:
 - stdio
 - newline-delimited JSON-RPC
 - read-only only
-- local binary scaffold under `../platform-truth-mcp-server/`
+- `platform-spec` CLI tool: `../platform-spec/SKILL.md`
+- agentic skills: `~/.agentic/skills/`
 
 ## Phase-by-phase operating model
 
 | Phase | Goal | Primary owner | Human interaction | Agent interaction | Skills used | Rules applied | Exit output |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Platform | Define durable context for all future changes | Architect | Platform stakeholders, Product, and Team Leads agree on guardrails, quality standards, common context, versioning, and JIRA conventions | Speckit creates or refreshes the constitution, OpenSpec encodes durable project config, BMAD frames context for later routing and roles | `speckit-codex-skill`, `openspec-codex-skill`, `bmad-codex-skill` | `speckit-codex-skill/rules/constitution-rules.md`, `openspec-codex-skill/rules/project-config-template.yaml` | constitution, project config, common context, platform ref model |
-| Route | Turn a request into a routed change package | Team Lead | Product, Architect, and Manager classify the request, affected scope, platform refs, and issue chain | BMAD selects the right track, OpenSpec frames the change package, agents call out size, impact, unknowns, and the next artifact | `bmad-codex-skill`, `openspec-codex-skill` | `bmad-codex-skill/rules/track-selection-rules.md`, `openspec-codex-skill/rules/artifact-rules.md` | scoped change package, selected path, initial platform/component/JIRA traceability |
-| Specify | Define the required behavior before implementation | Product | Product works with impacted teams to define goals, non-goals, acceptance behavior, and whether the change is local or shared | Platform-side support may use BMAD and Speckit, but component repos use OpenSpec only for `proposal.md`, delta specs, and local traceability files | platform: `openspec-codex-skill`, `speckit-codex-skill`, `bmad-codex-skill`; component: `openspec-codex-skill` | `openspec-codex-skill/rules/artifact-rules.md`, platform-side review rules as needed | approved proposal, delta specs, resolved ambiguity, confirmed platform refs |
-| Plan | Convert the approved spec into a technical execution plan | Architect | Architect, Team Lead, and Developers agree on design, dependencies, rollout approach, and story mapping | Platform planning may use BMAD and Speckit, but component repos turn the handoff into local OpenSpec `design.md` and `tasks.md` | platform: `bmad-codex-skill`, `openspec-codex-skill`, `speckit-codex-skill`; component: `openspec-codex-skill` | `openspec-codex-skill/rules/artifact-rules.md`, platform-side planning rules as needed | design, ADRs when needed, tasks, delivery slices, task-to-story traceability |
-| Deliver | Execute the plan in controlled slices through review, deploy, and archive | Team Lead | Team Lead coordinates Developers, QA, Architect, and Product across execution and release | Component repos execute through OpenSpec task updates, PR traceability, verification notes, and archive-ready closure | component: `openspec-codex-skill`; platform-side review support optional outside the component repo | `openspec-codex-skill/rules/artifact-rules.md` | implemented slices, reviewed PRs, verification evidence, deployed change, archived package with traceability |
+| Platform | Define durable context for all future changes | Architect | Platform stakeholders, Product, and Team Leads agree on guardrails, quality standards, common context, versioning, and JIRA conventions | Speckit creates or refreshes the constitution, OpenSpec encodes durable project config, BMAD frames context for later routing and roles | `speckit-skill`, `openspec-skill`, `bmad-skill` | `speckit-skill/rules/constitution-rules.md`, `openspec-skill/rules/project-config-template.yaml` | constitution, project config, common context, platform ref model |
+| Assess | Turn a request into an assessed change package | Team Lead | Product, Architect, and Manager classify the request, affected scope, platform refs, and issue chain | BMAD selects the right track, OpenSpec frames the change package, agents call out size, impact, unknowns, and the next artifact | `bmad-skill`, `openspec-skill` | `bmad-skill/rules/track-selection-rules.md`, `openspec-skill/rules/artifact-rules.md` | scoped change package, selected path, initial platform/component/JIRA traceability |
+| Specify | Define the required behavior before implementation | Product | Product works with impacted teams to define goals, non-goals, acceptance behavior, and whether the change is local or shared | Platform-side support may use BMAD and Speckit, but component repos use OpenSpec only for `proposal.md`, delta specs, and local traceability files | platform: `openspec-skill`, `speckit-skill`, `bmad-skill`; component: `openspec-skill` | `openspec-skill/rules/artifact-rules.md`, platform-side review rules as needed | approved proposal, delta specs, resolved ambiguity, confirmed platform refs |
+| Plan | Convert the approved spec into a technical execution plan | Architect | Architect, Team Lead, and Developers agree on design, dependencies, rollout approach, and story mapping | Platform planning may use BMAD and Speckit, but component repos turn the handoff into local OpenSpec `design.md` and `tasks.md` | platform: `bmad-skill`, `openspec-skill`, `speckit-skill`; component: `openspec-skill` | `openspec-skill/rules/artifact-rules.md`, platform-side planning rules as needed | design, ADRs when needed, tasks, delivery slices, task-to-story traceability |
+| Deliver | Execute the plan in controlled slices through review, deploy, and archive | Team Lead | Team Lead coordinates Developers, QA, Architect, and Product across execution and release | Component repos execute through OpenSpec task updates, PR traceability, verification notes, and archive-ready closure | component: `openspec-skill`; platform-side review support optional outside the component repo | `openspec-skill/rules/artifact-rules.md` | implemented slices, reviewed PRs, verification evidence, deployed change, archived package with traceability |
 
 ## What each phase contains
 
@@ -340,21 +345,44 @@ Typical outputs:
 - durable project config
 - common quality and documentation rules
 - role expectations for later phases
+- component ownership boundaries (`ownership/component-ownership-<name>.md`)
+- dependency map with three impact tiers (`ownership/dependency-map.md`)
+- shared glossary of platform terms (`ownership/glossary.md`)
 
 This phase is where Speckit's constitution mindset is strongest.
 
-### 2. Route
+The three ownership artifacts make impact assessment in Assess deterministic.
+They are created once and updated only when the platform structure changes.
+See [platform-ddd-spec.md](platform-ddd-spec.md) for the full rationale and
+[ADR-014](decisions/ADR-014-three-concept-ddd-for-platform-ownership-and-impact.md)
+for the decision record.
 
-Route is the intake gateway. It does not fully specify the work. It decides
+### 2. Assess
+
+Assess is the intake gateway. It does not fully specify the work. It decides
 how much workflow is needed and opens the change package.
 
-Route applies BMAD routing rules:
+Assess applies BMAD classification rules:
 
 - greenfield or brownfield
 - small, medium, or large
 - quick flow, PRD-first, or architecture-heavy path
 
-Route also applies the size and impact split already adopted in ADR-004.
+Assess also applies the size and impact split already adopted in ADR-004.
+
+In addition, Assess now uses three platform ownership artifacts:
+
+- read `ownership/component-ownership-<name>.md` to determine which component
+  owns the change before opening any epic
+- read `ownership/dependency-map.md` to determine the impact tier for each
+  affected relationship (must-change-together / watch-for-breakage /
+  adapts-independently)
+- confirm glossary terms are defined before writing the proposal
+
+The impact tier from the dependency map drives the JIRA structure decision.
+Tier 1 → open coordinated component epics immediately.
+Tier 2 → add a watch note in `platform-ref.yaml`.
+Tier 3 → no additional action required.
 
 ### 3. Specify
 
@@ -432,7 +460,7 @@ Inside component repositories, Deliver is an OpenSpec-driven execution flow.
 
 ### BMAD contribution
 
-BMAD is strongest in Route and Plan. It gives the methodology:
+BMAD is strongest in Assess and Plan. It gives the methodology:
 
 - progressive context
 - track selection
@@ -441,7 +469,7 @@ BMAD is strongest in Route and Plan. It gives the methodology:
 
 ### OpenSpec contribution
 
-OpenSpec is the backbone from Route through Deliver. It gives the methodology:
+OpenSpec is the backbone from Assess through Deliver. It gives the methodology:
 
 - one change package as the canonical execution unit
 - a stable artifact chain
@@ -470,16 +498,92 @@ Speckit strengthens Platform, Specify, and Plan. It gives the methodology:
 - ADR-011 proposes OpenSpec-only local workflows inside component repositories
 - ADR-012 proposes a local read-only platform MCP gateway for developer access to platform truth
 - ADR-013 proposes implementing the first local MCP server as a self-contained Go stdio server
+- ADR-014 proposes adopting three DDD-derived concepts (component ownership boundary, dependency map, shared glossary) to make Assess-phase impact assessment deterministic
 
 ## Evolution path
 
 The next evolution is clear:
 
-- adoption iteration 1 = Platform -> Route -> Specify
+- adoption iteration 1 = Platform -> Assess -> Specify
 - adoption iteration 2 = Plan -> Deliver
 
-- v1 = Platform -> Route -> Specify -> Plan -> Deliver
-- v2 = Platform -> Route -> Specify -> Plan -> Build -> Deploy
+- v1 = Platform -> Assess -> Specify -> Plan -> Deliver
+- v2 = Platform -> Assess -> Specify -> Plan -> Build -> Deploy
 
 We should only split Deliver when release coordination becomes complex enough
 to justify a separate top-level phase.
+
+
+
+
+
+## Phase → Tool → Role Mapping
+
+### Phase 1: Platform
+
+**Owner:** Architect | **Support:** Product, Team Lead
+
+|Tool|Element Used|Purpose|
+|---|---|---|
+|**Speckit**|`constitution` command + constitution rules|Draft the quality bar and platform principles — _used first_|
+|**OpenSpec**|`config.yaml` + project config rules|Encode durable context and reusable rules — _used second_|
+|**BMAD**|Architect agent, context/role framing|Align role boundaries and prepare routing — _used third_|
+
+### Phase 2: Assess
+
+**Owner:** Team Lead | **Support:** Product, Architect, EM
+
+|Tool|Element Used|Purpose|
+|---|---|---|
+|**BMAD**|routing agent, `track-selection-rules.md`|Classify greenfield/brownfield, size, path — _used first_|
+|**OpenSpec**|`/opsx:explore` or `/opsx:propose`, `artifact-rules.md`|Frame the change package and next artifact — _used second_|
+|**Speckit**|`clarify` command|_Optional_ — only when the request is too vague to Assess safely|
+
+---
+
+### Phase 3: Specify
+
+**Owner:** Product | **Support:** Team Lead, Architect, Developers
+
+|Tool|Element Used|Purpose|
+|---|---|---|
+|**OpenSpec**|`proposal.md`, delta specs, `platform-ref.yaml`, `jira-traceability.yaml`, `artifact-rules.md`|Primary and only tool in component repos — _used exclusively_|
+|**BMAD**|upstream scope support|_Platform-side only_ — scope control before component package is approved|
+|**Speckit**|`clarify` command|_Platform-side only_ — expose ambiguity before component package is approved|
+
+---
+
+### Phase 4: Plan
+
+**Owner:** Architect | **Support:** Team Lead, Developers, Product
+
+|Tool|Element Used|Purpose|
+|---|---|---|
+|**BMAD**|architect agent, planning rules|Platform-side planning depth and architecture decisions|
+|**OpenSpec**|`design.md`, `tasks.md`, `artifact-rules.md`|Component repo turns platform handoff into local executable artifacts|
+|**Speckit**|analysis + checklist|Platform-side pre-execution discipline|
+
+**Component repo rule:** OpenSpec only.
+
+---
+
+### Phase 5: Deliver
+
+**Owner:** Team Lead | **Support:** Developers, QA, Architect, Product
+
+|Tool|Element Used|Purpose|
+|---|---|---|
+|**OpenSpec**|task updates, PR traceability, verification notes, archive|Drives all 6 slices: Build → Create PR → Review PR → Verify → Deploy → Archive|
+|**BMAD**|_not used_ in component repos|Platform-side review support only (optional)|
+|**Speckit**|_not used_ in component repos|—|
+
+**Component repo rule:** OpenSpec only.
+
+---
+
+## Key Boundary Rule
+
+```
+Platform phases (cross-cutting):  BMAD + OpenSpec + Speckit
+Component repos (local work):     OpenSpec ONLY
+```

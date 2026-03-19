@@ -4,7 +4,7 @@ title: "Adopt canonical platform truth with versioned component alignment and JI
 status: "proposed"
 date: "2026-03-08"
 initiative: "unified-sdd-methodology"
-author: "javierbenavides + codex"
+author: "javierbenavides + claude"
 deciders:
   - "platform-methodology-working-group"
 ---
@@ -112,7 +112,7 @@ Shared changes must update:
 ## Consequences
 
 - Platform phase must define the master repo baseline, versioning approach, and shared ref IDs
-- Route must classify changes as platform-only, component-only, or shared
+- Assess must classify changes as platform-only, component-only, or shared
 - Specify must keep component specs aligned to platform refs and open linked platform deltas when shared truth changes
 - Plan must trace tasks to stories and keep platform refs visible in design and task artifacts
 - Deliver must link PRs, stories, verification, and archive records back to the same aligned change

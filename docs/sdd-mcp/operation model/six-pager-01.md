@@ -1,8 +1,8 @@
 # Six Pager
-## Spec-Driven Development (SDD) v3.0
-**Two MCPs · Four Agents · Zero Overhead Services**
+## Spec-Driven Development (SDD) v4.0
+**Five Phases · Governed Knowledge · Zero Overhead Services**
 
-> *Version 3.0 — February 2026*
+> *Version 4.0 — March 2026*
 > *"Nothing is implemented without a validated spec backed by governed context."*
 
 ---
@@ -38,7 +38,7 @@ The answer is not more process. It is **governed, consumable knowledge**. Two MC
 
 ## 3. Methodology Origins — What We Took and Why
 
-SDD v3.0 is not a new methodology. It is a deliberate composition of proven frameworks, filtered by a single criterion: *"Does this practice change what the agent or engineer writes? If not, it is cut."*
+SDD v4.0 is not a new methodology. It is a deliberate composition of proven frameworks, filtered by a single criterion: *"Does this practice change what the agent or engineer writes? If not, it is cut."*
 
 Three frameworks contributed the core structural ideas, alongside SDD, MCP, ADR governance, Agile/XP, and Lean. Each is documented below with the specific practices adopted and the rationale.
 
@@ -122,9 +122,69 @@ SpecKit defines the template-driven pattern for AI-assisted spec authoring. The 
 
 Three implications:
 
-1. **Specs are first-class artifacts** — not PR descriptions, not Confluence pages, not Slack threads
-2. **Context is consumed, not invented** — agents call MCP tools to get the truth, never infer from the codebase
-3. **Gates are self-enforced** — embedded checklists in agent templates, not external validator services
+1. **Specs are first-class artifacts** -- not PR descriptions, not Confluence pages, not Slack threads
+2. **Context is consumed, not invented** -- agents call MCP tools to get the truth, never infer from the codebase
+3. **Gates are self-enforced** -- embedded checklists in agent templates, not external validator services
+
+---
+
+## 4b. The 5-Phase Model
+
+All work flows through five sequential phases. Each phase has a designated owner, specific inputs and outputs, and an exit gate that must pass before the next phase begins.
+
+```
+  Phase 1        Phase 2        Phase 3        Phase 4        Phase 5
+  PLATFORM  -->  ASSESS    -->  SPECIFY   -->  PLAN      -->  DELIVER
+  Architect      Team Lead      Product        Architect      Team Lead
+  (durable)      (per change)   (per change)   (per change)   (per change)
+```
+
+| Phase | Owner | Goal | Key Outputs |
+|---|---|---|---|
+| **Platform** | Architect | Durable context, constitution, ownership | constitution, ownership.yaml, dependency-map.yaml, glossary.yaml |
+| **Assess** | Team Lead | Classify change, open change package, pin context | platform-ref.yaml, jira-traceability.yaml, change package (opened) |
+| **Specify** | Product | Define what changes in business terms | proposal.md, delta specs, glossary updates |
+| **Plan** | Architect | Implementable design with bounded tasks | design.md, tasks.md, gate results (5 gates PASS) |
+| **Deliver** | Team Lead | Build, verify, archive | code, verify.md, archived change package, updated spec graph |
+
+### Change Package
+
+Every unit of work is a **change package** -- a versioned directory opened in Assess and archived in Deliver:
+
+```
+changes/CP-{ID}/
+  platform-ref.yaml        # pinned constitution version
+  jira-traceability.yaml   # external tracking links
+  proposal.md              # what and why (Specify output)
+  design.md                # how (Plan output)
+  tasks.md                 # execution plan (Plan output)
+  verify.md                # evidence (Deliver output)
+```
+
+### Traceability Artifacts
+
+**platform-ref.yaml:** Pins the constitution version and applicable policies at the time the change package was opened. Ensures every downstream artifact is written against a known, reproducible policy baseline.
+
+**jira-traceability.yaml:** Links the change package to external issue trackers (Jira, Linear, GitHub Issues). Enables bidirectional navigation between methodology artifacts and project management tools.
+
+### Core Boundary Rule
+
+The 5-phase model applies differently depending on repository scope.
+
+| Scope | Phases Available | Methodology Sources |
+|---|---|---|
+| **Platform-side** (specs repo, constitution, governance) | All 5 phases | BMAD + OpenSpec + SpecKit |
+| **Component repos** (system code, local specs) | Assess, Specify (delta only), Plan, Deliver | OpenSpec only |
+
+**Rule:** Component teams consume platform artifacts (constitution, templates, ownership, glossary) as read-only input. They contribute to them via PR to the platform repo, never by direct edit.
+
+### Two-Iteration Adoption
+
+Teams adopt the unified model in two iterations:
+
+**Iteration 1 -- Foundation:** Establish Platform phase artifacts (constitution, ownership, dependency map, glossary). Run Assess and Specify for one pilot change. Execute Plan and Deliver with gate checks. Validate end-to-end traceability.
+
+**Iteration 2 -- Full Model:** All changes flow through the 5-phase model. Deliver slices are fully operational (Build through Archive). Spec Graph updated after every merge. CI enforces verify.md sign-off before merge.
 
 ---
 
@@ -132,11 +192,11 @@ Three implications:
 
 ```mermaid
 flowchart TD
-    KL["🔶 KNOWLEDGE LAYER\nPlatform MCP · Component MCPs\nPolicies · Contracts · Invariants · Patterns · ADRs"]
+    KL["KNOWLEDGE LAYER\nPlatform MCP · Component MCPs\nPolicies · Contracts · Invariants · Patterns · ADRs"]
     CP["Context Pack\nversioned — assembled before any spec is written"]
-    SL["🔷 SPEC LAYER  ·  2 repos\nfeature-spec  ·  component-spec  ·  impl-spec  ·  ADRs  ·  verify.md"]
-    CL["🟢 CODE LAYER\nServices · APIs · Infrastructure"]
-    OL["⚪ OBSERVABILITY\nLogs · Metrics · Traces"]
+    SL["SPEC LAYER  ·  2 repos\nfeature-spec  ·  component-spec  ·  impl-spec  ·  ADRs  ·  verify.md"]
+    CL["CODE LAYER\nServices · APIs · Infrastructure"]
+    OL["OBSERVABILITY\nLogs · Metrics · Traces"]
 
     KL -->|"get_context_pack() · get_contracts() · get_invariants()"| CP
     CP --> SL
@@ -213,14 +273,14 @@ One instance per component. Same Docker image, different environment config per 
 ```mermaid
 graph TD
     subgraph "openclaw-specs/ repo"
-        PMCP["⬟ Platform MCP\n1 instance\nreads constitution/\nagents/ · workflows/\ntemplates/ · graph/"]
+        PMCP["Platform MCP\n1 instance\nreads constitution/\nagents/ · workflows/\ntemplates/ · graph/"]
     end
 
     subgraph "system repo"
-        CM1["◈ Component MCP\nmario-hugo"]
-        CM2["◈ Component MCP\nguaripolo"]
-        CM3["◈ Component MCP\npolicarpo"]
-        CMn["◈ Component MCP\n...N"]
+        CM1["Component MCP\nmario-hugo"]
+        CM2["Component MCP\nguaripolo"]
+        CM3["Component MCP\npolicarpo"]
+        CMn["Component MCP\n...N"]
     end
 
     PMCP -->|"context pack + workflow"| AG["Agents\nanalyst · architect\ndeveloper · verifier"]
@@ -313,15 +373,15 @@ flowchart LR
     RL -->|medium| S
     RL -->|"high · critical"| F
 
-    subgraph Q["⚡ QUICK"]
+    subgraph Q["QUICK"]
         Q1["Developer"] --> Q2["Verifier"]
     end
 
-    subgraph S["🔷 STANDARD"]
+    subgraph S["STANDARD"]
         S1["Architect"] --> S2["Developer\n(parallel)"] --> S3["Verifier"]
     end
 
-    subgraph F["🔴 FULL"]
+    subgraph F["FULL"]
         F1["Analyst"] --> F2["Architect"] --> F3["Developer\n(parallel)"] --> F4["Verifier\n+ Human Gate"]
     end
 
@@ -409,7 +469,7 @@ flowchart TD
 
 Result: integration bugs, emergency rework, delayed release.
 
-**With SDD v3.0**
+**With SDD v4.0**
 
 - Platform MCP determines risk level: medium → Standard workflow
 - Architect calls Component MCP for Cart, Checkout, Payments, Shipping contracts and invariants
@@ -431,8 +491,8 @@ flowchart LR
     G3["Gate 3\nIntegration Safety\nconsumers identified\ncompat plan present"]
     G4["Gate 4\nNFR Compliance\nlogging · metrics\nPII · performance"]
     G5["Gate 5\nReady to Implement\nno open ADRs\nACs testable"]
-    BLOCK["🔴 BLOCKED\nstop · fix · retry"]
-    PASS["✅ PROCEED"]
+    BLOCK["BLOCKED\nstop · fix · retry"]
+    PASS["PROCEED"]
 
     G1 --> G2 --> G3 --> G4 --> G5
     G1 -->|FAIL| BLOCK
@@ -464,7 +524,7 @@ flowchart LR
   G4  NFR Compliance         logging · metrics · PII · performance targets
   G5  Ready to Implement     no open ADRs · ACs testable in GWT format
 
-  All 5 PASS → ✅ PROCEED
+  All 5 PASS --> PROCEED
 ```
 
 Gates are embedded as checklists in agent templates. Agents self-check — no external validator services.
@@ -596,15 +656,16 @@ graph TD
 
 ## 13. Roles
 
-| Role | Owns | Accountable For |
-|---|---|---|
-| **Product Manager** | Initiative, business goals, UX intent | Success criteria |
-| **Platform Architect** | `constitution/`, `templates/`, `workflows/`, `graph/` | "What the system must do" · approves Architect agent output |
-| **Domain Owner** | Component specs — invariants, contracts, patterns, ADRs | Domain correctness · approves Developer agent output |
-| **Integration Owner** | `contracts/` inside each component spec | Approves contract changes at Architect exit gate |
-| **Component Team** | `impl-spec.md`, code, tests | "How the system works locally" — Developer + Verifier agents |
-| **ADR Owner** | Platform or component ADRs | Resolving ambiguity before implementation proceeds |
-| **AI Agents** | analyst · architect · developer · verifier | Must call MCPs · self-check exit gates · produce traceable outputs |
+| Role | Phase Ownership | Owns | Accountable For |
+|---|---|---|---|
+| **Architect** | Platform, Plan | `constitution/`, `templates/`, `workflows/`, `graph/`, design.md, tasks.md | "What the system must do" · gate checks · approves Architect agent output |
+| **Team Lead** | Assess, Deliver | Change package lifecycle, risk classification, build/verify/archive coordination | Traceability · change package opened and archived · verify.md sign-off |
+| **Product** | Specify | proposal.md, acceptance criteria, delta specs, glossary check | Success criteria · "what changes in business terms" |
+| **Domain Owner** | -- | Component specs -- invariants, contracts, patterns, ADRs | Domain correctness · approves Developer agent output |
+| **Integration Owner** | -- | `contracts/` inside each component spec | Approves contract changes at Architect exit gate |
+| **Component Team** | -- | `impl-spec.md`, code, tests | "How the system works locally" -- Developer + Verifier agents |
+| **ADR Owner** | -- | Platform or component ADRs | Resolving ambiguity before implementation proceeds |
+| **AI Agents** | -- | analyst · architect · developer · verifier | Must call MCPs · self-check exit gates · produce traceable outputs |
 
 ---
 
@@ -612,9 +673,9 @@ graph TD
 
 ```mermaid
 flowchart LR
-    E["🟡 EARLY STAGE\n1–2 people\nSingle repo\n1 Component MCP\nQuick workflow only"]
-    G["🔵 GROWING TEAM\n3–6 people\nSplit repos\nComponent MCP per context\nStandard workflow added"]
-    F["🔴 FULL MODEL\n6+ people\n2-repo model\nFull workflow for critical\nCI enforces verify.md"]
+    E["EARLY STAGE\n1-2 people\nSingle repo\n1 Component MCP\nQuick workflow only"]
+    G["GROWING TEAM\n3-6 people\nSplit repos\nComponent MCP per context\nStandard workflow added"]
+    F["FULL MODEL\n6+ people\n2-repo model\nFull workflow for critical\nCI enforces verify.md"]
 
     E --> G --> F
 
@@ -669,15 +730,13 @@ flowchart LR
 
 ## 17. Day 1 Implementation Plan
 
-| Phase | Actions |
+| Iteration | Actions |
 |---|---|
-| **Phase 1 · Foundation** | Create `openclaw-specs/` · Write `constitution/policies.md` · Deploy Platform MCP · Deploy Component MCP per component · Symlink `.claude/agents/` |
-| **Phase 2 · First Initiative** | Pilot feature · Quick workflow only · Validate gate checklist · Verifier produces `verify.md` |
-| **Phase 3 · Standard Flow** | Medium feature · Architect produces `feature-spec.md` · Developer agents fan out in parallel · Update `graph/index.yaml` |
-| **Phase 4 · Harden** | Full workflow for critical changes · Human approval gate · CI enforces `verify.md` before merge |
+| **Iteration 1 · Foundation** | Establish Platform phase artifacts (constitution, ownership, dependency map, glossary) · Run Assess and Specify for one pilot change · Execute Plan and Deliver with gate checks · Validate end-to-end traceability |
+| **Iteration 2 · Full Model** | All changes flow through the 5-phase model · Deliver slices fully operational (Build through Archive) · Spec Graph updated after every merge · CI enforces verify.md sign-off before merge |
 
 ---
 
 > *"Software is no longer just built — it is specified, validated, and executed as a system of knowledge."*
 
-*Target Operating Model · SDD + MCP · v3.0 — February 2026*
+*Target Operating Model · SDD + MCP · v4.0 — March 2026*

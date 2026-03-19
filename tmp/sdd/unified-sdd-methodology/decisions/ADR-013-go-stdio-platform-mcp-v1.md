@@ -4,7 +4,7 @@ title: "Implement the first local platform MCP server as a self-contained Go std
 status: "proposed"
 date: "2026-03-08"
 initiative: "unified-sdd-methodology"
-author: "javierbenavides + codex"
+author: "javierbenavides + claude"
 deciders:
   - "platform-methodology-working-group"
 ---

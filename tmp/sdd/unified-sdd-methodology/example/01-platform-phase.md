@@ -36,10 +36,10 @@ When to act:
 
 Skills in order:
 
-1. `bmad-codex-skill`
-2. `openspec-codex-skill`
-3. `speckit-codex-skill`
-4. `explain-code-codex-skill` when teams need the current architecture explained
+1. `bmad-skill`
+2. `openspec-skill`
+3. `speckit-skill`
+4. `explain-code-skill` when teams need the current architecture explained
 
 Example prompts:
 
@@ -65,9 +65,9 @@ When to act:
 
 Skills in order:
 
-1. `openspec-codex-skill`
-2. `speckit-codex-skill`
-3. `explain-code-codex-skill` when current behavior needs clarification
+1. `openspec-skill`
+2. `speckit-skill`
+3. `explain-code-skill` when current behavior needs clarification
 
 Example prompts:
 
@@ -90,9 +90,9 @@ When to act:
 
 Skills in order:
 
-1. `bmad-codex-skill`
-2. `openspec-codex-skill`
-3. `explain-code-codex-skill`
+1. `bmad-skill`
+2. `openspec-skill`
+3. `explain-code-skill`
 
 Example prompts:
 

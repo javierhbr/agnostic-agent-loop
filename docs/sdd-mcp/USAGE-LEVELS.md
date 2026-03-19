@@ -9,9 +9,11 @@ The SDD (Spec-Driven Development) methodology supports **three independent level
 
 | Level | Scope | Use Case | Risk | Phases | Timeline |
 |-------|-------|----------|------|--------|----------|
-| **OpenSpec** | Single service/team | Component changes, bug fixes | Low | 1 (implementation) | 1-3 weeks |
-| **Platform** | Multi-service coordination | Architecture decisions, API contracts | Medium | 1 (specification) | 1-2 weeks |
-| **SDD Full** | Critical multi-service | Payment systems, auth, PII, high-risk | Critical | 4+ (discovery → verification) | 3-4 weeks |
+| **OpenSpec** | Single service/team | Component changes, bug fixes | Low | Specify + Deliver only | 1-3 weeks |
+| **Platform** | Multi-service coordination | Architecture decisions, API contracts | Medium | Platform + Assess + Specify + Plan + Deliver | 1-2 weeks |
+| **SDD Full** | Critical multi-service | Payment systems, auth, PII, high-risk | Critical | All 5 phases (Platform, Assess, Specify, Plan, Deliver) | 3-4 weeks |
+
+**Core boundary rule:** Component repos use OpenSpec ONLY. Platform-side tooling (BMAD, Speckit) stays in the platform repo.
 
 ---
 
@@ -22,6 +24,8 @@ The SDD (Spec-Driven Development) methodology supports **three independent level
 ### What It Is
 
 OpenSpec is a lightweight specification + task decomposition system for individual teams. You write a proposal and decompose it into tasks, then track completion.
+
+**Core boundary rule:** Component repos use OpenSpec ONLY. They do not use BMAD, Speckit, or platform-level tooling.
 
 ### Commands
 
@@ -56,9 +60,10 @@ agentic-agent openspec archive <change-id>
 ### Gate Checks (Basic)
 
 OpenSpec enforces basic gates:
-- ✓ Metadata exists (change ID, status, blocked_by)
-- ✓ No unresolved ADRs blocking the change
-- ✓ Contracts listed if referencing other services
+
+- Metadata exists (change ID, status, blocked_by)
+- No unresolved ADRs blocking the change
+- Contracts listed if referencing other services
 
 ### Directory Structure
 
@@ -94,11 +99,11 @@ agentic-agent openspec archive card-expiry-fix
 
 ### When to Use OpenSpec Only
 
-✅ Single service/component
-✅ No other teams depend on your changes
-✅ Low risk (bug fix, internal refactor, small feature)
-✅ Timeline: 1-3 weeks
-✅ Team-level autonomy (no platform governance needed)
+- Single service/component
+- No other teams depend on your changes
+- Low risk (bug fix, internal refactor, small feature)
+- Timeline: 1-3 weeks
+- Team-level autonomy (no platform governance needed)
 
 ---
 
@@ -108,7 +113,9 @@ agentic-agent openspec archive card-expiry-fix
 
 ### What It Is
 
-Platform level provides governance, initiative tracking, and fan-out task distribution. Platform team designs specs, then distributes them to component teams who pick up OpenSpec changes.
+Platform level provides governance, initiative tracking, and fan-out task distribution using BMAD + OpenSpec + Speckit. Platform team designs specs, then distributes them to component teams who pick up OpenSpec changes.
+
+**Note:** Platform-side tooling (BMAD, Speckit) stays in the platform repo. Component repos receive fan-out tasks and use OpenSpec ONLY (core boundary rule).
 
 ### Commands
 
@@ -226,13 +233,13 @@ agentic-agent platform change-priority \
 
 ### When to Use Platform Level
 
-✅ Multiple services affected
-✅ Cross-team coordination needed
-✅ Architecture decisions matter (contracts, APIs, patterns)
-✅ Platform team owns governance
-✅ Medium risk (shared patterns, breaking changes)
-✅ Timeline: 1-2 weeks
-✅ Need to track initiative progress across teams
+- Multiple services affected
+- Cross-team coordination needed
+- Architecture decisions matter (contracts, APIs, patterns)
+- Platform team owns governance
+- Medium risk (shared patterns, breaking changes)
+- Timeline: 1-2 weeks
+- Need to track initiative progress across teams
 
 ---
 
@@ -242,17 +249,21 @@ agentic-agent platform change-priority \
 
 ### What It Is
 
-The complete SDD methodology with four agent roles running in sequence:
-1. **Analyst** — Discover the problem with team evidence
-2. **Architect** — Design platform + component specs with gates
-3. **Developer** — Implement specs in parallel per component
-4. **Verifier** — Verify all ACs with observable evidence
+The complete SDD methodology with five phases and a two-iteration adoption model:
+
+1. **Platform** — Define governance, constitution, and platform-level specs (BMAD + Speckit)
+2. **Assess** — Discover the problem with team evidence (Analyst role)
+3. **Specify** — Design delta specs with gates (Architect role, produces proposal.md + delta specs)
+4. **Plan** — Create design.md and tasks.md (Architect role)
+5. **Deliver** — Implement specs in parallel, then verify all ACs with evidence (Developer + Verifier roles)
+
+**Two-iteration adoption:** Teams start with Specify + Deliver (iteration 1), then add Platform + Assess + Plan (iteration 2) as they mature.
 
 ### Commands
 
 ```bash
 # Start an SDD initiative
-agentic-agent specifyify start "Subscription Billing" --risk critical
+agentic-agent specify start "Subscription Billing" --risk critical
 
 # This creates:
 # - .agentic/initiatives/<id>/ (workflow state)
@@ -260,41 +271,39 @@ agentic-agent specifyify start "Subscription Billing" --risk critical
 # - Next agent: Analyst
 
 # Show workflow progress
-agentic-agent specifyify workflow show <initiative-id>
+agentic-agent specify workflow show <initiative-id>
 
 # Install agent skills
-agentic-agent specifyify agents install
+agentic-agent specify agents install
 
 # Create ADR for blocking decisions
-agentic-agent specifyify adr create --title "Where to store card tokens?"
+agentic-agent specify adr create --title "Where to store card tokens?"
 
 # Resolve ADR when decision made
-agentic-agent specifyify adr resolve ADR-001
+agentic-agent specify adr resolve ADR-001
 
 # Sync spec graph
-agentic-agent specifyify sync-graph
+agentic-agent specify sync-graph
 
 # Complete initiative
 agentic-agent openspec complete <change-id>
 ```
 
-### Agent Phases
+### SDD Phases
 
-**Phase 1: Analyst**
+**Phase 1: Platform** (skip for component-only changes)
+
+- Define governance and constitution
+- Create platform-level specs using BMAD + Speckit
+- Set up platform-ref.yaml for component alignment
+- Produce: constitution, platform-specs, contracts
+
+**Phase 2: Assess** (lightweight for medium risk, full for critical)
 - Interview team one question at a time
 - Extract evidence (real data, not assumptions)
 - Classify risk with rationale
 - Identify blocking ADRs
 - Produce: `discovery.md`
-
-**Phase 2: Architect**
-- Read discovery
-- Call MCP services for context packs
-- Design feature-spec (platform WHAT)
-- Design component-specs (per service HOW)
-- Create ADRs for blocking decisions
-- Self-check all 5 gates
-- Produce: feature-spec + component-specs + ADRs
 
 **Phase 2.5: ADR Resolution**
 - CTO/Security team reviews ADR options
@@ -302,24 +311,36 @@ agentic-agent openspec complete <change-id>
 - Mark ADR approved
 - Unblock implementation
 
-**Phase 3: Developer (Parallel)**
-- Read component-spec (your contract)
-- Call MCP for patterns/decisions
-- Write impl-spec (HOW to implement)
-- Decompose into tasks.yaml (8-10 tasks)
-- Self-check all 5 gates
-- Produce: impl-spec + tasks.yaml
+**Phase 3: Specify** (Architect role)
 
-**Phase 4: Verifier**
-- Read all ACs from feature + component specs
+- Read discovery / requirements
+- Design proposal.md (what you are building)
+- Create delta specs (per service changes)
+- Create ADRs for blocking decisions
+- Self-check all 5 gates
+- Produce: proposal.md + delta specs + ADRs
+
+**Phase 4: Plan** (Architect role)
+
+- Read proposal and delta specs
+- Create design.md (technical design)
+- Decompose into tasks.md (8-10 tasks)
+- Self-check all 5 gates
+- Produce: design.md + tasks.md
+
+**Phase 5: Deliver** (Developer + Verifier roles)
+
+- Developer reads delta specs and tasks.md
+- Implement in parallel per component
+- Verifier reads all ACs from specs
 - For each AC, gather evidence:
   - Test name + output
   - Log showing feature works
   - Metric/trace evidence
 - Check code quality (tests, lint, coverage)
 - Write verify.md with evidence
-- Blocking condition: Any unverified AC → BLOCK
-- Produce: verify.md with sign-off
+- Blocking condition: Any unverified AC --> BLOCK
+- Produce: implementation + verify.md with sign-off
 
 ### Gate Checks (All 5 Gates + Evidence)
 
@@ -334,11 +355,11 @@ SDD Full enforces:
 
 ### Workflow Paths by Risk
 
-| Risk | Workflow | Agents | Timeline |
+| Risk | Workflow | Phases | Timeline |
 |------|----------|--------|----------|
-| Low | Quick | Developer → Verifier | 1-2 days |
-| Medium | Standard | Architect → Developer(s) → Verifier | 3-5 days |
-| High/Critical | **Full** | **Analyst → Architect → Developer(s) → Verifier** | **5-10 days** |
+| Low | Quick | Specify + Deliver | 1-2 days |
+| Medium | Standard | Assess (lightweight) + Specify + Plan + Deliver | 3-5 days |
+| High/Critical | **Full** | **Platform + Assess + Specify + Plan + Deliver** | **5-10 days** |
 
 ### Example: Critical Payment Feature
 
@@ -348,24 +369,28 @@ See [`examples/sdd-ecommerce-payments/`](../../examples/sdd-ecommerce-payments/)
 
 ```bash
 # Start SDD
-agentic-agent specifyify start "Subscription Billing" --risk critical
+agentic-agent specify start "Subscription Billing" --risk critical
 
-# Phase 1: Analyst interviews team
+# Phase 1: Platform sets governance (if needed)
+# Produces: constitution, platform-ref.yaml
+
+# Phase 2: Assess - Analyst interviews team
 # Produces: discovery.md (evidence of 43 support tickets, 8 lost deals)
 
-# Phase 2: Architect designs
-# Produces: feature-spec.md, component-spec-billing.md, component-spec-payments.md
+# Phase 3: Specify - Architect designs
+# Produces: proposal.md, delta specs per service
 # Creates ADR-001: "Where to store card tokens?" (self-hosted vs Stripe)
 
-# Phase 2.5: CTO/Security decide
+# Phase 3.5: CTO/Security decide
 # ADR-001 approved: "Use Stripe Vault"
 
-# Phase 3: Developers implement (parallel)
-# Each produces: impl-spec + tasks.yaml
-# Billing dev: impl-spec-billing (10 tasks)
-# Payments dev: impl-spec-payments (8 tasks)
+# Phase 4: Plan - Architect creates design + tasks
+# Produces: design.md + tasks.md per component
+# Billing: 10 tasks, Payments: 8 tasks
 
-# Phase 4: Verifier checks all ACs with evidence
+# Phase 5: Deliver - Developers implement, Verifier checks
+# Developers implement in parallel
+# Verifier checks all ACs with evidence
 # Produces: verify.md
 # All ACs verified: tests pass, logs show behavior, metrics collected
 
@@ -375,14 +400,14 @@ agentic-agent openspec complete SBL-2025-Q1
 
 ### When to Use SDD Full
 
-✅ Risk = High or Critical (payment, auth, PII, regulatory)
-✅ Multiple services affected (5+)
-✅ Blocking decisions needed (ADRs)
-✅ Team needs evidence-based verification
-✅ Data consistency is critical
-✅ Rollback is complex
-✅ Timeline: 3-4 weeks (justified by risk)
-✅ Full audit trail needed
+- Risk = High or Critical (payment, auth, PII, regulatory)
+- Multiple services affected (5+)
+- Blocking decisions needed (ADRs)
+- Team needs evidence-based verification
+- Data consistency is critical
+- Rollback is complex
+- Timeline: 3-4 weeks (justified by risk)
+- Full audit trail needed
 
 ---
 
@@ -444,25 +469,26 @@ Start: What's your change?
 ## Integration: How They Work Together
 
 ```
-SDD Full Workflow (When Risk = Critical)
+SDD Full Workflow (When Risk = Critical) — 5 Phases
 │
-├─ Analyst discovers evidence
-├─ Architect designs from evidence
+├─ Phase 1: Platform — governance, constitution, platform-ref.yaml
+├─ Phase 2: Assess — discovers evidence (discovery.md)
+├─ Phase 3: Specify — designs from evidence
 │  │
-│  ├─ Creates feature-spec.md (platform WHAT)
-│  └─ Creates component-spec-*.md (per service HOW)
+│  ├─ Creates proposal.md (what you are building)
+│  └─ Creates delta specs (per service changes)
 │     │
 │     ├─ Maps to Platform level:
 │     │  └─ platform-specs/<feature-id>/spec.md + fanout.yaml
 │     │
-│     └─ Maps to OpenSpec level:
+│     └─ Maps to OpenSpec level (core boundary rule):
 │        └─ Each team's .agentic/specs/<component>/
-│           ├─ proposal.md (from component-spec)
-│           ├─ tasks.md (from impl-spec)
+│           ├─ proposal.md
+│           ├─ tasks.md
 │           └─ implementation
 │
-├─ Developer(s) implement in parallel
-├─ Verifier checks with evidence
+├─ Phase 4: Plan — design.md + tasks.md per component
+├─ Phase 5: Deliver — Developer(s) implement, Verifier checks with evidence
 └─ Complete
 ```
 
@@ -494,13 +520,13 @@ agentic-agent platform change-priority --initiative "..." --priority "..."
 ### SDD Commands
 
 ```bash
-agentic-agent specifyify start <name> --risk low|medium|high|critical
-agentic-agent specifyify workflow show <id>
-agentic-agent specifyify agents install
-agentic-agent specifyify gate-check <spec-id>
-agentic-agent specifyify adr create --title "..."
-agentic-agent specifyify adr resolve <adr-id>
-agentic-agent specifyify sync-graph
+agentic-agent specify start <name> --risk low|medium|high|critical
+agentic-agent specify workflow show <id>
+agentic-agent specify agents install
+agentic-agent specify gate-check <spec-id>
+agentic-agent specify adr create --title "..."
+agentic-agent specify adr resolve <adr-id>
+agentic-agent specify sync-graph
 ```
 
 ---
@@ -563,26 +589,29 @@ agentic-agent platform change-priority \
 
 ## Best Practices
 
-### OpenSpec Level
-- ✅ Write proposal that your team understands
-- ✅ Decompose into 3-10 concrete tasks
-- ✅ Use blocked_by if waiting on other teams
-- ✅ Mark complete only when tested
+### OpenSpec Level (Specify + Deliver)
 
-### Platform Level
-- ✅ Write platform spec with clear contracts
-- ✅ Use fanout to distribute to teams
-- ✅ Run all 5 gate checks before fan-out
-- ✅ Track initiative priority/status
-- ✅ Update component teams with changes
+- Write proposal that your team understands
+- Decompose into 3-10 concrete tasks
+- Use blocked_by if waiting on other teams
+- Mark complete only when tested
 
-### SDD Full Level
-- ✅ Use for critical features only
-- ✅ Get Analyst buy-in (evidence matters)
-- ✅ Architect must write both feature + component specs
-- ✅ Resolve ADRs quickly (they block development)
-- ✅ Developer runs in parallel per component
-- ✅ Verifier checks EVERY AC with evidence
+### Platform Level (Platform + Assess + Specify + Plan + Deliver)
+
+- Write platform spec with clear contracts
+- Use fanout to distribute to teams
+- Run all 5 gate checks before fan-out
+- Track initiative priority/status
+- Update component teams with changes
+
+### SDD Full Level (All 5 Phases)
+
+- Use for critical features only
+- Get Assess phase buy-in (evidence matters)
+- Specify phase must produce proposal.md + delta specs
+- Resolve ADRs quickly (they block development)
+- Plan phase produces design.md + tasks.md
+- Deliver phase: Developer runs in parallel, Verifier checks EVERY AC with evidence
 
 ---
 
@@ -611,4 +640,4 @@ A: No. Use the minimum needed for your risk level:
 A: You can upgrade anytime. Reference your existing OpenSpec files in Platform specs. Continue to next phase (Architect, then Developer/Verifier).
 
 **Q: Can a small team use SDD Full?**
-A: Yes. Analyst/Architect/Developer/Verifier can be roles for 2-3 people. It takes longer (3-4 weeks) but the evidence trail is valuable for critical features.
+A: Yes. The five phases (Platform, Assess, Specify, Plan, Deliver) can be roles for 2-3 people. Team Lead handles Assess and Deliver, Product handles Specify, Architect handles Platform and Plan. It takes longer (3-4 weeks) but the evidence trail is valuable for critical features.

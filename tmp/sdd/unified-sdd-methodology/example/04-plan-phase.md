@@ -32,8 +32,8 @@ When to act:
 
 Skills in order:
 
-1. `openspec-codex-skill`
-2. `explain-code-codex-skill`
+1. `openspec-skill`
+2. `explain-code-skill`
 
 Example prompts:
 
@@ -56,8 +56,8 @@ When to act:
 
 Skills in order:
 
-1. `openspec-codex-skill`
-2. `explain-code-codex-skill`
+1. `openspec-skill`
+2. `explain-code-skill`
 
 Example prompts:
 
@@ -78,8 +78,8 @@ When to act:
 
 Skills in order:
 
-1. `openspec-codex-skill`
-2. `explain-code-codex-skill`
+1. `openspec-skill`
+2. `explain-code-skill`
 
 Example prompts:
 
@@ -99,8 +99,8 @@ When to act:
 
 Skills in order:
 
-1. `openspec-codex-skill`
-2. `explain-code-codex-skill`
+1. `openspec-skill`
+2. `explain-code-skill`
 
 Example prompts:
 

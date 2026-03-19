@@ -4,7 +4,7 @@ title: "Create a Platform Contextualizer skill for starting Iteration 1 on exist
 status: "proposed"
 date: "2026-03-08"
 initiative: "unified-sdd-methodology"
-author: "javierbenavides + codex"
+author: "javierbenavides + claude"
 deciders:
   - "platform-methodology-working-group"
 ---

@@ -6,14 +6,14 @@ This guide shows how to use SDD methodology with AI agents (Claude, ChatGPT, etc
 
 ## TL;DR: Prompt Patterns by Level
 
-| Level | Agent Role | Prompt Pattern | Output |
-|-------|-----------|---|--------|
-| **OpenSpec** | PM/Developer | "Decompose feature into tasks" | proposal.md + tasks.md |
+| Phase | Role | Prompt Pattern | Output |
+|-------|------|---|--------|
+| **Specify** | Product / PM | "Decompose feature into tasks" | proposal.md + delta specs |
 | **Platform** | Architect | "Design multi-service spec" | platform-spec.md + fanout.yaml |
-| **SDD Full** | Analyst | "Interview team, extract evidence" | discovery.md |
-| **SDD Full** | Architect | "Design from discovery" | feature-spec + component-specs |
-| **SDD Full** | Developer | "Implement from spec" | impl-spec + tasks.yaml |
-| **SDD Full** | Verifier | "Verify all ACs with evidence" | verify.md |
+| **Assess** | Team Lead | "Interview team, extract evidence" | discovery.md |
+| **Specify** | Product / Architect | "Design from discovery" | proposal.md + delta specs |
+| **Plan** | Architect | "Create design and task breakdown" | design.md + tasks.md |
+| **Deliver** | Team Lead / Developer | "Implement from spec" | implementation + verify.md |
 
 ---
 
@@ -249,10 +249,10 @@ agentic-agent platform change-priority \
 
 ### Use Case: Critical Feature (High Risk, Multiple Services)
 
-#### Prompt 1: Analyst Phase - Discovery Interview Generator
+#### Prompt 1: Assess Phase - Discovery Interview Generator
 
 ```
-You are an SDD Analyst helping a team discover the problem space.
+You are a Team Lead running the Assess phase to discover the problem space.
 
 INITIATIVE: [Feature name]
 TEAM CONTEXT: [Who's involved, what's the team size]
@@ -295,17 +295,17 @@ Example output:
 Continue for 8-10 questions...
 ```
 
-#### Prompt 2: Architect Phase - Spec Generator
+#### Prompt 2: Specify Phase - Spec Generator
 
 ```
-You are an SDD Architect designing from team discovery.
+You are a Product/Architect running the Specify phase from team discovery.
 
 DISCOVERY SUMMARY:
-[Paste team evidence and findings from Analyst phase]
+[Paste team evidence and findings from Assess phase]
 
 Generate TWO specs:
 
-1. feature-spec.md (Platform Level - WHAT)
+1. proposal.md (what you are building)
    - Problem (from discovery)
    - Goals / Non-Goals
    - User Experience (walkthrough)
@@ -315,14 +315,14 @@ Generate TWO specs:
    - Acceptance Criteria (7+ in Given/When/Then format)
    - Feature Flag & Rollback Strategy
 
-2. component-spec-[service].md (Per Service - HOW)
+2. Delta specs per service (Per Service - HOW)
    - For EACH affected service, generate one:
    - API Contracts (endpoints, events, schemas)
    - Data Model (tables, fields, constraints)
    - Acceptance Criteria (3-5 per service)
    - Edge Cases (3-4 scenarios)
 
-Format as markdown for feature-spec.md and component-spec-*.md
+Format as markdown for proposal.md and delta spec files per service
 
 Make specs detailed enough to pass these gates:
 - Gate 1: Every section has Source: line (cite discovery or requirements)
@@ -332,44 +332,44 @@ Make specs detailed enough to pass these gates:
 - Gate 5: No TBD sections, acceptance criteria testable
 ```
 
-#### Prompt 3: Developer Phase - Implementation Spec Generator
+#### Prompt 3: Plan Phase - Design and Task Generator
 
 ```
-You are an SDD Developer reading a component-spec.
+You are an Architect running the Plan phase from a delta spec.
 
-COMPONENT SPEC:
-[Paste component-spec-[service].md here]
+DELTA SPEC:
+[Paste the delta spec for this service here]
 
 Generate:
 
-1. impl-spec.md
+1. design.md
    - Data Model: SQL schema for any new tables
    - Code Changes: Exact functions/modules to create/modify
    - Edge Cases: Table with 4+ edge case scenarios and handling
    - Observability: Logging, metrics, tracing specs
    - Rollout Plan: Feature flag strategy, canary rollout
 
-2. tasks.yaml
+2. tasks.md
    - Decompose into 8-10 actionable tasks
    - Group by component (Backend, Frontend, Testing)
    - For each task: what you'll modify, acceptance criteria
    - List dependencies (Task 3 depends on Task 1)
 
-Format as markdown and YAML for impl-spec.md and tasks.yaml.
+Format as markdown for design.md and tasks.md.
 
 Each task should be completable in 1-3 days by one developer.
 ```
 
-#### Prompt 4: Verifier Phase - Test Plan Generator
+#### Prompt 4: Deliver Phase - Verification Plan Generator
 
 ```
-You are an SDD Verifier creating a verification plan.
+You are a Team Lead running verification in the Deliver phase.
 
-FEATURE SPEC:
-[Paste feature-spec.md with all ACs]
+PROPOSAL:
+[Paste proposal.md with all ACs]
 
-IMPLEMENTATION:
-[Paste impl-spec.md]
+DESIGN:
+[Paste design.md]
 
 Generate verify.md with:
 
@@ -399,43 +399,43 @@ Format as markdown for verify.md.
 Include example test output and log excerpts.
 ```
 
-#### Prompt 5: Create CLI Commands for SDD Full
+#### Prompt 5: Create CLI Commands for All 5 Phases
 
 ```bash
 # Start SDD workflow
-agentic-agent specifyify start "Subscription Billing" --risk critical
+agentic-agent specify start "Subscription Billing" --risk critical
 
-# Analyst phase
+# Assess phase (Team Lead)
 # Use Prompt 1 to generate interview guide
 # Interview team and document answers
 
-# Architect phase
-# Use Prompt 2 to generate feature + component specs
+# Specify phase (Product/Architect)
+# Use Prompt 2 to generate proposal.md + delta specs
 mkdir -p .agentic/specs/subscription-billing
-# (Paste AI-generated feature-spec.md)
-# (Paste AI-generated component-spec-*.md)
+# (Paste AI-generated proposal.md)
+# (Paste AI-generated delta specs)
 
 # Check gates
-agentic-agent specifyify gate-check subscription-billing --format text
+agentic-agent specify gate-check subscription-billing --format text
 
 # If ADR needed, create it
-agentic-agent specifyify adr create --title "Where to store card tokens?"
+agentic-agent specify adr create --title "Where to store card tokens?"
 
 # Resolve when decision made
-agentic-agent specifyify adr resolve ADR-001
+agentic-agent specify adr resolve ADR-001
 
-# Developer phase (parallel)
-# Use Prompt 3 to generate impl-specs + tasks
+# Plan phase (Architect)
+# Use Prompt 3 to generate design.md + tasks.md
 cd billing-service/
-# (Paste AI-generated impl-spec.md)
-# (Paste AI-generated tasks.yaml)
+# (Paste AI-generated design.md)
+# (Paste AI-generated tasks.md)
 
 agentic-agent task claim <task-id>
 # ... code ...
 agentic-agent task complete <task-id>
 
-# Verifier phase
-# Use Prompt 4 to generate test plan
+# Deliver phase (Team Lead verifies)
+# Use Prompt 4 to generate verification plan
 # Run tests, collect evidence
 
 # Complete
@@ -455,9 +455,9 @@ Use **USAGE-LEVELS.md** to decide, then use **Prompts** to implement:
    (Answer: OpenSpec / Platform / SDD Full)
 
 2. Use appropriate Prompt from above:
-   - OpenSpec → Use Prompt 1-2
-   - Platform → Use Prompt 1-3
-   - SDD Full → Use Prompt 1-5
+   - OpenSpec (Specify + Deliver) → Use Prompt 1-2
+   - Platform (all 5 phases) → Use Prompt 1-3
+   - SDD Full (all 5 phases) → Use Prompt 1-5
 
 3. Use CLI commands to track progress
 ```
@@ -524,7 +524,7 @@ Action:
 
 ## Best Practices: Using Prompts with CLI
 
-### ✅ Do This
+### Do This
 
 ```bash
 # 1. Prompt generates spec
@@ -542,13 +542,13 @@ agentic-agent openspec complete <feature-id>
 # AI + CLI = best of both worlds
 ```
 
-### ❌ Don't Do This
+### Don't Do This
 
 ```bash
-# ❌ Use prompts but never save specs
-# ❌ Use CLI but never generate proposals
-# ❌ Use prompts for everything (overkill for simple bugs)
-# ❌ Use CLI for everything (no planning)
+# DON'T: Use prompts but never save specs
+# DON'T: Use CLI but never generate proposals
+# DON'T: Use prompts for everything (overkill for simple bugs)
+# DON'T: Use CLI for everything (no planning)
 
 # Balance: Prompts for design, CLI for tracking
 ```
@@ -557,31 +557,39 @@ agentic-agent openspec complete <feature-id>
 
 ## Prompt Workflow by Role
 
-### Product Manager / Architect
+### Team Lead (Assess, Deliver)
 
 ```
 1. Use USAGE-LEVELS.md → Decide level
-2. Use Prompt 1-3 → Generate specs
-3. Use CLI → Create/update
-4. Team implements
+2. Assess: Use Prompt 1 → Generate interview guide, gather evidence
+3. Deliver: Use Prompt 4 → Generate verification plan
+4. Use CLI → Track progress, mark complete
 ```
 
-### Developer
+### Product / PM (Specify)
 
 ```
-1. Read component-spec from PM
-2. Use Prompt 3 → Generate impl-spec + tasks
+1. Use Prompt 1 (OpenSpec) or Prompt 2 (SDD Full) → Generate proposal.md + delta specs
+2. Use CLI → Create/update specs
+3. Hand off to Architect for Plan phase
+```
+
+### Architect (Platform, Plan)
+
+```
+1. Platform: Design governance, platform-specs
+2. Plan: Use Prompt 3 → Generate design.md + tasks.md
 3. Use CLI → Track progress
-4. Code implementation
+4. Hand off to Team Lead for Deliver phase
 ```
 
-### Verifier / QA
+### Developer (Deliver)
 
 ```
-1. Read feature-spec + impl-spec
-2. Use Prompt 4 → Generate test plan
-3. Run tests, gather evidence
-4. Use CLI → Mark complete
+1. Read delta specs and tasks.md
+2. Use CLI → Claim tasks, implement
+3. Code implementation
+4. Team Lead verifies
 ```
 
 ---
@@ -626,14 +634,14 @@ agentic-agent platform add-feature \
   --fanout "payments-service,accounting-service"
 ```
 
-**Step 4: Each Team Generates Component Spec (Prompt 2)**
+**Step 4: Each Team Generates Delta Spec (Prompt 2)**
 
 ```
 Prompt for payments-service:
-"Generate component spec for payments-service from this platform spec: [paste]"
+"Generate delta spec for payments-service from this platform spec: [paste]"
 
 AI Output:
-# Component Spec: Payments Service
+# Delta Spec: Payments Service
 
 ## API Changes
 POST /refunds
@@ -653,15 +661,15 @@ agentic-agent openspec init "Process refunds" \
   --from ../platform-specs/card-refunds/spec.md
 ```
 
-**Step 6: Each Team Generates Impl Spec (Prompt 3)**
+**Step 6: Architect Generates Design + Tasks (Prompt 3)**
 
 ```
 Prompt:
-"Generate impl-spec + tasks for implementing card refunds in payments-service
-from this component-spec: [paste]"
+"Generate design.md + tasks.md for implementing card refunds in payments-service
+from this delta spec: [paste]"
 
 AI Output:
-# Implementation Spec
+# Design
 
 ## Data Model
 ALTER TABLE charges ADD COLUMN refund_id VARCHAR(32);
@@ -689,12 +697,12 @@ agentic-agent task complete <task-1>
 # Continue for all tasks
 ```
 
-**Step 8: Verifier Generates Test Plan (Prompt 4)**
+**Step 8: Team Lead Generates Verification Plan (Prompt 4)**
 
 ```
 Prompt:
 "Generate a verification plan (verify.md) for card refunds feature
-from this feature-spec and impl-spec: [paste both]"
+from this proposal.md and design.md: [paste both]"
 
 AI Output:
 # Verification Report: Card Refunds
@@ -746,10 +754,10 @@ A: Start with USAGE-LEVELS.md decision tree, then use appropriate prompts.
 |------|------|
 | Decide usage level | USAGE-LEVELS.md |
 | Choose level for small project | SMALL-PROJECTS.md |
-| Generate proposal + tasks | Prompt 1 (OpenSpec) |
-| Generate platform spec | Prompt 1-2 (Platform) |
-| Generate impl spec + tasks | Prompt 3 (Developer) |
-| Generate test plan | Prompt 4 (Verifier) |
+| Generate proposal + delta specs (Specify) | Prompt 1 (OpenSpec) or Prompt 2 (SDD Full) |
+| Generate platform spec (Platform) | Prompt 1-2 (Platform) |
+| Generate design.md + tasks.md (Plan) | Prompt 3 (Architect) |
+| Generate verification plan (Deliver) | Prompt 4 (Team Lead) |
 | Create/track specs | CLI commands |
 | Mark complete | CLI commands |
 

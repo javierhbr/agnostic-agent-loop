@@ -72,18 +72,26 @@ Includes:
 
 ---
 
-### 🏗️ **Complex Projects** (High risk, multi-team, regulatory)
+### **Complex Projects** (High risk, multi-team, regulatory)
 
-Use full SDD methodology with gates, ADRs, verification:
+Use the full 5-phase SDD methodology: Platform, Assess, Specify, Plan, Deliver.
 
 ```bash
-agentic-agent specifyify start "Feature" --risk critical
-agentic-agent specifyify workflow show <id>
-# ... runs through Analyst → Architect → Developer → Verifier phases ...
-agentic-agent specifyify gate-check <id>  # Verify before moving forward
+# Assess and classify
+agentic-agent task list
+
+# Specify and plan
+agentic-agent openspec init "Feature" --from requirements.md
+
+# Deliver
+agentic-agent task claim <id>
+agentic-agent validate
+agentic-agent task complete <id>
 ```
 
-→ See: [SDD-FULL.md](./SDD-FULL.md) (if available) or main SDD docs
+Core boundary rule: platform-side uses BMAD + OpenSpec + Speckit; component repos use OpenSpec only.
+
+See: [Unified SDD Phases](../reference/unified-sdd-phases.md) | [SDD Methodology](../explanation/sdd-methodology.md)
 
 ---
 
@@ -151,22 +159,22 @@ agentic-agent openspec complete <id>
 agentic-agent openspec archive <id>
 ```
 
-### SDD (Full Methodology)
+### SDD (Full 5-Phase Methodology)
 
 ```bash
-# Start risk-classified initiative
-agentic-agent specifyify start "Name" --risk low|medium|high|critical
+# Assess and classify change
+agentic-agent task list
 
-# View workflow state
-agentic-agent specifyify workflow show <id>
+# Specify: create change package from requirements
+agentic-agent openspec init "Name" --from requirements.md
 
-# Create architectural decisions
-agentic-agent specifyify adr create --title "Decision" --scope global|local
-agentic-agent specifyify adr list
-agentic-agent specifyify adr resolve <id>
+# Plan and deliver
+agentic-agent task claim <id>
+agentic-agent validate
+agentic-agent task complete <id>
 
-# Gate checks before moving forward
-agentic-agent specifyify gate-check <spec-id>
+# Validate before completion
+agentic-agent validate
 ```
 
 ---

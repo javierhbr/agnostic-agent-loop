@@ -1,16 +1,13 @@
 # Platform MCP Boilerplate
 
-Use this boilerplate to define a small local MCP server that gives component
-teams read-only access to canonical platform truth.
-
-This is not a full server implementation. It is a starter shape for the first
-local version.
+Use this boilerplate as a reference for how platform truth is organized so that
+`platform-spec` can index and search it effectively.
 
 See also:
 
 - `../../local-platform-mcp-model.md`
-- `../../../platform-truth-mcp-codex-skill/SKILL.md`
-- `../../../platform-truth-mcp-server/README.md`
+- `../../../platform-spec/SKILL.md`
+- `~/.agentic/skills/` — agentic skills directory
 
 ## Files
 

@@ -4,7 +4,7 @@ title: "Adopt a local read-only platform MCP gateway for developer access to pla
 status: "proposed"
 date: "2026-03-08"
 initiative: "unified-sdd-methodology"
-author: "javierbenavides + codex"
+author: "javierbenavides + claude"
 deciders:
   - "platform-methodology-working-group"
 ---

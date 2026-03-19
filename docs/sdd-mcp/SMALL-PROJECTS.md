@@ -136,10 +136,11 @@ agentic-agent openspec archive user-dashboard
 **No gates. No verification. No specs.**
 
 Just:
-1. ✅ Problem statement (1-2 sentences)
-2. ✅ Tasks decomposed (what you're building)
-3. ✅ Tasks completed
-4. ✅ Archive
+
+1. Problem statement (1-2 sentences)
+2. Tasks decomposed (what you're building)
+3. Tasks completed
+4. Archive
 
 ### When to Add Minimal Gates
 
@@ -162,7 +163,7 @@ agentic-agent openspec check user-dashboard
 
 ### Lightweight Platform + OpenSpec
 
-Don't do full SDD. Skip Analyst. Do light Architect + Developer.
+Don't do all 5 phases. Small projects can skip Platform and use a lightweight Assess. Focus on Specify + Deliver, with a light Plan if needed.
 
 ```bash
 # 1. Team lead writes a quick platform spec (1 page)
@@ -248,12 +249,13 @@ agentic-agent platform change-priority \
 
 ### Key Differences from Full SDD
 
-| Full SDD | Small Project SDD |
+| Full SDD (5 Phases) | Small Project SDD |
 |----------|-------------------|
-| Analyst phase (discovery) | Skip (assume requirements known) |
-| Architect writes detailed specs | Team lead writes 1-page spec |
-| 5 gates enforced | 1 gate: "Did everyone test?" |
-| Verifier checks all ACs | Skip (team tests as they go) |
+| Platform phase (governance) | Skip (no platform governance needed) |
+| Assess phase (discovery) | Skip or lightweight (assume requirements known) |
+| Specify phase (detailed specs) | Team lead writes 1-page spec |
+| Plan phase (design + tasks) | Simple task list |
+| Deliver phase (5 gates + verifier) | 1 gate: "Did everyone test?" |
 | 3-4 weeks | 2-3 weeks |
 
 ---
@@ -384,10 +386,10 @@ agentic-agent openspec archive product-search
 
 ```bash
 # Skip these for small projects:
-agentic-agent specifyify start ...          # (full SDD only)
+agentic-agent specify start ...          # (full SDD only)
 agentic-agent platform init ...      # (only if multi-service)
-agentic-agent specifyify adr create ...     # (only if blocking decision)
-agentic-agent specifyify gate-check ...     # (only if high-risk)
+agentic-agent specify adr create ...     # (only if blocking decision)
+agentic-agent specify gate-check ...     # (only if high-risk)
 ```
 
 ### Do Use These (Useful)
@@ -413,13 +415,13 @@ The optional **Superpowers plugin** adds methodology gates, TDD enforcement, and
 
 | Scenario | Use Superpowers? | Why |
 |----------|------------------|-----|
-| Solo developer, quick bug fix | ❌ No | Overkill. Use plain `task` workflow |
-| 1-2 person team, unclear requirements | ✅ Yes | Brainstorming + planning gates help |
-| New feature with critical logic (payments, auth) | ✅ Yes | TDD enforcement prevents bugs |
-| Parallel tasks (2-3 devs) | ✅ Yes | Git worktrees for isolation |
-| Subtle bug that's hard to debug | ✅ Yes | Systematic debugging (4-phase protocol) |
-| Final verification before deploy | ✅ Yes | Hard gate requiring evidence |
-| Fast iteration on clear requirements | ❌ No | CLI Ralph loop is faster |
+| Solo developer, quick bug fix | No | Overkill. Use plain `task` workflow |
+| 1-2 person team, unclear requirements | Yes | Brainstorming + planning gates help |
+| New feature with critical logic (payments, auth) | Yes | TDD enforcement prevents bugs |
+| Parallel tasks (2-3 devs) | Yes | Git worktrees for isolation |
+| Subtle bug that's hard to debug | Yes | Systematic debugging (4-phase protocol) |
+| Final verification before deploy | Yes | Hard gate requiring evidence |
+| Fast iteration on clear requirements | No | CLI Ralph loop is faster |
 
 ### Small Project Workflow with Superpowers
 
@@ -559,13 +561,13 @@ agentic-agent openspec complete
 
 Upgrade from "Light SDD" if:
 
-✅ **Risk increases:** Feature touches payments, auth, PII
-✅ **Team grows:** Add a third developer → coordination matters
-✅ **Complexity grows:** > 10 tasks or circular dependencies
-✅ **Cross-team:** Multiple services owned by different teams
-✅ **Blocking decisions:** Need ADR (e.g., "which database?")
+- **Risk increases:** Feature touches payments, auth, PII
+- **Team grows:** Add a third developer -- coordination matters
+- **Complexity grows:** > 10 tasks or circular dependencies
+- **Cross-team:** Multiple services owned by different teams
+- **Blocking decisions:** Need ADR (e.g., "which database?")
 
-**Then move to:** Platform level (skip Analyst) or SDD Full (if critical risk)
+**Then move to:** Platform level (skip Assess phase or keep it lightweight) or SDD Full with all 5 phases (if critical risk)
 
 ---
 
@@ -700,10 +702,10 @@ What are you building?
 
 ## Summary: SDD for Small Projects
 
-| Aspect | Big Project | Small Project |
+| Aspect | Big Project (5 Phases) | Small Project |
 |--------|-------------|---------------|
 | Specs | Detailed, gated | 1 paragraph |
-| Phases | 4+ (analyst → verifier) | 1 (build) |
+| Phases | All 5 (Platform, Assess, Specify, Plan, Deliver) | Specify + Deliver only |
 | Gates | 5 gates enforced | Skip gates |
 | Verification | Evidence-based | Team testing |
 | Timeline | 3-4 weeks | 1-2 weeks |

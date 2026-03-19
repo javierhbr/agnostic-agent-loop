@@ -17,6 +17,10 @@ platform-template/
     contract-template.md
   adrs/
     ADR-000-template.md
+  ownership/
+    component-ownership-template.md   <- one per component
+    dependency-map-template.md        <- one per platform
+    glossary-template.md              <- one per platform
 ```
 
 ## What belongs here
@@ -27,6 +31,9 @@ platform-template/
 - platform-level ADRs
 - JIRA hierarchy conventions
 - versioning and durable ref rules
+- component ownership boundaries
+- dependency map with impact tiers
+- shared glossary
 
 ## What should not live here
 

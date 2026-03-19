@@ -69,3 +69,45 @@ Keep the global context lean and ruthless.
 - Downstream tasks will fail because the foundational code is broken.
 
 **The Solution:** Ensure you are utilizing the `agentic-agent sync` and `agentic-agent validate` commands. The framework relies on strict Validation Gates. If a unit test or behavioral integrity check fails, the task should *never* reach the "done" state.
+
+---
+
+## 6. The "No Platform Alignment" Anti-pattern
+
+**The Anti-pattern:** Starting implementation work in a component repo without checking platform-ref.yaml or confirming alignment with the platform version.
+
+**Why it's bad:**
+
+- Component work may drift from platform truth without anyone noticing.
+- Impact tiers from dependency-map.md are ignored, leading to uncoordinated changes across tier 1 dependencies.
+- Verification cannot confirm platform compliance if the alignment was never established.
+
+**The Solution:** Always populate platform-ref.yaml in the Assess phase. Pin the platform version, list affected contracts and capabilities, and populate impact tiers from dependency-map.md. Read impact tiers before writing design.md — tier 1 entries become hard constraints.
+
+---
+
+## 7. The "Skipping Assess" Anti-pattern
+
+**The Anti-pattern:** Jumping directly from a request to writing specs (Specify phase) without going through the Assess phase to classify the change and open a change package.
+
+**Why it's bad:**
+
+- Without classification, you don't know if the change is component-only or shared, and may miss platform-level coordination.
+- No change package means no canonical execution container — artifacts are scattered.
+- Ownership is not verified against component-ownership files, leading to wrong teams owning the wrong changes.
+
+**The Solution:** Always run the Assess phase. Use BMAD to classify (greenfield/brownfield, size, impact). Read component-ownership files. Open a change package with platform-ref.yaml and jira-traceability.yaml before any spec work begins.
+
+---
+
+## 8. The "BMAD in Component Repos" Anti-pattern
+
+**The Anti-pattern:** Using BMAD or Speckit tools inside component repositories instead of keeping them OpenSpec-only.
+
+**Why it's bad:**
+
+- Creates competing sources of intent between platform-side and component-side artifacts.
+- Violates the core boundary rule (ADR-011): component repos use OpenSpec ONLY.
+- Makes traceability harder because artifacts from different tools have different formats and assumptions.
+
+**The Solution:** Follow the core boundary rule strictly. Platform-side work may use BMAD + OpenSpec + Speckit. Once work enters a component repo, use OpenSpec only for proposal.md, delta specs, design.md, tasks.md, and all delivery artifacts.

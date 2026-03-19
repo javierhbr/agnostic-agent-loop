@@ -11,26 +11,33 @@ START HERE: What are you building?
 
 ┌────────────────────────────────────────────────────────┐
 │  Bug fix or small refactor? (< 1 day)                  │
-│  👉 Use: agentic-agent task only                       │
+│  -> Use: agentic-agent task only                       │
 │  Time: 5 minutes setup                                 │
 └────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────┐
 │  Single feature (1-2 weeks)?                           │
-│  👉 Use: agentic-agent openspec init                   │
+│  -> Use: agentic-agent openspec init                   │
 │  Time: 10 minutes setup                                │
 └────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────┐
 │  Monorepo (multi-package)?                             │
-│  👉 Use: OpenSpec + multi-path config                  │
+│  -> Use: OpenSpec + multi-path config                  │
 │  Time: 20 minutes setup                                │
 └────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────┐
 │  Critical / high-risk (payments, auth)?                │
-│  👉 Use: Full SDD with gates                           │
+│  -> Use: Full SDD with gates                           │
 │  Time: 1 hour planning + gates                         │
+└────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────┐
+│  Full SDD (platform + multi-team)?                     │
+│  -> Use: 5-Phase: Platform > Assess > Specify >        │
+│          Plan > Deliver                                │
+│  Time: Multi-sprint lifecycle                          │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -60,18 +67,26 @@ agentic-agent openspec complete <id>         # Mark done
 agentic-agent openspec archive <id>          # Archive
 ```
 
-### SDD Full (High-Risk Only)
+### Full SDD 5-Phase (Platform + Multi-Team)
 
 ```bash
-agentic-agent specifyify start "Name" \
-  --risk critical                            # Create initiative
+# Assess
+agentic-agent task list
 
-agentic-agent specifyify workflow show <id>         # View phase
-agentic-agent specifyify gate-check <id>            # Verify gates
-agentic-agent specifyify adr create \
-  --title "Decision" --scope global          # Create decision
-agentic-agent specifyify adr list                   # View decisions
-agentic-agent specifyify adr resolve <id>           # Approve decision
+# Specify
+agentic-agent openspec init "Feature" --from requirements.md
+
+# Plan + Deliver
+agentic-agent task claim <id>
+agentic-agent validate
+agentic-agent task complete <id>
+```
+
+#### Core Boundary Rule
+
+```
+Platform-side: BMAD + OpenSpec + Speckit
+Component repos: OpenSpec ONLY
 ```
 
 ---
@@ -222,7 +237,8 @@ agentic-agent openspec archive <id>
 
 **Use with Claude Code / Cursor / your agent:**
 
-### 1️⃣ Spec Review
+### 1. Spec Review
+
 ```
 Review this spec and break into concrete tasks.
 
@@ -234,7 +250,7 @@ For each acceptance criterion:
 - How to verify it works
 ```
 
-### 2️⃣ Package-Specific Implementation
+### 2. Package-Specific Implementation
 ```
 I'm implementing [task] in packages/[service]/.
 
@@ -248,7 +264,7 @@ Please:
 4. Provide test structure
 ```
 
-### 3️⃣ Integration (Cross-Package)
+### 3. Integration (Cross-Package)
 ```
 I'm integrating [feature] across:
 - packages/service-a (provider)
@@ -264,7 +280,7 @@ What needs to happen in service-b?
 - Token refresh strategy
 ```
 
-### 4️⃣ Testing
+### 4. Testing
 ```
 Write tests for [feature].
 
@@ -280,7 +296,7 @@ Provide:
 4. Test file locations
 ```
 
-### 5️⃣ Verification (Before Completion)
+### 5. Verification (Before Completion)
 ```
 Verify [feature] is complete.
 
@@ -298,7 +314,7 @@ Show me:
 3. Any blocking issues
 ```
 
-### 6️⃣ Dependency Analysis
+### 6. Dependency Analysis
 ```
 Specs across packages:
 - packages/a/specs/[spec-1].md (provider)
@@ -312,7 +328,7 @@ What's the implementation order?
 Show dependency graph + rollout strategy.
 ```
 
-### 7️⃣ Documentation
+### 7. Documentation
 ```
 Generate documentation for [feature].
 
@@ -386,11 +402,11 @@ Current: Using tasks only
 
 Current: Using OpenSpec
 ├─ Scale up if: High risk (payment/auth/PII)
-└─ Next: Full SDD (agentic-agent specifyify start)
+└─ Next: 5-Phase SDD (Platform > Assess > Specify > Plan > Deliver)
 
-Current: Using SDD
+Current: Using 5-Phase SDD
 ├─ Add gates if: Regulatory/critical
-└─ Command: agentic-agent specifyify gate-check
+└─ Command: agentic-agent validate
 ```
 
 ---
@@ -518,7 +534,7 @@ agentic-agent openspec complete oauth-ui
 agentic-agent --help                    # Top-level help
 agentic-agent task --help               # Task commands
 agentic-agent openspec --help           # OpenSpec commands
-agentic-agent specifyify --help                # SDD commands
+agentic-agent validate --help           # Validation commands
 agentic-agent [command] --help          # Help for specific command
 ```
 
@@ -545,7 +561,7 @@ agentic-agent [command] --help          # Help for specific command
 | Bug fix | Task | `task create "fix: X"` |
 | Small feature | OpenSpec | `openspec init --from spec.md` |
 | Monorepo | Multi-path + OpenSpec | See MONOREPO-OPENSPEC.md |
-| Critical feature | SDD | `sdd start --risk critical` |
+| Critical feature | 5-Phase SDD | `openspec init + task claim` |
 | Parallel teams | Monorepo + worktrees | `agentic-agent task claim` × N |
 | Final verification | Hard gate | `openspec complete` (after tests pass) |
 

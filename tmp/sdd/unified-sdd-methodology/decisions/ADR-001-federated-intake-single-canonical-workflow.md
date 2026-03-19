@@ -4,7 +4,7 @@ title: "Allow federated intake with a single canonical workflow"
 status: "proposed"
 date: "2026-03-07"
 initiative: "unified-sdd-methodology"
-author: "javierbenavides + codex"
+author: "javierbenavides + claude"
 deciders:
   - "platform-methodology-working-group"
 ---

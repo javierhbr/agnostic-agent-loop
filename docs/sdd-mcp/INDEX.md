@@ -6,11 +6,13 @@
 
 ## By Document Type
 
-### 📋 **README.md** (Your Starting Point)
+### **README.md** (Your Starting Point)
+
 **390 lines | Navigation hub**
 
 What's inside:
-- Decision tree by project type (Tiny → Small → Monorepo → Complex)
+- Decision tree by project type (Tiny, Small, Monorepo, Complex)
+- 5-phase SDD model (Platform, Assess, Specify, Plan, Deliver)
 - CLI command cheat sheet
 - When to use what workflow
 - Real examples
@@ -22,7 +24,8 @@ What's inside:
 
 ---
 
-### ⚡ **CHEATSHEET.md** (Quick Lookup)
+### **CHEATSHEET.md** (Quick Lookup)
+
 **500 lines | One-page reference (print-friendly)**
 
 What's inside:
@@ -170,13 +173,15 @@ agentic-agent task complete <id>
 
 ---
 
-### 💳 "This is critical/high-risk" → **Payments, auth, regulatory**
-```
-SDD workflow:
-agentic-agent specifyify start "Feature" --risk critical
-agentic-agent specifyify workflow show <id>
-agentic-agent specifyify gate-check <id>
-[implementation with gates]
+### "This is critical/high-risk" -- Payments, auth, regulatory
+
+```text
+5-Phase SDD workflow:
+Platform -> Assess -> Specify -> Plan -> Deliver
+agentic-agent task list
+agentic-agent task claim <id>
+agentic-agent validate
+agentic-agent task complete <id>
 ```
 
 **Read:** README.md or SDD-specific docs (linked from README)

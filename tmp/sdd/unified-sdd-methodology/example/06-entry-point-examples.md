@@ -120,6 +120,6 @@ Skills and prompts:
 
 Expected outputs:
 
-- bug-fix route decision
+- bug-fix assessment decision
 - compact spec or full spec
 - impacted component and platform refs

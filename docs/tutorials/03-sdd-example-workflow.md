@@ -1,404 +1,571 @@
-# SDD v3.0 Example Workflow: Guest Checkout
+# SDD Example Workflow: Validated Customer Email Updates
 
-This document shows a **real walkthrough** of how to use the new SDD v3.0 methodology from start to finish.
-
----
-
-## Phase 0: Initiative Definition (Product Manager)
-
-A product manager wants to reduce cart abandonment by enabling guest checkout.
-
-### Step 1: Create the Initiative
-
-```bash
-# Classify the risk level using the risk-assessment skill
-# User answers 5 questions one at a time...
-#
-# Q1: Does this change any cross-service contract? YES (CartUpdated event schema)
-# Q2: Does this touch payment/auth/PII? NO (just cart)
-# Q3: Will multiple teams work on this? YES (3-4 services)
-# Q4: Do we have a rollback plan? YES (feature flag)
-# Q5: ADR dependencies? NO (clear)
-#
-# Result: MEDIUM risk → STANDARD workflow
-
-agentic-agent specifyify start "Enable Guest Checkout" --risk medium
-```
-
-**Output:**
-```
-✓ Initiative created: .agentic/sdd/initiatives/enable-guest-checkout.yaml
-
-Workflow: STANDARD (Medium Risk)
-├─ Architect → Design feature spec
-├─ Developers (parallel, per component) → Implement
-└─ Verifier → Test and verify
-
-Expected timeline: 3-5 days
-Current agent: Architect (ready to receive specs)
-```
-
-### Step 2: PM Hands Off to Architect
-
-The initiative file contains:
-- Problem statement: "30% cart abandonment from guests"
-- Success metrics: "< 20% abandonment within 30 days"
-- Affected components: [checkout-service, payment-service, user-service, email-service]
-- Risk context: medium, standard workflow
+This tutorial walks through a complete SDD workflow using the unified 5-phase methodology. The running example is a real-world change: allowing customers to update their email address with proper validation, contract versioning, and cross-service coordination.
 
 ---
 
-## Phase 1: Architecture Design (Solution Architect)
+## Context
 
-The architect reads the initiative and uses the **architect/SKILL.md** to understand what to produce.
+The customer identity platform currently does not allow email updates after account creation. Product has identified this as a top-5 support ticket driver. The change touches profile-service (owner of customer data) and auth-service (owner of login credentials), requires a shared contract update, and must coordinate deployment across both services.
 
-### Step 1: Architect Reads the Initiative
+**Key identifiers used throughout:**
 
-```bash
-# Architect reads the initiative file
-cat .agentic/sdd/initiatives/enable-guest-checkout.yaml
-
-# Then reads the Platform Constitution to understand constraints
-cat openclaw-specs/constitution/policies.md
-
-# Key policies this spec must follow:
-# - PII handling: guest email must be encrypted at rest
-# - Observability: all auth flows must log (no PII), emit metrics
-# - Performance: payment processing < 2 seconds (p95)
-# - Security: session TTL max 24 hours
-```
-
-### Step 2: Architect Designs the Solution
-
-Creates `feature-spec.md`:
-- What: "Enable guest checkout flow"
-- Why: "Reduce cart abandonment 30% → 20%"
-- How: "No account required, guest email collected, payment processed, confirmation email sent"
-- UX flows: Step 1 (guest flag) → Step 2 (email collection) → Step 3 (payment) → Step 4 (confirmation)
-- Key invariants: "Guest checkout must not create user account; payment idempotent"
-- Security: "Guest email encrypted at rest per Constitution/Security"
-- Observability: "Log auth attempt, emit `guest_checkout_started` metric, trace payment flow"
-
-Creates `component-spec.md` for each service:
-- **checkout-service**: Add guest checkout flow, skip account creation step
-- **payment-service**: No changes (existing API works)
-- **user-service**: Add guest customer tracking (no account = no login)
-- **email-service**: Send confirmation to guest email
-- **analytics-service**: Track checkout_guest metric
-
-Each component spec includes:
-- Acceptance criteria (GWT format)
-- NFRs (performance, security, observability)
-- Contract changes (if any)
-- Dependencies on other specs
-
-### Step 3: Gate Check Architecture
-
-```bash
-# Architect validates their design passes all 5 gates before handing to developers
-agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
-
-✓ Gate 1: Context Completeness PASS
-  - feature-spec.md has implements, context_pack, status fields
-  - component-spec.md files present for all 4 services
-
-✓ Gate 2: Domain Validity PASS
-  - No cross-domain DB access
-  - User domain invariant respected: "Email unique, Active XOR Deleted"
-
-✓ Gate 3: Integration Safety PASS
-  - Contract change declared: CartUpdated event adds guest_flag
-  - Consumers identified: checkout-service, analytics-service
-  - Dual-publish plan documented in spec
-
-✓ Gate 4: NFR Compliance PASS
-  - Security: Guest email encryption per Constitution §2
-  - Observability: logging, metrics, tracing all declared
-  - Performance: payment < 2s baseline respected
-
-✓ Gate 5: Ready to Implement PASS
-  - blocked_by is empty (no pending ADRs)
-  - All 8 acceptance criteria in GWT format
-  - No ambiguity in component responsibilities
-```
-
-### Step 4: Create Task Fan-Out
-
-Architect produces a task fan-out (automatically from spec):
-
-```bash
-# Each component team gets a task with impl-spec.md template
-agentic-agent task create --from feature-spec.md --fanout-by-component
-
-# Creates 4 parallel tasks:
-# - TASK-001: Implement checkout-service guest flow
-# - TASK-002: Implement user-service guest tracking
-# - TASK-003: Implement email-service guest confirmation
-# - TASK-004: Implement analytics-service guest metrics
-```
+| ID | Type | Description |
+| ---- | ------ | ----------- |
+| PLAT-123 | Platform issue | Customer identity platform review |
+| PROF-456 | Epic (profile-service) | Email update capability |
+| AUTH-234 | Epic (auth-service) | Credential sync for email changes |
+| chg-profile-email-validation | Change package | Tracks the full change across services |
+| contracts.customer-profile.v2 | Shared contract | Updated profile contract with email history |
 
 ---
 
-## Phase 2: Implementation (Developers, Parallel)
+## Phase 1: Platform (Architect)
 
-Each component team receives their `component-spec.md` and uses the **developer/SKILL.md** to understand what to produce.
+The architect establishes platform-level context before any feature work begins. This phase produces ownership artifacts, a constitution, and encoding that all downstream phases reference.
 
-### Developer: Checkout Service
+### Step 1.1: BMAD Brownfield Review
 
-**Input:** `component-spec-checkout-service.md`
+The architect conducts a brownfield review of the customer identity platform. This is not a greenfield design -- both profile-service and auth-service exist and carry legacy constraints.
 
-**What they produce:**
-- `impl-spec-checkout-service.md` with:
-  - Exact code changes (add GuestCheckoutFlow class)
-  - All 6 acceptance criteria verified
-  - Edge cases (invalid email, network timeout, duplicate submission)
-  - Observability: logging points, metrics emitted, tracing spans
-  - Rollback: feature flag check before enabling guest flow
+Key findings:
 
-```go
-// Example code snippet in impl-spec
-if !featureFlags.IsEnabled("GuestCheckoutEnabled") {
-  return ErrGuestCheckoutDisabled
-}
+- profile-service owns `customer` table with `email` column (no history)
+- auth-service owns `credentials` table keyed by email
+- No existing contract between the two services for email changes
+- Email is used as a login identifier in auth-service (high coupling)
 
-guestEmail := req.Email
-// Log attempt without PII
-log.Info("guest_checkout_attempt", "request_id", requestID)
+### Step 1.2: Speckit Constitution
 
-// Emit metric
-metrics.Increment("guest_checkout_total")
+The architect writes the platform constitution encoding validation rules, contract policies, observability standards, and API versioning conventions.
+
+Key constitution decisions:
+
+- **Validation**: Email changes require verification of the new address before commit
+- **Contracts**: All cross-service data flows use versioned shared contracts
+- **Observability**: Every state transition emits a structured event with correlation ID
+- **API versioning**: Breaking changes require a new contract version; consumers get a migration window
+
+### Step 1.3: OpenSpec config.yaml Encoding
+
+```yaml
+# openspec/config.yaml
+project:
+  name: customer-identity-platform
+  id: PLAT-123
+
+services:
+  profile-service:
+    owner: team-profile
+    repo: github.com/org/profile-service
+  auth-service:
+    owner: team-auth
+    repo: github.com/org/auth-service
+
+contracts:
+  customer-profile:
+    current_version: v1
+    consumers: [auth-service, notification-service]
+
+conventions:
+  branching: feature/PROF-{id}
+  jira_prefix: PROF (profile-service), AUTH (auth-service)
 ```
 
-- `tasks.yaml` with implementation steps:
-  1. Add GuestCheckout flag to Feature Flags system
-  2. Implement GuestCheckoutFlow class
-  3. Add guest email validation
-  4. Integrate with payment service
-  5. Add feature flag guard rails
-  6. Write unit tests (min 4 edge cases)
-  7. Write integration tests
-  8. Performance test: payment < 2s latency
+### Step 1.4: Versioning and JIRA Conventions
 
-**Gate Check:**
-```bash
-agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST-IMPL
+- Platform issue: PLAT-123
+- Profile-service epic: PROF-456, stories: PROF-789, PROF-790, PROF-791
+- Auth-service epic: AUTH-234
+- Contract versioning: customer-profile.v1 (current) to customer-profile.v2 (target)
 
-✓ Gate 4: NFR Compliance PASS
-  - Logging: "guest_checkout_attempt" emitted with request_id
-  - Metrics: "guest_checkout_total" counter, "payment_latency_ms" histogram
-  - Tracing: Span "GuestCheckout" with tags guest_email_hash, result
-  - Security: Email not logged raw, hashed in observability
+### Step 1.5: Ownership Artifacts
 
-✓ Gate 5: Ready to Implement PASS
-  - All 6 ACs in GWT format with test evidence
-  - No blocking ADRs
-  - Feature flag default: false (safe)
-```
+The architect writes three ownership artifacts.
 
-### Developer: User Service
-
-**Input:** `component-spec-user-service.md`
-
-**What they produce:**
-- `impl-spec-user-service.md`:
-  - Add GuestCustomer table (minimal: email, created_at, last_order_at)
-  - Do NOT create User account (guest remains anonymous)
-  - Maintain invariant: "Email unique, Active XOR Deleted" (guests don't violate this)
-
-### Developer: Email Service
-
-**Input:** `component-spec-email-service.md`
-
-**What they produce:**
-- `impl-spec-email-service.md`:
-  - Add guest confirmation email template
-  - Send to email address from guest_checkout event
-  - Track delivery in metrics
-
-### Developer: Analytics Service
-
-**Input:** `component-spec-analytics-service.md`
-
-**What they produce:**
-- `impl-spec-analytics-service.md`:
-  - Consume CartUpdated v2 event (has guest_flag)
-  - Emit "checkout_guest_flow" dimension for reports
-  - Calculate abandonment rate by flow type
-
----
-
-## Phase 3: Verification (Verifier)
-
-After all developers commit their code, the verifier uses the **verifier/SKILL.md** to prove it works.
-
-### Step 1: Verify Every Acceptance Criterion
-
-```bash
-# Run all 6 acceptance criteria with observable evidence
-
-✓ AC1: Given guest user, When they reach checkout, Then they can proceed without account
-   Evidence: Unit test GuestCheckoutFlow_NoAccountRequired passes
-   Trace: curl -X POST /api/v1/checkout/guest -d '{"email":"test@example.com"}' → 200 OK
-
-✓ AC2: Given guest provides email, When they enter payment, Then payment is processed
-   Evidence: Integration test GuestCheckout_PaymentFlow passes
-   Trace: Payment service logs "payment_processed" for guest email
-
-✓ AC3: Given payment completes, When guest receives confirmation, Then email sent < 30s
-   Evidence: E2E test confirms delivery in 20ms average
-   Trace: Email service metrics "email_delivery_latency_ms" p95 < 500
-
-✓ AC4-6: Similar evidence for other ACs...
-```
-
-### Step 2: Update Spec Graph
-
-```bash
-# Mark initiative as Done in spec-graph.json
-agentic-agent specifyify sync-graph
-
-# This creates/updates .agentic/spec-graph.json:
-{
-  "SPEC-CHECKOUT-GUEST": {
-    "implements": "INIT-GUEST-CHECKOUT",
-    "status": "Done",
-    "depends_on": [],
-    "affects": ["SPEC-ANALYTICS-GUEST"],
-    "contracts_referenced": ["CartUpdated-v2"],
-    "blocked_by": [],
-    "updated_at": "2026-02-28T15:00:00Z"
-  }
-}
-```
-
-### Step 3: Create Verify.md
+**component-ownership-profile-service.md** (excerpt):
 
 ```markdown
-# Verification Report: Guest Checkout
+# Component Ownership: profile-service
 
-## All Acceptance Criteria Verified ✓
+Owner: team-profile
+Domain: Customer profile data (name, email, address, preferences)
+Key invariant: One active email per customer at any time
+Dependencies: auth-service (downstream consumer of email changes)
+Contracts published: contracts.customer-profile.v2
+```
 
-### AC1: Guest Checkout Without Account
-- **Test:** GuestCheckoutFlow_NoAccountRequired
-- **Result:** PASS
-- **Evidence:** curl output shows HTTP 200, no account created
-- **Latency:** 150ms p95
+**component-ownership-auth-service.md** (excerpt):
 
-### AC2: Guest Email → Payment Processing
-- **Test:** GuestCheckout_PaymentFlow_Integration
-- **Result:** PASS
-- **Evidence:** Payment service logs guest transaction, metrics confirm
-- **Latency:** 850ms p95 (within budget)
+```markdown
+# Component Ownership: auth-service
 
-### AC3: Confirmation Email < 30s
-- **Test:** GuestCheckout_EmailConfirmation_E2E
-- **Result:** PASS
-- **Evidence:** Email received in 20ms average
-- **Latency:** 500ms p99
+Owner: team-auth
+Domain: Authentication credentials and login flows
+Key invariant: Credential lookup by email must resolve in < 50ms
+Dependencies: profile-service (upstream publisher of email changes)
+Contracts consumed: contracts.customer-profile.v2
+```
 
-### AC4-6: Additional criteria...
+**dependency-map.md** (excerpt):
 
-## Gate Verification
+```markdown
+# Dependency Map
 
-- Gate 1 (Context): ✓ All metadata complete
-- Gate 2 (Domain): ✓ Invariants maintained
-- Gate 3 (Integration): ✓ Consumers notified and updated
-- Gate 4 (NFR): ✓ Observability deployed and working
-- Gate 5 (Ready): ✓ All blocking ADRs resolved
+## Impact Tiers
 
-## Deployment
+Tier 1 (hard constraint -- must not break):
+  - auth-service credential lookup by email
+  - login flow availability (99.9% SLA)
 
-- Feature Flag: GuestCheckoutEnabled = OFF (safe default)
-- Rollout Plan: Monitor metrics for 24h before enabling in production
-- Rollback: Disable feature flag (instant rollback, no deploy required)
+Tier 2 (should not degrade):
+  - notification-service email delivery
+  - profile-service API response time (< 200ms p95)
+
+Tier 3 (acceptable temporary degradation):
+  - analytics dashboards (eventual consistency OK)
+```
+
+**glossary.md** (excerpt):
+
+```markdown
+# Glossary
+
+- **email change**: A customer-initiated request to update their login email
+- **verification**: Proof of ownership of the new email address via token
+- **credential sync**: The process of updating auth-service after a verified email change
+- **contract**: A versioned schema defining the data shape exchanged between services
 ```
 
 ---
 
-## Phase 4: Deployment & Success Metrics
+## Phase 2: Assess (Team Lead)
 
-Once verifier confirms all ACs and gates:
+The team lead classifies the change and opens a formal change package.
 
-```bash
-# 1. Merge to main
-git merge feature/guest-checkout
+### Step 2.1: BMAD Classification
 
-# 2. Deploy with feature flag OFF (safe)
-agentic-agent deploy
+| Dimension | Value | Rationale |
+| --------- | ----- | --------- |
+| Greenfield/Brownfield | Brownfield | Both services exist with production traffic |
+| Size | Medium | 2 services, 1 contract, 3 stories |
+| Impact | High | Email is a login identifier; breaking it breaks login |
+| Scope | Shared change | Crosses service boundaries with a contract update |
 
-# 3. Monitor metrics
-agentic-agent metrics watch guest_checkout_total
+Classification result: **Standard workflow** with architect impact review required.
 
-# 4. Enable feature flag at 10% traffic
-agentic-agent flags set GuestCheckoutEnabled=10pct
+### Step 2.2: Open Change Package
 
-# 5. Monitor for 24 hours
-# - guest_checkout_total steadily increasing
-# - cart_abandonment_rate trending down
-# - payment_latency_ms stays < 2s
-# - no error spikes
-
-# 6. If metrics look good, enable to 100%
-agentic-agent flags set GuestCheckoutEnabled=100pct
-
-# 7. Measure final success at day 30
-# Expected: cart_abandonment 30% → 18% (below 20% target)
+```yaml
+# openspec/changes/chg-profile-email-validation/platform-ref.yaml
+change_package: chg-profile-email-validation
+platform: PLAT-123
+status: open
+created: 2026-03-19
+services:
+  - profile-service
+  - auth-service
+contracts_affected:
+  - contracts.customer-profile.v2
+epics:
+  - PROF-456
+  - AUTH-234
 ```
 
+```yaml
+# openspec/changes/chg-profile-email-validation/jira-traceability.yaml
+epics:
+  PROF-456:
+    stories: [PROF-789, PROF-790, PROF-791]
+    service: profile-service
+  AUTH-234:
+    stories: []  # to be created after design review
+    service: auth-service
+links:
+  platform_issue: PLAT-123
+  change_package: chg-profile-email-validation
+```
+
+### Step 2.3: Architect Impact Review
+
+The architect reviews the change package against the dependency map:
+
+- **Tier 1 impact identified**: auth-service credential lookup by email is a hard constraint. The email change flow must guarantee that auth-service credentials are updated atomically or the old email continues to work until sync completes.
+- **Mitigation**: Use an event-driven approach. Profile-service publishes `EmailChanged` event. Auth-service consumes it and updates credentials. During the window, both old and new email work for login.
+
 ---
 
-## Key Artifacts Created
+## Phase 3: Specify (Product)
 
-| Phase | Owner | Artifact | Location |
-|-------|-------|----------|----------|
-| **0** | PM | Initiative | `.agentic/sdd/initiatives/enable-guest-checkout.yaml` |
-| **1** | Architect | Feature Spec | `openclaw-specs/features/guest-checkout/feature-spec.md` |
-| **1** | Architect | Component Specs (x4) | `openclaw-specs/features/guest-checkout/component-spec-*.md` |
-| **2** | Developers | Impl Specs (x4) | `openclaw-specs/features/guest-checkout/impl-spec-*.md` |
-| **2** | Developers | Tasks | `.agentic/tasks/in-progress.yaml` |
-| **3** | Verifier | Verify Report | `openclaw-specs/features/guest-checkout/verify.md` |
-| **3** | Verifier | Spec Graph | `.agentic/spec-graph.json` |
+Product writes the proposal and delta specs that define exactly what changes.
+
+### Step 3.1: Check Glossary, Write proposal.md
+
+Product checks the glossary to use consistent terminology, then writes the proposal.
+
+**proposal.md** (excerpt):
+
+```markdown
+# Proposal: Validated Customer Email Updates
+
+## Problem
+Customers cannot update their email address after account creation.
+This generates 2,400 support tickets per month (top-5 driver).
+
+## Solution
+Allow customers to request an email change through the profile UI.
+The new email must be verified before it replaces the old one.
+Auth-service credentials sync automatically via the customer-profile.v2 contract.
+
+## Success Criteria
+- Given a customer requests an email change,
+  When they verify the new email via token,
+  Then their profile and login credentials update within 30 seconds.
+- Given a customer has a pending email change,
+  When they log in with the old email,
+  Then login succeeds until the new email is verified.
+- Support tickets for email changes drop by 80% within 60 days.
+
+## Scope
+- IN: Email change request, verification flow, credential sync, audit trail
+- OUT: Username changes, email merge across accounts, bulk migration
+```
+
+### Step 3.2: Write Delta Specs
+
+Delta specs describe what is ADDED, MODIFIED, or REMOVED.
+
+**delta-spec.md** (excerpt):
+
+```markdown
+# Delta Spec: chg-profile-email-validation
+
+## profile-service
+
+ADDED:
+  - POST /api/v1/customers/{id}/email-change-request
+    - Accepts: { new_email: string }
+    - Returns: { request_id: string, verification_token_sent: boolean }
+  - POST /api/v1/customers/{id}/email-change-verify
+    - Accepts: { request_id: string, token: string }
+    - Returns: { verified: boolean, email_updated: boolean }
+  - Table: email_change_requests (customer_id, old_email, new_email, token, status, created_at, verified_at)
+
+MODIFIED:
+  - contracts.customer-profile: v1 -> v2
+    - ADDED field: email_change_history (array of { old, new, changed_at })
+    - ADDED event: EmailChanged { customer_id, old_email, new_email, timestamp }
+
+## auth-service
+
+ADDED:
+  - Consumer: EmailChanged event handler
+    - Updates credential lookup index for new email
+    - Maintains old email as alias until TTL expires (72h)
+
+REMOVED:
+  - Nothing
+```
+
+### Step 3.3: Scope and Alignment Check
+
+Product confirms:
+
+- Delta spec aligns with proposal success criteria
+- No items outside declared scope
+- Contract version bump is justified (new field + new event)
+- Auth-service team (team-auth) has reviewed and accepted the consumer contract
 
 ---
 
-## CLI Cheat Sheet for This Feature
+## Phase 4: Plan (Architect)
+
+The architect translates the spec into a concrete design and implementable tasks.
+
+### Step 4.1: Write design.md
+
+The architect reads the impact tiers from the dependency map. Tier 1 (auth-service credential lookup) is a hard constraint that shapes the design.
+
+**design.md** (excerpt):
+
+```markdown
+# Design: Validated Customer Email Updates
+
+## Architecture Decision
+Event-driven email sync with dual-email grace period.
+
+Profile-service is the source of truth for email changes.
+Auth-service is a consumer that updates credentials asynchronously.
+
+## Sequence
+1. Customer submits email change request via profile-service API
+2. Profile-service sends verification email to new address
+3. Customer clicks verification link -> profile-service verifies token
+4. Profile-service updates customer record and publishes EmailChanged event
+5. Auth-service consumes event, adds new email to credential index
+6. Auth-service maintains old email alias for 72h (Tier 1 safety)
+7. After 72h TTL, old email alias is removed
+
+## Tier 1 Constraint: auth-service
+- Old email MUST continue to work for login during sync window
+- If EmailChanged event processing fails, retry with exponential backoff
+- Dead letter queue after 5 retries; alert team-auth on-call
+- Rollback: old email always works; new email only works after sync
+
+## Contract: contracts.customer-profile.v2
+- Backward compatible: v1 consumers ignore new fields
+- v2 consumers get email_change_history and EmailChanged event
+- Migration window: 90 days before v1 deprecation
+
+## Observability
+- profile-service: email_change_requested, email_change_verified, email_change_failed
+- auth-service: credential_sync_completed, credential_sync_failed
+- Correlation ID: request_id flows through all events
+```
+
+### Step 4.2: Write tasks.md
+
+Three tasks mapped to JIRA stories under PROF-456.
+
+**tasks.md** (excerpt):
+
+```markdown
+# Tasks: chg-profile-email-validation
+
+## PROF-789: Email change request and verification endpoints
+Service: profile-service
+Type: feature
+Estimated: 3 points
+Depends on: nothing
+Delivers:
+  - POST /email-change-request endpoint
+  - POST /email-change-verify endpoint
+  - email_change_requests table migration
+  - Verification email sending
+  - Unit and integration tests
+Acceptance criteria:
+  - Given valid customer ID and new email, When POST /email-change-request, Then verification email sent
+  - Given valid token, When POST /email-change-verify, Then email updated and EmailChanged event published
+
+## PROF-790: Contract v2 and EmailChanged event publishing
+Service: profile-service
+Type: contract
+Estimated: 2 points
+Depends on: PROF-789
+Delivers:
+  - contracts.customer-profile.v2 schema definition
+  - EmailChanged event publisher
+  - email_change_history field population
+  - Contract compatibility tests
+Acceptance criteria:
+  - Given email verified, When event published, Then EmailChanged contains old_email, new_email, timestamp
+  - Given v1 consumer, When reading contract, Then no breaking changes
+
+## PROF-791: Audit trail and observability
+Service: profile-service
+Type: observability
+Estimated: 1 point
+Depends on: PROF-789
+Delivers:
+  - Structured logging for all email change state transitions
+  - Metrics: email_change_requested, email_change_verified, email_change_failed
+  - Correlation ID propagation
+Acceptance criteria:
+  - Given any email change operation, When it completes, Then structured log emitted with correlation_id
+  - Given email change failure, When alert threshold reached, Then on-call notified
+```
+
+### Step 4.3: Developer Feasibility Review
+
+Developer reviews tasks and confirms:
+
+- Migration is additive (no column drops)
+- Event schema is straightforward
+- 72h alias TTL in auth-service is achievable with existing TTL infrastructure
+- No blockers identified
+
+---
+
+## Phase 5: Deliver (Team Lead)
+
+The team lead coordinates build, review, verification, and deployment.
+
+### Step 5.1: Build
+
+Developer claims and implements the first task.
 
 ```bash
-# PM: Define and classify risk
-agentic-agent specifyify start "Enable Guest Checkout" --risk medium
+# View available tasks
+agentic-agent task list
 
-# PM: View progress
-agentic-agent specifyify workflow show enable-guest-checkout
+# Claim the first task
+agentic-agent task claim PROF-789
 
-# Architect: Gate check design
-agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
+# The CLI creates a worktree at .worktrees/feature/task-PROF-789/
+# Developer implements the email change endpoints, writes tests
 
-# Developers: Claim component task
-agentic-agent task claim TASK-001
-agentic-agent task complete TASK-001
-
-# Verifier: Run all gates before merge
-agentic-agent specifyify gate-check SPEC-CHECKOUT-GUEST
+# Validate before completing
 agentic-agent validate
 
-# All: Sync traceability to platform repo
-agentic-agent specifyify sync-graph
+# Complete the task
+agentic-agent task complete PROF-789
+```
 
-# Deploy when verified
-git merge feature/guest-checkout
-agentic-agent deploy --with-feature-flag GuestCheckoutEnabled=off
+Repeat for PROF-790 (depends on PROF-789) and PROF-791 (parallel with PROF-790).
+
+### Step 5.2: Create PR
+
+```bash
+agentic-agent pr create --task PROF-789
+```
+
+**PR description** (excerpt):
+
+```markdown
+## Validated Customer Email Updates - Request and Verification Endpoints
+
+### Change Package
+chg-profile-email-validation
+
+### JIRA
+- Epic: PROF-456
+- Story: PROF-789
+
+### What
+- Added POST /api/v1/customers/{id}/email-change-request
+- Added POST /api/v1/customers/{id}/email-change-verify
+- Added email_change_requests table migration
+- Added verification email integration
+
+### Testing
+- 12 unit tests covering happy path and edge cases
+- 3 integration tests for the full request-verify flow
+- Verified old email continues to work during pending state
+
+### Contract Impact
+- Prepares for contracts.customer-profile.v2 (shipped in PROF-790)
+- No breaking changes to existing consumers
+
+### Traceability
+Platform: PLAT-123 | Epic: PROF-456 | Story: PROF-789
+Change Package: chg-profile-email-validation
+```
+
+### Step 5.3: Review PR
+
+A reviewer (different agent or team member) reviews against:
+
+- Delta spec compliance: do the endpoints match the spec?
+- Design constraints: is the Tier 1 safety (old email works) maintained?
+- Observability: are structured logs present?
+- Test coverage: are acceptance criteria proven by tests?
+
+### Step 5.4: Verify
+
+The verifier checks every acceptance criterion with evidence:
+
+```text
+AC1: Given valid customer and new email, When POST /email-change-request
+     Then verification email sent
+     Evidence: Integration test EmailChangeRequest_SendsVerification PASS
+     Log: {"event":"email_change_requested","customer_id":"C-100","correlation_id":"req-abc"}
+
+AC2: Given valid token, When POST /email-change-verify
+     Then email updated and EmailChanged event published
+     Evidence: Integration test EmailChangeVerify_UpdatesAndPublishes PASS
+     Event: {"type":"EmailChanged","old":"old@example.com","new":"new@example.com"}
+```
+
+### Step 5.5: Deploy
+
+Deployment requires coordination with AUTH-234 (auth-service must be ready to consume EmailChanged events before profile-service starts publishing them).
+
+Deployment order:
+
+1. Deploy auth-service with EmailChanged consumer (events will be no-ops until profile-service publishes)
+2. Deploy profile-service with email change endpoints and event publisher
+3. Monitor: credential_sync_completed metric should appear within minutes of first real email change
+4. Verify: old email login still works during sync window
+
+### Step 5.6: Archive
+
+Once all stories under PROF-456 are complete and deployed:
+
+```bash
+# Archive the change package
+# Move openspec/changes/chg-profile-email-validation/ to openspec-archive/
+```
+
+The archived change package preserves the full history: platform-ref, jira-traceability, proposal, delta specs, design, tasks, PR links, and verification evidence.
+
+---
+
+## Complete Traceability Chain
+
+Every artifact links back to the platform issue and forward to the deployed code.
+
+```text
+PLAT-123 (platform issue)
+  |
+  +-- openspec/config.yaml (platform encoding)
+  +-- component-ownership-profile-service.md
+  +-- component-ownership-auth-service.md
+  +-- dependency-map.md (impact tiers)
+  +-- glossary.md
+  |
+  +-- chg-profile-email-validation (change package)
+       |
+       +-- platform-ref.yaml --> PLAT-123
+       +-- jira-traceability.yaml --> PROF-456, AUTH-234
+       |
+       +-- proposal.md (what and why)
+       +-- delta-spec.md (what changes, precisely)
+       |
+       +-- design.md (how, with Tier 1 constraints)
+       +-- tasks.md --> PROF-789, PROF-790, PROF-791
+       |
+       +-- PROF-789 --> PR #42 --> commit abc1234
+       +-- PROF-790 --> PR #43 --> commit def5678
+       +-- PROF-791 --> PR #44 --> commit ghi9012
+       |
+       +-- verification evidence (per AC)
+       +-- deployment record (auth-service first, then profile-service)
+       |
+       +-- openspec-archive/ (final resting place)
+```
+
+Reading the chain from any point:
+
+- From a commit: which story? which task? which change package? which platform issue?
+- From a platform issue: which change packages? which services? which contracts? which PRs?
+- From a contract version: which change package introduced it? which consumers were notified?
+
+---
+
+## CLI Commands Summary
+
+```bash
+# Phase 5 -- the commands you use most often
+
+agentic-agent task list                    # see backlog and in-progress
+agentic-agent task claim PROF-789          # claim task, creates worktree
+agentic-agent validate                     # run validators before completing
+agentic-agent task complete PROF-789       # mark done, captures commits
+agentic-agent pr create --task PROF-789    # generate PR from spec
+agentic-agent pr review --task PROF-789    # spawn independent reviewer
+agentic-agent pr status                    # check PR state
 ```
 
 ---
 
-## Success: 30 Days Later
+## Key Takeaways
 
-```
-METRIC                   BEFORE    TARGET    ACTUAL    STATUS
-Cart Abandonment Rate    30%       < 20%     18%       ✓ EXCEEDS
-Payment Latency (p95)    3.2s      < 2s      1.8s      ✓ EXCEEDS
-Guest Checkout Adoption  0%        > 10%     12.5%     ✓ EXCEEDS
-Logged-in Conversion     5.2%      >= 5.2%   5.3%      ✓ MAINTAINED
-```
+1. **Platform first.** Phase 1 ownership artifacts (dependency map, glossary, constitution) prevent Phase 4/5 surprises. The Tier 1 constraint on auth-service shaped the entire design.
 
-**Result:** Initiative marked as Done. Architecture, implementation, and verification all documented in spec-graph. Team ships guest checkout with confidence.
+2. **Change packages are the unit of traceability.** Everything -- proposal, delta specs, design, tasks, PRs, verification -- lives under one change package ID that links to the platform issue and JIRA epics.
+
+3. **Delta specs are precise.** ADDED/MODIFIED/REMOVED eliminates ambiguity about what the change does. Reviewers and verifiers reference the delta spec, not verbal descriptions.
+
+4. **Deploy order matters for shared changes.** The consumer (auth-service) deploys before the publisher (profile-service). This is derived from the Tier 1 constraint identified in Phase 1.
+
+5. **Archive preserves institutional knowledge.** Six months from now, when someone asks "why does auth-service support dual-email login?", the archived change package has the answer.

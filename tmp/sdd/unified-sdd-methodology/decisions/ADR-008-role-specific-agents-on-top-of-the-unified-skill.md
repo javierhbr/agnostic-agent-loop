@@ -4,7 +4,7 @@ title: "Use role-specific agents on top of the unified SDD skill package"
 status: "proposed"
 date: "2026-03-08"
 initiative: "unified-sdd-methodology"
-author: "javierbenavides + codex"
+author: "javierbenavides + claude"
 deciders:
   - "platform-methodology-working-group"
 ---

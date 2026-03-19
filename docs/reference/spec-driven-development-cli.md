@@ -16,6 +16,8 @@ Agentic-agent supports **spec-driven development** where specifications drive ta
 
 All three work through the same mechanism: **configure paths, reference specs, read on-demand**.
 
+**Core boundary rule:** Component repos use OpenSpec only. Platform-side tooling (BMAD, Speckit) stays in the platform repo. Component repos can reference platform alignment via `platform-ref.yaml` without importing platform tools.
+
 ---
 
 ## Configuration
@@ -47,6 +49,11 @@ workflow:
 ```
 
 When a task references `auth/spec.md`, the resolver searches each directory in order and uses the first match. If no config file exists, the default is `.agentic/spec`.
+
+### Additional Configuration Files
+
+- **`platform-ref.yaml`** -- Component repos use this to reference platform alignment (initiative IDs, platform-spec links) without importing platform-level tools.
+- **`jira-traceability.yaml`** -- Maps spec changes and tasks to Jira tickets for external project tracking integration.
 
 ### Spec Resolution Rules
 

@@ -8,7 +8,7 @@ practical guide for teams.
 Iteration 1 covers the first three phases:
 
 1. Platform
-2. Route
+2. Assess
 3. Specify
 
 The purpose of Iteration 1 is to improve the quality of shared context and
@@ -20,14 +20,16 @@ Use this document as the day-to-day guide for the first rollout of the
 methodology.
 
 - start with `Platform` once for the shared environment
-- run `Route` for each new request or change
+- run `Assess` for each new request or change
 - run `Specify` before any technical planning starts
 
 Helpful starter skill for existing platforms:
 
-- [../platform-contextualizer-codex-skill/SKILL.md](../platform-contextualizer-codex-skill/SKILL.md)
+- [../platform-contextualizer-skill/SKILL.md](../platform-contextualizer-skill/SKILL.md)
 - Detailed alignment guide: [canonical-platform-truth-and-component-alignment.md](canonical-platform-truth-and-component-alignment.md)
-- Local MCP guide: [local-platform-mcp-model.md](local-platform-mcp-model.md)
+- Local platform access guide: [local-platform-mcp-model.md](local-platform-mcp-model.md)
+- Platform spec search skill: [../platform-spec/SKILL.md](../platform-spec/SKILL.md)
+- Agentic skills directory: `~/.agentic/skills/`
 - Worked examples: [example/README.md](example/README.md)
 - Templates:
   - [templates/platform-ref.yaml](templates/platform-ref.yaml)
@@ -47,7 +49,7 @@ The rule is simple:
   create shared context and durable rules
         |
         v
-[ROUTE]
+[ASSESS]
   turn a request into a scoped change package
         |
         v
@@ -85,7 +87,7 @@ to define the durable baseline.
   constitution + config + role map + quality language
             |
             v
-Ready for Route
+Ready for Assess
 ```
 
 ### 1. Main objectives and outcomes
@@ -120,6 +122,15 @@ Main activities:
 - define the platform versioning and ref model for component repositories
 - define the JIRA hierarchy or issue-link conventions for platform and component work
 - define whether teams will use a local read-only platform MCP gateway
+- write one component ownership boundary file per component
+  (`ownership/component-ownership-<name>.md`) — records what each component
+  owns and what it does NOT own; prevents scope drift and ownership confusion
+  in every future Assess step
+- write the platform dependency map (`ownership/dependency-map.md`) — records
+  which components must change together (tier 1), which need watching (tier 2),
+  and which adapt independently (tier 3); makes impact assessment deterministic
+- seed the shared glossary (`ownership/glossary.md`) — defines shared terms
+  with "what it is NOT" clauses to prevent spec ambiguity before Specify begins
 
 ### 3. Agent roles and responsibilities
 
@@ -137,13 +148,13 @@ Agent roles:
 
 ### 4. Skills used and how they are applied
 
-- `speckit-codex-skill`
+- `speckit-skill`
   - use first to draft the constitution and quality bar
   - use it to make principles explicit, testable, and durable
-- `openspec-codex-skill`
+- `openspec-skill`
   - use second to encode stable project context and reusable rules
   - use it to create or refine `openspec/config.yaml`
-- `bmad-codex-skill`
+- `bmad-skill`
   - use third to align role boundaries, planning expectations, and progressive context
   - use it to prepare later routing and architecture work
 
@@ -151,20 +162,20 @@ Agent roles:
 
 Apply these rules:
 
-- `speckit-codex-skill/rules/constitution-rules.md`
+- `speckit-skill/rules/constitution-rules.md`
   - principles must be explicit and testable
   - quality, testing, security, and UX expectations must be visible
-- `openspec-codex-skill/rules/project-config-template.yaml`
+- `openspec-skill/rules/project-config-template.yaml`
   - keep stable context in config
   - keep artifact rules concise and reusable
-- `bmad-codex-skill/rules/artifact-rules.md`
+- `bmad-skill/rules/artifact-rules.md`
   - every durable artifact should state purpose, constraints, risks, and success criteria
 
 ### 6. Expected artifacts and deliverables
 
 Expected outputs:
 
-- constitution or principles document
+- constitution or principles document (including rules O-1, O-2, O-3)
 - `openspec/config.yaml` or equivalent reusable config
 - shared role map for the workflow
 - common language for quality and artifact expectations
@@ -172,14 +183,18 @@ Expected outputs:
 - JIRA hierarchy conventions for platform issue, component epic, and stories
 - local platform MCP usage model when teams need local query and validation
 - adoption-ready templates for `platform-ref.yaml` and `jira-traceability.yaml`
+- `ownership/component-ownership-<name>.md` for each component
+- `ownership/dependency-map.md` with all component relationships and their tier
+- `ownership/glossary.md` seeded with terms from the constitution and
+  brownfield review
 
 ### 7. Criteria for moving to the next phase
 
-Move to `Route` when:
+Move to `Assess` when:
 
 - principles are explicit enough for teams to follow
 - durable context is separated from temporary change detail
-- role ownership is clear for Platform, Route, and Specify
+- role ownership is clear for Platform, Assess, and Specify
 - there is a reusable config or rules baseline for future changes
 
 ### 8. Potential challenges and mitigation strategies
@@ -193,12 +208,12 @@ Move to `Route` when:
 
 ### 9. Feedback and iteration process
 
-- review the first few routed changes against the constitution
+- review the first few assessed changes against the constitution
 - track which rules teams actually use and which ones they ignore
 - refine the constitution and config after each pilot or retro
 - keep the platform baseline small, practical, and easy to maintain
 
-## Phase 2: Route
+## Phase 2: Assess
 
 ### Phase flow
 
@@ -207,7 +222,7 @@ Move to `Route` when:
   initiative / requirement / team proposal
             |
             v
-[Team Lead owns routing]
+[Team Lead owns assessment]
   Support: Product + Architect + Engineering Manager
             |
             +--> BMAD: classify greenfield/brownfield, size, and track
@@ -215,7 +230,7 @@ Move to `Route` when:
             +--> Speckit: clarify only if the request is too vague
             |
             v
-[Routed change package]
+[Assessed change package]
   scope + size + impact + path + next artifact + known unknowns
             |
             v
@@ -232,7 +247,7 @@ Objectives:
 
 Outcomes:
 
-- one routed change package
+- one assessed change package
 - a size and impact classification
 - a selected track for the next step
 - a short list of known unknowns
@@ -248,72 +263,87 @@ Core concepts:
 - greenfield vs brownfield
 - platform-only vs component-only vs shared change
 - platform issue -> component epic -> story traceability
+- component ownership boundaries (who owns the change?)
+- dependency map impact tiers (who else is affected and how urgently?)
+- glossary alignment (are all teams using the same terms?)
 
 Main activities:
 
 - review the incoming request and its entry point
 - identify affected scope, teams, and dependencies
+- read `ownership/component-ownership-<name>.md` to confirm which component
+  owns the primary change before opening any JIRA epic
+- read `ownership/dependency-map.md` to determine the impact tier for each
+  affected relationship; record the tiers in `platform-ref.yaml`
+  (`impact.must_change_together`, `impact.watch_for_breakage`,
+  `impact.adapts_independently`)
 - identify affected platform refs and affected component repositories
 - classify size and impact separately
 - classify the change as local-only, shared, or platform rule adoption
-- choose the BMAD path depth
+- choose the BMAD path depth based on the ownership and impact results
 - open the change package and define the next artifact
+- create the initial JIRA issue chain:
+  - tier 1 dependencies → open coordinated component epics immediately
+  - tier 2 dependencies → add watch note in `alignment_notes`
+  - tier 3 dependencies → no additional action
 - create the initial JIRA issue chain and alignment metadata
 
 ### 3. Agent roles and responsibilities
 
 Human roles:
 
-- Team Lead owns the phase and makes the routing decision
+- Team Lead owns the phase and makes the assessment decision
 - Product clarifies business priority, intent, and non-goals
 - Architect identifies architecture, integration, and cross-team impact
 - Engineering Manager supports prioritization, staffing, and escalation
 
 Agent roles:
 
-- BMAD routing agent classifies project type, size, and track
+- BMAD classification agent classifies project type, size, and track
 - OpenSpec change agent frames the change package and the next artifact
-- Speckit clarify agent is optional here when the request is too vague to route safely
+- Speckit clarify agent is optional here when the request is too vague to assess safely
 
 ### 4. Skills used and how they are applied
 
-- `bmad-codex-skill`
+- `bmad-skill`
   - use first to classify greenfield or brownfield, size, and path depth
   - use it to decide quick flow, PRD-first, or architecture-heavy work
-- `openspec-codex-skill`
+- `openspec-skill`
   - use second to frame the change package and prepare the next artifact
   - use `/opsx:explore` when the request is still fuzzy
   - use `/opsx:propose` when the team is ready to open the change
-- `speckit-codex-skill`
-  - use only when ambiguity blocks safe routing
+- `speckit-skill`
+  - use only when ambiguity blocks safe assessment
   - keep it lightweight at this phase
 
 ### 5. Rules that govern interactions and outputs
 
 Apply these rules:
 
-- `bmad-codex-skill/rules/track-selection-rules.md`
+- `bmad-skill/rules/track-selection-rules.md`
   - classify project type
   - classify size
   - pick the correct planning track
   - escalate to architecture when required
-- `openspec-codex-skill/rules/artifact-rules.md`
+- `openspec-skill/rules/artifact-rules.md`
   - keep the change small, clear, and reviewable
   - call out unknowns instead of hiding them
-- `bmad-codex-skill/rules/artifact-rules.md`
-  - the routed output must include scope, assumptions, risks, and success criteria
+- `bmad-skill/rules/artifact-rules.md`
+  - the assessed output must include scope, assumptions, risks, and success criteria
 
 ### 6. Expected artifacts and deliverables
 
 Expected outputs:
 
-- routed change package
+- assessed change package
 - intake summary
 - size and impact classification
 - selected path and next artifact
 - known unknowns and open questions
-- initial `platform-ref.yaml`
-- initial `jira-traceability.yaml`
+- initial `platform-ref.yaml` with `ownership.primary_component` and `impact`
+  tiers populated from the dependency map
+- initial `jira-traceability.yaml` with JIRA issue chain derived from impact
+  tiers
 
 ### 7. Criteria for moving to the next phase
 
@@ -329,7 +359,7 @@ Move to `Specify` when:
 ### 8. Potential challenges and mitigation strategies
 
 - Challenge: the team jumps straight to implementation
-  - Mitigation: require a routed change package before any planning starts
+  - Mitigation: require an assessed change package before any planning starts
 - Challenge: size and impact are mixed together
   - Mitigation: classify them separately every time
 - Challenge: brownfield constraints are missed
@@ -339,17 +369,17 @@ Move to `Specify` when:
 
 ### 9. Feedback and iteration process
 
-- compare route decisions with actual downstream effort
+- compare assessment decisions with actual downstream effort
 - track where teams under-classified or over-classified changes
 - refine size and impact examples after each pilot
-- update routing guidance when repeated mistakes appear
+- update assessment guidance when repeated mistakes appear
 
 ## Phase 3: Specify
 
 ### Phase flow
 
 ```text
-[Routed change package]
+[Assessed change package]
             |
             v
 [Product owns behavior definition]
@@ -395,13 +425,20 @@ Core concepts:
 
 Main activities:
 
-- write the problem statement in plain language
+- read `ownership/glossary.md` before writing `proposal.md` — all terms in
+  goals and acceptance criteria must be in the glossary; add missing terms
+  before the proposal is approved (rule O-2)
+- confirm the owning component from `ownership/component-ownership-<name>.md`
+  before writing delta specs — scope must stay within the component's boundary
+- write the problem statement in plain language using only glossary terms
 - define goals, non-goals, and affected behavior
 - confirm the platform version and platform refs that constrain the change
 - draft delta specs using explicit `ADDED`, `MODIFIED`, and `REMOVED` sections
 - decide whether the change needs a linked platform delta or only a component delta
 - run clarify to expose hidden assumptions
 - run a checklist pass before planning
+- record glossary terms used in `platform-ref.yaml` under
+  `alignment_notes.glossary_terms_used`
 
 ### 3. Agent roles and responsibilities
 
@@ -420,7 +457,7 @@ Agent roles:
 
 ### 4. Skills used and how they are applied
 
-- `openspec-codex-skill`
+- `openspec-skill`
   - use first and use it as the only component-repo skill
   - use it to create `proposal.md`, delta specs, `platform-ref.yaml`, and
     `jira-traceability.yaml`
@@ -434,7 +471,7 @@ Agent roles:
 
 Apply these rules:
 
-- `openspec-codex-skill/rules/artifact-rules.md`
+- `openspec-skill/rules/artifact-rules.md`
   - proposal must separate goals from non-goals
   - specs must use concrete behavior and scenarios
 - component rule
@@ -464,6 +501,8 @@ Move to `Plan` when:
 - important ambiguity is resolved or explicitly tracked
 - the team agrees that planning can start without guessing
 - the component spec is aligned to explicit platform refs
+- all terms in the proposal and delta specs are in the shared glossary
+- `platform-ref.yaml` includes `alignment_notes.glossary_terms_used`
 
 ### 8. Potential challenges and mitigation strategies
 
@@ -472,7 +511,7 @@ Move to `Plan` when:
 - Challenge: requirements are vague or promotional
   - Mitigation: rewrite them as specific behaviors and scenarios
 - Challenge: scope keeps expanding during specification
-  - Mitigation: keep non-goals visible and route out-of-scope work into a separate change
+  - Mitigation: keep non-goals visible and move out-of-scope work into a separate change
 - Challenge: edge cases are missed
   - Mitigation: include Developers and Architect in clarify review
 
@@ -488,7 +527,7 @@ Move to `Plan` when:
 Iteration 1 is successful when teams can do the following consistently:
 
 - define shared context once instead of repeating it in every change
-- route work into one clear change package
+- assess work into one clear change package
 - produce specs that are clear enough to plan without guesswork
 
 At that point, the organization is ready to move into Iteration 2:

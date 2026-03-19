@@ -4,7 +4,7 @@ title: "Adopt a 5-phase v1 workflow with Team Lead owning Deliver"
 status: "proposed"
 date: "2026-03-08"
 initiative: "unified-sdd-methodology"
-author: "javierbenavides + codex"
+author: "javierbenavides + claude"
 deciders:
   - "platform-methodology-working-group"
 ---
@@ -41,7 +41,7 @@ as the main visible workflow.
 
 ### Option B: Move directly to 6 phases
 
-Use Platform, Route, Specify, Plan, Build, and Deploy.
+Use Platform, Assess, Specify, Plan, Build, and Deploy.
 
 **Pros:**
 - Very strong separation between engineering and release
@@ -53,7 +53,7 @@ Use Platform, Route, Specify, Plan, Build, and Deploy.
 
 ### Option C: Use 5 phases in v1 ← CHOSEN
 
-Use Platform, Route, Specify, Plan, and Deliver. Keep build, verify, deploy,
+Use Platform, Assess, Specify, Plan, and Deliver. Keep build, verify, deploy,
 and archive inside Deliver as internal slices.
 
 **Pros:**
@@ -71,7 +71,7 @@ and archive inside Deliver as internal slices.
 Adopt a 5-phase v1 workflow:
 
 - Platform
-- Route
+- Assess
 - Specify
 - Plan
 - Deliver

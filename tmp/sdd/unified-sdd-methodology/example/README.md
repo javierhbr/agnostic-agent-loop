@@ -35,7 +35,7 @@ Affected components:
 [Platform baseline]
         |
         v
-[Route]
+[Assess]
   PLAT-123 + PROF-456 + AUTH-234
         |
         v
@@ -54,7 +54,7 @@ Affected components:
 ## Documents in this directory
 
 - `01-platform-phase.md`
-- `02-route-phase.md`
+- `02-assess-phase.md`
 - `03-specify-phase.md`
 - `04-plan-phase.md`
 - `05-deliver-phase.md`

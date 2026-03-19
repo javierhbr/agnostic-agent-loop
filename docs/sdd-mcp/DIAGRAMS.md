@@ -186,12 +186,12 @@ TIER 2: OPENSPEC (Balanced)
                             ↓ Upgrade if...
                    (High risk: payments, auth, PII)
 
-TIER 3: SDD (Full Methodology)
+TIER 3: SDD (Full 5-Phase Methodology)
 ┌──────────────────────────────────────────────────────────────┐
-│ $ agentic-agent specifyify start "Name" --risk critical             │
-│ $ agentic-agent specifyify workflow show <id>                       │
-│ $ agentic-agent specifyify gate-check <id>                          │
-│ $ agentic-agent specifyify adr list                                 │
+│ Platform -> Assess -> Specify -> Plan -> Deliver             │
+│ $ agentic-agent task list                                    │
+│ $ agentic-agent task claim <id>                              │
+│ $ agentic-agent validate                                     │
 │                                                              │
 │ ├─ Use for:      Critical features, regulatory compliance   │
 │ ├─ Team size:    3+ people, multiple teams                 │
@@ -450,7 +450,7 @@ AUTO-GENERATED TASKS.MD:
 │       SDD GATE CHECKS (High-Risk Features)                   │
 └──────────────────────────────────────────────────────────────┘
 
-agentic-agent specifyify start "Payment Processing" --risk critical
+Platform -> Assess -> Specify -> Plan -> Deliver
             ↓
 GATE 1: CONTEXT GATE
 ┌───────────────────────────────────┐
@@ -502,7 +502,7 @@ GATE 5: READY GATE
       ✅ PASS → Implementation starts
       ❌ FAIL → Refine plan
             ↓
-  agentic-agent specifyify gate-check <spec-id>
+  agentic-agent validate
         (checks all 5 gates)
             ↓
     Either: ✅ ALL PASS (proceed)

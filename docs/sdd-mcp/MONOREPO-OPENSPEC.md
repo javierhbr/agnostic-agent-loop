@@ -14,6 +14,8 @@ This guide shows how to organize specs per-package, track changes centrally, and
 4. **CLI auto-discovers** all specs across packages
 5. **Prompts guide implementation** for each package/task
 
+**Core boundary rule:** Component repos (individual packages) use OpenSpec ONLY. Platform-level tooling (BMAD, Speckit) stays in the platform repo. Use `platform-ref.yaml` in component repos to reference platform alignment without importing platform tools.
+
 ---
 
 ## Setup (One-Time)
@@ -659,11 +661,11 @@ agentic-agent openspec init "OAuth Integration" \
 
 ## Next Steps
 
-1. ✅ Create root `agnostic-agent.yaml` with your monorepo structure
-2. ✅ Write specs in `packages/*/specs/` directories
-3. ✅ Initialize OpenSpec from specs: `agentic-agent openspec init`
-4. ✅ Use the 7 prompts to guide implementation
-5. ✅ Track progress with `agentic-agent task` and `openspec`
-6. ✅ Archive completed changes: `agentic-agent openspec archive`
+1. Create root `agnostic-agent.yaml` with your monorepo structure
+2. Write specs in `packages/*/specs/` directories
+3. Initialize OpenSpec from specs: `agentic-agent openspec init`
+4. Use the 7 prompts to guide implementation
+5. Track progress with `agentic-agent task` and `openspec`
+6. Archive completed changes: `agentic-agent openspec archive`
 
 **Don't over-engineer:** Start simple, add specs only when needed (> 1 week of work).

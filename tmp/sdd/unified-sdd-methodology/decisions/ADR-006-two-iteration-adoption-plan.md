@@ -4,7 +4,7 @@ title: "Roll out the 5-phase workflow in two iterations"
 status: "proposed"
 date: "2026-03-08"
 initiative: "unified-sdd-methodology"
-author: "javierbenavides + codex"
+author: "javierbenavides + claude"
 deciders:
   - "platform-methodology-working-group"
 ---
@@ -21,7 +21,7 @@ That is more change than most teams can absorb safely.
 
 ### Option A: Roll out all 5 phases at once
 
-Adopt Platform, Route, Specify, Plan, and Deliver in a single release.
+Adopt Platform, Assess, Specify, Plan, and Deliver in a single release.
 
 **Pros:**
 - Fastest path to the full target model
@@ -36,7 +36,7 @@ Adopt Platform, Route, Specify, Plan, and Deliver in a single release.
 
 Adopt the workflow in two steps:
 
-- Iteration 1: Platform, Route, Specify
+- Iteration 1: Platform, Assess, Specify
 - Iteration 2: Plan, Deliver
 
 **Pros:**
@@ -56,7 +56,7 @@ Roll out the methodology in two iterations.
 Iteration 1 focuses on the first three phases:
 
 - Platform
-- Route
+- Assess
 - Specify
 
 Iteration 2 focuses on the remaining two phases:
@@ -71,6 +71,6 @@ the first two adoption iterations.
 
 - The proposal should show both the target 5-phase model and the two-step
   adoption path
-- Early pilots should validate platform context, routing, and specification
+- Early pilots should validate platform context, assessment, and specification
   quality before changing delivery behavior
 - Teams can improve planning and delivery later using better upstream inputs

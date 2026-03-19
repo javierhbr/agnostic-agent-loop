@@ -331,9 +331,9 @@ Expected outputs:
 Platform does not yet break work into local component detail. It defines the
 shared rules that later changes must follow.
 
-### Route
+### Assess
 
-Route is where the issue chain and scope chain are created.
+Assess is where the issue chain and scope chain are created.
 
 The Team Lead should classify the incoming work as one of these:
 
@@ -342,7 +342,7 @@ The Team Lead should classify the incoming work as one of these:
 - `shared platform + component`
 - `multi-component shared change`
 
-Route must answer:
+Assess must answer:
 
 - which platform refs are affected
 - which component repositories are affected

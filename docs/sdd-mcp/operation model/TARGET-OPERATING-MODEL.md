@@ -1,10 +1,10 @@
 # Target Operating Model
-## SDD + MCP Enterprise Model — Version 3.0 · February 2026
+## SDD + MCP Enterprise Model — Version 4.0 · March 2026
 
 > *"Nothing is implemented without a validated spec backed by governed context."*
-> — Core Principle, v3.0
+> -- Core Principle, v4.0
 
-A practical guide to Spec-Driven Development with two MCP servers, four Markdown agents, and zero overhead services — the enterprise model for teams that need alignment, traceability, and zero tribal knowledge.
+A practical guide to Spec-Driven Development with a 5-phase model (Platform --> Assess --> Specify --> Plan --> Deliver), governed knowledge, and zero overhead services -- the enterprise model for teams that need alignment, traceability, and zero tribal knowledge.
 
 ---
 
@@ -16,7 +16,7 @@ A practical guide to Spec-Driven Development with two MCP servers, four Markdown
 
 **Process overhead kills velocity:** Heavy methodologies (router services, gate validators, contract registries as servers) add infrastructure that nobody maintains. Teams skip the process or drown in it.
 
-**The answer:** Two MCP servers that serve governed knowledge. Four Markdown agents that carry the process. Zero overhead services — gates live as checklists inside templates, not in TypeScript validators. If a methodology component doesn't change what the agent writes, it's eliminated.
+**The answer:** A 5-phase model (Platform --> Assess --> Specify --> Plan --> Deliver) with governed knowledge, change packages as the canonical execution unit, and zero overhead services -- gates live as checklists inside templates, not in TypeScript validators. If a methodology component doesn't change what the agent writes, it's eliminated.
 
 ---
 
@@ -24,7 +24,7 @@ A practical guide to Spec-Driven Development with two MCP servers, four Markdown
 
 Your organisation is a knowledge system, not just a code system. Code is the output — specs, contracts, and decisions are the inputs that determine whether the code is right.
 
-| ⚠ Without SDD | ✓ With SDD + MCP |
+| Without SDD | With SDD + MCP |
 |---|---|
 | Teams interpret requirements differently | Specs are the explicit, versioned source of truth |
 | Service contracts break without warning | Contracts are governed with full consumer lists |
@@ -45,7 +45,7 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 
 ---
 
-### 📐 SDD — Spec-Driven Development
+### SDD -- Spec-Driven Development
 *From: enterprise software delivery practices*
 
 **What we took**
@@ -60,11 +60,11 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 `→ removes overhead server`
 
 ~~**Centralised spec registry with automated snapshots**~~ — spec databases with change tracking, contract registries as standalone services, automated snapshot pipelines.
-`✗ doesn't change what gets written`
+`DROPPED:doesn't change what gets written`
 
 ---
 
-### ⬟ MCP — Model Context Protocol
+### MCP -- Model Context Protocol
 *From: Anthropic — structured agent context*
 
 **What we took**
@@ -76,14 +76,14 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 `→ right context, right scope`
 
 ~~**MCP Router**~~ — a central dispatcher that routes agent queries to the correct MCP server, aggregating responses into a single context pack.
-`✗ agents know their role — no router needed`
+`DROPPED:agents know their role — no router needed`
 
 ~~**Separate contracts-mcp and domain-mcp**~~ — dedicated servers for contract registries and domain invariants, each with their own deployment lifecycle.
-`✗ contracts are component knowledge — get_contracts() on the component MCP`
+`DROPPED:contracts are component knowledge — get_contracts() on the component MCP`
 
 ---
 
-### 📋 ADR — Architecture Decision Records
+### ADR -- Architecture Decision Records
 *From: Michael Nygard (2011) · widely adopted in microservices*
 
 **What we took**
@@ -95,11 +95,11 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 `→ no spec can escape an unresolved decision`
 
 ~~**ADR query service**~~ — a queryable database of decisions with cross-repo search, impact analysis APIs, and automated staleness detection.
-`✗ Markdown files in git already provide this`
+`DROPPED:Markdown files in git already provide this`
 
 ---
 
-### 🔄 Agile / XP — Extreme Programming & Agile
+### Agile / XP -- Extreme Programming & Agile
 *From: Beck, Manifesto for Agile (2001)*
 
 **What we took**
@@ -111,11 +111,11 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 `→ parallel execution per component`
 
 ~~**Story points, velocity tracking, sprint ceremonies**~~ — estimation rituals, retrospective formats, burndown charts as mandatory process.
-`✗ tasks.yaml captures owner + points when needed — no ceremony`
+`DROPPED:tasks.yaml captures owner + points when needed — no ceremony`
 
 ---
 
-### ✂️ Lean — Lean Software Thinking
+### Lean -- Lean Software Thinking
 *From: Poppendieck, Toyota Production System adapted*
 
 **What we took**
@@ -131,7 +131,7 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 
 ---
 
-### 🤖 BMAD — Breakthrough Method for Agile AI Development
+### BMAD -- Breakthrough Method for Agile AI Development
 *From: BMAD-METHOD · AI-native multi-agent workflow design*
 
 **What we took — and why**
@@ -149,14 +149,14 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 `→ agent evolution without deploys`
 
 ~~**Orchestrator agent**~~ — a meta-agent that decides which specialist agent to invoke, routing requests based on request type classification.
-`✗ Platform MCP get_workflow() replaces this — risk level determines the agent sequence, not a separate agent`
+`DROPPED:Platform MCP get_workflow() replaces this — risk level determines the agent sequence, not a separate agent`
 
 ~~**Persona-based agent naming**~~ — agents named after team member personas ("Alex the Architect", "Dev Dana") to guide interaction style.
-`✗ role names are sufficient — persona framing doesn't change what gets written`
+`DROPPED:role names are sufficient — persona framing doesn't change what gets written`
 
 ---
 
-### 📄 OpenSpec — Open Specification Format
+### OpenSpec -- Open Specification Format
 *From: OpenSpec format · structured spec authoring for distributed systems*
 
 **What we took — and why**
@@ -174,11 +174,11 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 `→ no invisible technical debt`
 
 ~~**Spec versioning server**~~ — a dedicated service managing spec versions with diff APIs, conflict detection, and branch-per-initiative spec trees.
-`✗ git already handles versioning — the spec graph provides the links without a separate server`
+`DROPPED:git already handles versioning — the spec graph provides the links without a separate server`
 
 ---
 
-### 📦 SpecKit — Template-Driven Spec Assembly
+### SpecKit -- Template-Driven Spec Assembly
 *From: SpecKit · template-driven spec assembly for AI-assisted development*
 
 **What we took — and why**
@@ -196,15 +196,90 @@ Three frameworks contributed the core structural ideas: **BMAD** (Breakthrough M
 `→ template updates propagate instantly`
 
 ~~**Spec scaffolding CLI**~~ — a command-line tool that generates spec file stubs, pre-fills metadata, and validates spec structure on creation.
-`✗ Platform MCP get_template() replaces this — the agent fetches and fills the template inline, no CLI required`
+`DROPPED:Platform MCP get_template() replaces this — the agent fetches and fills the template inline, no CLI required`
 
 ---
 
-## 01 — Two MCPs, Four Agents
+## 01 -- Target State: 5-Phase Model with Two MCPs and Four Agents
 
-Two MCP server types carry all the governed knowledge. Four Markdown agents carry all the process. No routers, no gate validators, no extra services — just logic in files.
+All work flows through five sequential phases: **Platform --> Assess --> Specify --> Plan --> Deliver**. Two MCP server types carry all the governed knowledge. Four Markdown agents carry all the process. No routers, no gate validators, no extra services -- just logic in files.
 
-### ⬟ Platform MCP — Platform Intelligence
+### 5-Phase Model
+
+```
+  Phase 1        Phase 2        Phase 3        Phase 4        Phase 5
+  PLATFORM  -->  ASSESS    -->  SPECIFY   -->  PLAN      -->  DELIVER
+  Architect      Team Lead      Product        Architect      Team Lead
+  (durable)      (per change)   (per change)   (per change)   (per change)
+```
+
+| Phase | Owner | Goal | Key Outputs |
+|---|---|---|---|
+| **Platform** | Architect | Durable context, constitution, ownership | constitution, ownership.yaml, dependency-map.yaml, glossary.yaml |
+| **Assess** | Team Lead | Classify change, open change package, pin context | platform-ref.yaml, jira-traceability.yaml, change package (opened) |
+| **Specify** | Product | Define what changes in business terms | proposal.md, delta specs, glossary updates |
+| **Plan** | Architect | Implementable design with bounded tasks | design.md, tasks.md, gate results (5 gates PASS) |
+| **Deliver** | Team Lead | Build, verify, archive | code, verify.md, archived change package, updated spec graph |
+
+### Change Package
+
+Every unit of work is a **change package** -- a versioned directory opened in Assess and archived in Deliver:
+
+```
+changes/CP-{ID}/
+  platform-ref.yaml        # pinned constitution version
+  jira-traceability.yaml   # external tracking links
+  proposal.md              # what and why (Specify output)
+  design.md                # how (Plan output)
+  tasks.md                 # execution plan (Plan output)
+  verify.md                # evidence (Deliver output)
+```
+
+### Core Boundary Rule
+
+The 5-phase model applies differently depending on repository scope.
+
+| Scope | Phases Available | Methodology Sources |
+|---|---|---|
+| **Platform-side** (specs repo, constitution, governance) | All 5 phases | BMAD + OpenSpec + SpecKit |
+| **Component repos** (system code, local specs) | Assess, Specify (delta only), Plan, Deliver | OpenSpec only |
+
+**Rule:** Component teams consume platform artifacts (constitution, templates, ownership, glossary) as read-only input. They contribute to them via PR to the platform repo, never by direct edit.
+
+### Ownership Artifacts (Target Outputs)
+
+Three DDD ownership artifacts establish domain-driven ownership across the platform:
+
+- **`component-ownership.yaml`** -- Maps every bounded context to its owning team. No component may be unowned.
+- **`dependency-map.yaml`** -- Classifies every integration point into three tiers: Internal, Partner, External.
+- **`shared-glossary.yaml`** -- Canonical definitions for all domain terms used across components.
+
+### Traceability Artifacts
+
+- **`platform-ref.yaml`** -- Pins the constitution version and applicable policies at the time the change package was opened.
+- **`jira-traceability.yaml`** -- Links the change package to external issue trackers (Jira, Linear, GitHub Issues).
+
+### Two-Iteration Adoption
+
+Teams adopt the unified model in two iterations:
+
+**Iteration 1 -- Foundation:** Establish Platform phase artifacts. Run Assess and Specify for one pilot change. Execute Plan and Deliver with gate checks. Validate end-to-end traceability.
+
+**Iteration 2 -- Full Model:** All changes flow through the 5-phase model. Deliver slices fully operational. Spec Graph updated after every merge. CI enforces verify.md sign-off.
+
+### Agent Descriptions
+
+| Agent | Description |
+|---|---|
+| **platform-contextualizer** | Reads constitution, ownership, dependency map, and glossary to assemble context packs for downstream phases |
+| **uncle-sdd-agent** | Enforces the core boundary rule and validates that all methodology artifacts are correctly structured |
+| **unified-sdd-skill** | Combined skill that routes to the correct phase-specific behavior based on the current workflow state |
+| **analyst.md** | Full workflow only -- produces discovery.md with evidence, affected components, success metrics |
+| **architect.md** | Standard + Full -- produces feature-spec.md + component-spec.md per domain |
+| **developer.md** | All workflows, parallel per component -- produces impl-spec.md + tasks.yaml |
+| **verifier.md** | All workflows, hard stop -- produces verify.md with AC verification and merge gate |
+
+### Platform MCP -- Platform Intelligence
 *1 instance per org · reads openclaw-specs/ · 4 tools only*
 
 The single source of platform-level truth. Provides context packs, templates with embedded exit gates, agent definitions, and workflow configs. Never needs redeployment — just update the specs repo.
@@ -216,7 +291,7 @@ The single source of platform-level truth. Provides context packs, templates wit
 | `get_agent(name)` | analyst / architect / developer / verifier |
 | `get_workflow(risk_level)` | which agents to activate |
 
-### ◈ Component MCP — Component Knowledge
+### Component MCP -- Component Knowledge
 *N instances · same image · different config per component*
 
 One instance per component. Serves that component's contracts, invariants, patterns, and technical decisions. The "local truth" each agent needs before writing a single line.
@@ -228,7 +303,7 @@ One instance per component. Serves that component's contracts, invariants, patte
 | `get_patterns()` | approved implementation patterns + canonical examples |
 | `get_decisions()` | ADRs + prior technical decisions |
 
-### ▤ Four Agents — Development Workflow
+### Four Agents -- Development Workflow
 *Markdown files in `.claude/agents/` · loaded on demand by Claude Code*
 
 Four Markdown agents define the entire development process. Gates live inside the agent as checklists — not as external validators. Agents self-verify before handing off.
@@ -440,7 +515,7 @@ Architect · feature-spec.md ready
                  │
         ┌────────┼────────┐
         │        │        │
-   mario-hugo  perform  ⛔ guaripolo
+   mario-hugo  perform  [BLOCKED] guaripolo
    ─────────   ────────   ───────────
    OC-047      OC-047     OC-048
    momentum    feedback   cb-rules
@@ -462,7 +537,7 @@ Non-negotiable checkpoints enforced at CLI, CI, PR, and agent levels. If any gat
 | **G4** | NFR Compliance | Logging, metrics, tracing declared · PII handling specified · Performance targets set (p95) |
 | **G5** | Ready to Implement | No open BlockedBy ADRs · Spec is unambiguous · All acceptance criteria testable |
 
-> 🚫 **If any gate FAILS →** the system must block progress. The failure must be resolved before moving forward. Self-enforced by the Verifier agent checklist at merge time, and by CI spec link validation in both repos.
+> **If any gate FAILS -->** the system must block progress. The failure must be resolved before moving forward. Self-enforced by the Verifier agent checklist at merge time, and by CI spec link validation in both repos.
 
 ---
 
@@ -667,15 +742,16 @@ Result: Agent queries Domain MCP and immediately flags two invariant violations:
 
 Every role has a clear repo, clear ownership, and clear accountability. No overlap — no ambiguity about who decides what.
 
-| Role | Repo | Owns | Accountable For |
-|---|---|---|---|
-| **Product Manager** | Platform Repo | Initiative definition, business goals, UX intent | Initiative (Epic), success criteria |
-| **Platform Architect** | Specs Repo | `constitution/`, `templates/`, `workflows/`, `graph/index.yaml` — governed inputs that Platform MCP serves | "What the system must do" across all components · approves Architect agent output |
-| **Domain Owner** | Specs + System Repo | `components/{name}/specs/` — invariants, contracts, patterns, ADRs served by Component MCP | Domain correctness of all specs touching their component · approves Developer agent output |
-| **Integration Owner** | Specs Repo | `contracts/` inside each component spec — `get_contracts()` on Component MCP returns these | Approves contract changes declared in Architect exit gate · verifies no breaking changes |
-| **Component Team** | System Repo | Implementation specs (`docs/specs/`), code, tests, local ADRs | "How the system works locally" — Developer + Verifier agents |
-| **ADR Owner** | Platform or Component | Technical decisions — global or local scope | Resolving ambiguity before implementation proceeds |
-| **AI Agents** | analyst · architect · developer · verifier | Discovery, specification, implementation, and verification — loaded from `.claude/agents/` as Markdown | Must call Platform + Component MCPs · self-check exit gates · produce traceable outputs per risk level |
+| Role | Phase Ownership | Repo | Owns | Accountable For |
+|---|---|---|---|---|
+| **Architect** | Platform, Plan | Specs Repo | `constitution/`, `templates/`, `workflows/`, `graph/index.yaml`, design.md, tasks.md | "What the system must do" · gate checks · approves Architect agent output |
+| **Team Lead** | Assess, Deliver | Specs + System Repo | Change package lifecycle, risk classification, build/verify/archive coordination | Traceability · change package opened and archived · verify.md sign-off |
+| **Product** | Specify | Platform Repo | proposal.md, acceptance criteria, delta specs, glossary check | Success criteria · "what changes in business terms" |
+| **Domain Owner** | -- | Specs + System Repo | `components/{name}/specs/` -- invariants, contracts, patterns, ADRs served by Component MCP | Domain correctness of all specs touching their component · approves Developer agent output |
+| **Integration Owner** | -- | Specs Repo | `contracts/` inside each component spec -- `get_contracts()` on Component MCP returns these | Approves contract changes declared in Architect exit gate · verifies no breaking changes |
+| **Component Team** | -- | System Repo | Implementation specs (`docs/specs/`), code, tests, local ADRs | "How the system works locally" -- Developer + Verifier agents |
+| **ADR Owner** | -- | Platform or Component | Technical decisions -- global or local scope | Resolving ambiguity before implementation proceeds |
+| **AI Agents** | -- | analyst · architect · developer · verifier | Discovery, specification, implementation, and verification -- loaded from `.claude/agents/` as Markdown | Must call Platform + Component MCPs · self-check exit gates · produce traceable outputs per risk level |
 
 ---
 
@@ -683,7 +759,7 @@ Every role has a clear repo, clear ownership, and clear accountability. No overl
 
 Start with one repo and add structure only when the team needs it. The two-MCP model and four agents never change — only the physical organisation of content does.
 
-### 🟡 Early Stage — 1–2 people
+### Early Stage -- 1-2 people
 
 One repo. Platform MCP reads a single `openclaw-specs/` directory. Component MCP reads the one monorepo component you have. Quick workflow only.
 
@@ -692,7 +768,7 @@ One repo. Platform MCP reads a single `openclaw-specs/` directory. Component MCP
 - One component MCP for the whole system
 - Quick workflow only (developer → verifier)
 
-### 🔵 Growing Team — 3–6 people
+### Growing Team -- 3-6 people
 
 Split repos. `openclaw-specs/` becomes its own repo so product and engineering can PR separately. One component MCP instance per bounded context.
 
@@ -701,7 +777,7 @@ Split repos. `openclaw-specs/` becomes its own repo so product and engineering c
 - Standard workflow introduced for new features
 - `agents/` symlinked into `.claude/` from specs repo
 
-### 🔴 Full Model — 6+ people
+### Full Model -- 6+ people
 
 Full two-repo model as described in this document. Full workflow for high/critical. Human approval gates enforced at Verifier. Spec graph fully linked.
 
@@ -745,6 +821,6 @@ Four phases. MCP servers first — then your first initiative — then parallel 
 
 ---
 
-*Target Operating Model · SDD + MCP · v3.0*
+*Target Operating Model · SDD + MCP · v4.0*
 *"Software is no longer just built — it is specified, validated, and executed as a system of knowledge."*
-*February 2026*
+*March 2026*
