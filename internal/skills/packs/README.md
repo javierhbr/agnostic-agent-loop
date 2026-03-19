@@ -23,21 +23,38 @@ It acts as the **Universal Workflow Consultant** and orchestrator. It will inter
 | **`atdd` / `tdd`** | Driving implementation through automated acceptance and unit tests. | **Component** |
 | **`explain-code`** | Generating visual diagrams and analogies to understand existing architecture. | **Knowledge** |
 
+## 🔄 The 3-Pillar Mental Model
+
+To use this ecosystem effectively, you must distinguish between **Who** is doing the work, **What** is being produced, and **When** it happens.
+
+### 1. Roles (The Who)
+The methodology assigns responsibility to specific personas (even if one person/agent plays multiple roles):
+- **Product:** Defines "What" and "Why" (Goals, Success Metrics).
+- **Architect:** Defines "How" (Tech Stack, Data Model, API Design).
+- **Team Lead:** Routes work, manages change packages, and ensures delivery.
+- **Developer:** Implements the code against the specifications.
+- **Verifier:** Provides evidence that implementation matches the spec before merge.
+
+### 2. Artifacts & Tools (The What & How)
+These are the physical deliverables and the skills that generate them:
+- **`product-wizard`** → PRD / Initiative.
+- **`sdd-speckit`** → Feature Spec, Requirements, and Task Lists.
+- **`sdd-openspec`** → Proposal, Design, and Delta Specs.
+- **`atdd`** → Executable Acceptance Tests.
+- **`agentic-agent` CLI** → The physical execution engine (tasks, context, validation).
+
+### 3. Step/Flow (The When)
+The lifecycle of a change follows a 5-phase "Golden Path":
+1.  **Platform/Route:** Establish context and classify the request scale.
+2.  **Specify:** Define requirements and remove ambiguity (Produce Specs).
+3.  **Plan:** Break the spec into design and actionable tasks.
+4.  **Deliver:** Implementation loop (Claim → Code → Test → Complete).
+5.  **Archive:** Merge the delta specs into the "current truth" and close the change.
+
 ---
 
-## 🔄 How They Interact
-
-The skill ecosystem follows a **"Plan-to-Execution"** pipeline:
-
-1.  **Discovery Phase:** Use `product-wizard` to generate a PRD.
-2.  **Definition Phase:** Use `sdd-speckit` or `sdd-openspec` to turn the PRD into a technical spec and a list of tasks.
-3.  **Context Phase:** Run `agentic-agent context generate <DIR>` to ensure the agent understands local rules.
-4.  **Implementation Phase:** Use `run-with-ralph` or `atdd` to iterate on the code.
-5.  **Validation Phase:** Run `agentic-agent validate` to ensure the final output matches the spec.
-
----
-
-## 📝 Usage Samples
+## 🗺 Methodology Routing
+...
 
 ### Example 1: Building a New Feature from Scratch
 > "I want to build a new payment gateway. Guide me."

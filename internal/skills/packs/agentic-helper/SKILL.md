@@ -11,7 +11,19 @@ Guides you through agentic-agent CLI commands and helps you select the correct m
 
 ---
 
-## 1. Methodology Routing Matrix
+## 1. The 3-Pillar Mental Model
+
+Before starting, identify your current role, the artifact you need, and the phase you are in:
+
+| **Pillar** | Key Elements |
+|---|---|
+| **Roles (The Who)** | Product (Why), Architect (How), Team Lead (Route), Developer (Implement), Verifier (Evidence) |
+| **Artifacts (The What)** | PRD, Feature Spec, Proposal, Design, Tasks, Delta Specs, Acceptance Tests |
+| **Flow (The When)** | Platform/Route → Specify → Plan → Deliver → Archive |
+
+---
+
+## 2. Methodology Routing Matrix
 
 Before starting, assess your project scale (Platform vs. Component) and goal:
 
